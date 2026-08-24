@@ -1,0 +1,165 @@
+// 仿真游戏数据
+const GAME_DATA = {
+  user: {
+    name: '音乐旅人',
+    level: 3,
+    exp: 680,
+    expToNext: 1000,
+    coins: 520,
+    vip: false,
+    checkInDays: 2,
+    checkedInToday: false,
+  },
+  banners: [
+    { id: 1, title: '每日推荐 · 今日份好心情', color: '#e84393', tag: 'HOT' },
+    { id: 2, title: '私人漫游 · 为你定制', color: '#6c5ce7', tag: 'NEW' },
+    { id: 3, title: '云村新人礼 · 签到领云币', color: '#e17055', tag: '活动' },
+  ],
+  dailyTasks: [
+    { id: 'listen3', name: '收听 3 首歌曲', target: 3, progress: 0, reward: 50, done: false },
+    { id: 'like1', name: '红心收藏 1 首歌', target: 1, progress: 0, reward: 30, done: false },
+    { id: 'comment1', name: '发表 1 条乐评', target: 1, progress: 0, reward: 40, done: false },
+    { id: 'checkin', name: '每日签到', target: 1, progress: 0, reward: 100, done: false },
+  ],
+  playlists: [
+    {
+      id: 'daily',
+      name: '每日歌曲推荐',
+      cover: 'linear-gradient(135deg,#667eea,#764ba2)',
+      playCount: '892万',
+      desc: '根据你的口味生成',
+      locked: false,
+      songs: ['s1','s2','s3','s4','s5'],
+    },
+    {
+      id: 'private',
+      name: '私人漫游',
+      cover: 'linear-gradient(135deg,#f093fb,#f5576c)',
+      playCount: '456万',
+      desc: '无限模式，越听越懂你',
+      locked: false,
+      songs: ['s6','s7','s8','s9','s10'],
+    },
+    {
+      id: 'hot',
+      name: '热歌榜',
+      cover: 'linear-gradient(135deg,#fa709a,#fee140)',
+      playCount: '3200万',
+      desc: '全站最火',
+      locked: false,
+      songs: ['s1','s6','s11','s12','s13'],
+    },
+    {
+      id: 'new',
+      name: '新歌榜',
+      cover: 'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+      playCount: '890万',
+      desc: '最新上架',
+      locked: false,
+      songs: ['s14','s15','s16','s17','s18'],
+    },
+    {
+      id: 'soar',
+      name: '飙升榜',
+      cover: 'linear-gradient(135deg,#ff9a9e,#fecfef)',
+      playCount: '1200万',
+      desc: '24小时飙升',
+      locked: false,
+      songs: ['s2','s8','s19','s20','s21'],
+    },
+    {
+      id: 'original',
+      name: '原创榜',
+      cover: 'linear-gradient(135deg,#ffecd2,#fcb69f)',
+      playCount: '560万',
+      desc: '独立音乐人',
+      locked: false,
+      songs: ['s22','s23','s24','s25','s26'],
+    },
+    {
+      id: 'vip1',
+      name: '黑胶 VIP 专享',
+      cover: 'linear-gradient(135deg,#434343,#000000)',
+      playCount: 'VIP',
+      desc: '解锁需 200 云币',
+      locked: true,
+      unlockCost: 200,
+      songs: ['s27','s28','s29','s30','s31'],
+    },
+    {
+      id: 'vip2',
+      name: '无损音质精选',
+      cover: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
+      playCount: 'VIP',
+      desc: '解锁需 300 云币',
+      locked: true,
+      unlockCost: 300,
+      songs: ['s32','s33','s34','s35','s36'],
+    },
+  ],
+  songs: {
+    s1:  { id:'s1',  name:'晴天', artist:'周杰伦', album:'叶惠美', duration:269, cover:'linear-gradient(135deg,#74b9ff,#0984e3)' },
+    s2:  { id:'s2',  name:'七里香', artist:'周杰伦', album:'七里香', duration:299, cover:'linear-gradient(135deg,#fd79a8,#e84393)' },
+    s3:  { id:'s3',  name:'稻香', artist:'周杰伦', album:'魔杰座', duration:223, cover:'linear-gradient(135deg,#55efc4,#00b894)' },
+    s4:  { id:'s4',  name:'夜曲', artist:'周杰伦', album:'十一月的萧邦', duration:226, cover:'linear-gradient(135deg,#a29bfe,#6c5ce7)' },
+    s5:  { id:'s5',  name:'告白气球', artist:'周杰伦', album:'周杰伦的床边故事', duration:203, cover:'linear-gradient(135deg,#fab1a0,#e17055)' },
+    s6:  { id:'s6',  name:'起风了', artist:'买辣椒也用券', album:'起风了', duration:325, cover:'linear-gradient(135deg,#81ecec,#00cec9)' },
+    s7:  { id:'s7',  name:'光年之外', artist:'G.E.M.邓紫棋', album:'光年之外', duration:235, cover:'linear-gradient(135deg,#ffeaa7,#fdcb6e)' },
+    s8:  { id:'s8',  name:'泡沫', artist:'G.E.M.邓紫棋', album:'Xposed', duration:258, cover:'linear-gradient(135deg,#dfe6e9,#b2bec3)' },
+    s9:  { id:'s9',  name:'演员', artist:'薛之谦', album:'绅士', duration:261, cover:'linear-gradient(135deg,#636e72,#2d3436)' },
+    s10: { id:'s10', name:'丑八怪', artist:'薛之谦', album:'意外', duration:245, cover:'linear-gradient(135deg,#fdcb6e,#e17055)' },
+    s11: { id:'s11', name:'孤勇者', artist:'陈奕迅', album:'孤勇者', duration:256, cover:'linear-gradient(135deg,#e17055,#d63031)' },
+    s12: { id:'s12', name:'漠河舞厅', artist:'柳爽', album:'漠河舞厅', duration:334, cover:'linear-gradient(135deg,#0984e3,#74b9ff)' },
+    s13: { id:'s13', name:'错位时空', artist:'艾辰', album:'错位时空', duration:218, cover:'linear-gradient(135deg,#a29bfe,#fd79a8)' },
+    s14: { id:'s14', name:'星辰大海', artist:'黄霄雲', album:'星辰大海', duration:242, cover:'linear-gradient(135deg,#0984e3,#6c5ce7)' },
+    s15: { id:'s15', name:'踏山河', artist:'是七叔呢', album:'踏山河', duration:197, cover:'linear-gradient(135deg,#d63031,#e17055)' },
+    s16: { id:'s16', name:'白月光与朱砂痣', artist:'大籽', album:'白月光与朱砂痣', duration:204, cover:'linear-gradient(135deg,#fd79a8,#fab1a0)' },
+    s17: { id:'s17', name:'删了吧', artist:'许佳豪', album:'删了吧', duration:228, cover:'linear-gradient(135deg,#636e72,#b2bec3)' },
+    s18: { id:'s18', name:'漠河舞厅(DJ版)', artist:'柳爽', album:'漠河舞厅', duration:298, cover:'linear-gradient(135deg,#00b894,#55efc4)' },
+    s19: { id:'s19', name:'本草纲目', artist:'周杰伦', album:'依然范特西', duration:206, cover:'linear-gradient(135deg,#e84393,#fd79a8)' },
+    s20: { id:'s20', name:'以父之名', artist:'周杰伦', album:'叶惠美', duration:340, cover:'linear-gradient(135deg,#2d3436,#636e72)' },
+    s21: { id:'s21', name:'等你下课', artist:'周杰伦', album:'等你下课', duration:270, cover:'linear-gradient(135deg,#fdcb6e,#ffeaa7)' },
+    s22: { id:'s22', name:'理想三旬', artist:'陈鸿宇', album:'浓烟下的诗歌电台', duration:210, cover:'linear-gradient(135deg,#b2bec3,#dfe6e9)' },
+    s23: { id:'s23', name:'南山南', artist:'马頔', album:'孤岛', duration:271, cover:'linear-gradient(135deg,#55efc4,#81ecec)' },
+    s24: { id:'s24', name:'成都', artist:'赵雷', album:'无法长大', duration:327, cover:'linear-gradient(135deg,#e17055,#fab1a0)' },
+    s25: { id:'s25', name:'董小姐', artist:'宋冬野', album:'安和桥北', duration:284, cover:'linear-gradient(135deg,#6c5ce7,#a29bfe)' },
+    s26: { id:'s26', name:'斑马斑马', artist:'宋冬野', album:'安和桥北', duration:290, cover:'linear-gradient(135deg,#2d3436,#636e72)' },
+    s27: { id:'s27', name:'富士山下', artist:'陈奕迅', album:'What\'s Going On...?', duration:259, cover:'linear-gradient(135deg,#d63031,#e84393)' },
+    s28: { id:'s28', name:'红玫瑰', artist:'陈奕迅', album:'认了吧', duration:239, cover:'linear-gradient(135deg,#e84393,#fd79a8)' },
+    s29: { id:'s29', name:'好久不见', artist:'陈奕迅', album:'认了吧', duration:250, cover:'linear-gradient(135deg,#74b9ff,#a29bfe)' },
+    s30: { id:'s30', name:'浮夸', artist:'陈奕迅', album:'U87', duration:282, cover:'linear-gradient(135deg,#fdcb6e,#e17055)' },
+    s31: { id:'s31', name:'岁月如歌', artist:'陈奕迅', album:'Live For Today', duration:231, cover:'linear-gradient(135deg,#00b894,#55efc4)' },
+    s32: { id:'s32', name:'Blinding Lights', artist:'The Weeknd', album:'After Hours', duration:200, cover:'linear-gradient(135deg,#e84393,#6c5ce7)' },
+    s33: { id:'s33', name:'Shape of You', artist:'Ed Sheeran', album:'÷', duration:234, cover:'linear-gradient(135deg,#fd79a8,#e84393)' },
+    s34: { id:'s34', name:'Someone Like You', artist:'Adele', album:'21', duration:285, cover:'linear-gradient(135deg,#636e72,#2d3436)' },
+    s35: { id:'s35', name:'Perfect', artist:'Ed Sheeran', album:'÷', duration:263, cover:'linear-gradient(135deg,#fab1a0,#fd79a8)' },
+    s36: { id:'s36', name:'Stay', artist:'The Kid LAROI', album:'F*CK LOVE 3', duration:141, cover:'linear-gradient(135deg,#0984e3,#00cec9)' },
+  },
+  comments: [
+    { user: '云村村民007', text: '前奏一响，青春登场 🎵', likes: 2847 },
+    { user: '深夜听歌人', text: '单曲循环中，根本停不下来', likes: 1203 },
+    { user: '音乐治愈师', text: '这首歌陪我度过了最难熬的日子', likes: 956 },
+    { user: '耳机分你一半', text: '评论区都是故事，每首歌都是回忆', likes: 743 },
+    { user: '云村小透明', text: '第一次听是在高三，现在大学了还在听', likes: 521 },
+  ],
+  myPlaylists: [
+    { id: 'my1', name: '我喜欢的音乐', count: 0, cover: 'linear-gradient(135deg,#e84393,#fd79a8)' },
+    { id: 'my2', name: '深夜 emo 专区', count: 12, cover: 'linear-gradient(135deg,#2d3436,#636e72)' },
+    { id: 'my3', name: '运动健身 BGM', count: 8, cover: 'linear-gradient(135deg,#00b894,#55efc4)' },
+  ],
+  checkInRewards: [50, 80, 100, 120, 150, 200, 300],
+};
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function getSong(id) {
+  return GAME_DATA.songs[id];
+}
+
+function getPlaylistSongs(playlist) {
+  return playlist.songs.map(id => getSong(id)).filter(Boolean);
+}

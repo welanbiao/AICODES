@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云村音乐 · 仿真游戏</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧导航栏 -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">☁</span>
+        <span class="logo-text">云村音乐</span>
+      </div>
+
+      <nav class="nav-main">
+        <a class="nav-item active" data-page="discover">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          发现音乐
+        </a>
+        <a class="nav-item" data-page="podcast">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          播客
+        </a>
+        <a class="nav-item" data-page="video">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+          视频
+        </a>
+        <a class="nav-item" data-page="friends">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          朋友
+        </a>
+        <a class="nav-item" data-page="mymusic">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          我的音乐
+        </a>
+        <a class="nav-item" data-page="game">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          云村任务
+        </a>
+      </nav>
+
+      <div class="nav-section">
+        <div class="nav-section-title">创建的歌单 <span class="add-btn" title="新建歌单">+</span></div>
+        <div id="my-playlists-nav"></div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">收藏的歌单</div>
+        <a class="nav-item sub" data-page="fav-playlists">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          我的收藏
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar">🎧</div>
+          <div class="user-info">
+            <span class="user-name" id="sidebar-username">音乐旅人</span>
+            <span class="user-level">Lv.<span id="sidebar-level">3</span></span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main">
+      <header class="top-bar">
+        <div class="nav-arrows">
+          <button class="arrow-btn" disabled title="后退">‹</button>
+          <button class="arrow-btn" disabled title="前进">›</button>
+        </div>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="#999"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="search-input" placeholder="搜索音乐、歌手、歌词、用户" autocomplete="off">
+        </div>
+        <div class="top-actions">
+          <div class="coin-display" title="云音乐币">
+            <span class="coin-icon">🪙</span>
+            <span id="coin-count">520</span>
+          </div>
+          <button class="top-btn" id="checkin-btn">签到</button>
+          <button class="top-btn vip-btn">黑胶 VIP</button>
+          <div class="top-avatar">🎧</div>
+        </div>
+      </header>
+
+      <div class="content" id="content">
+        <!-- 动态渲染 -->
+      </div>
+    </main>
+
+    <!-- 底部播放器 -->
+    <footer class="player-bar">
+      <div class="player-song">
+        <div class="player-cover vinyl-mini" id="player-cover" title="点击打开黑胶播放器">
+          <div class="vinyl-disc">
+            <div class="vinyl-label"></div>
+            <div class="vinyl-hole"></div>
+          </div>
+        </div>
+        <div class="player-info">
+          <div class="player-song-name" id="player-song-name">未播放歌曲</div>
+          <div class="player-artist" id="player-artist">—</div>
+        </div>
+        <button class="player-like" id="player-like" title="收藏">♡</button>
+      </div>
+
+      <div class="player-controls">
+        <div class="control-buttons">
+          <button class="ctrl-btn mode-btn" id="mode-btn" title="播放模式">🔁</button>
+          <button class="ctrl-btn" id="prev-btn" title="上一首">⏮</button>
+          <button class="ctrl-btn play-btn" id="play-btn" title="播放">▶</button>
+          <button class="ctrl-btn" id="next-btn" title="下一首">⏭</button>
+          <button class="ctrl-btn" id="queue-btn" title="播放列表">☰</button>
+        </div>
+        <div class="progress-bar">
+          <span class="time" id="current-time">0:00</span>
+          <div class="progress-track" id="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+            <div class="progress-thumb" id="progress-thumb"></div>
+          </div>
+          <span class="time" id="total-time">0:00</span>
+        </div>
+      </div>
+
+      <div class="player-extra">
+        <button class="extra-btn active-extra" id="lyrics-btn" title="歌词">词</button>
+        <button class="extra-btn" id="volume-btn" title="音量">🔊</button>
+        <div class="volume-slider-wrap" id="volume-wrap">
+          <input type="range" id="volume-slider" min="0" max="100" value="80">
+        </div>
+        <button class="extra-btn" id="sfx-btn" title="音效开关">音效</button>
+      </div>
+    </footer>
+
+    <!-- 歌词面板 -->
+    <div class="lyrics-panel" id="lyrics-panel">
+      <div class="lyrics-header">
+        <div class="lyrics-song-info">
+          <span id="lyrics-song-name">未播放</span>
+          <span id="lyrics-artist">—</span>
+        </div>
+        <button id="lyrics-close">✕</button>
+      </div>
+      <div class="lyrics-body" id="lyrics-body">
+        <div class="lyrics-placeholder">播放歌曲后显示歌词</div>
+      </div>
+    </div>
+
+    <!-- 黑胶播放器 -->
+    <div class="vinyl-overlay" id="vinyl-overlay">
+      <div class="vinyl-stage">
+        <button class="vinyl-close" id="vinyl-close">✕</button>
+        <div class="vinyl-player-wrap">
+          <div class="tonearm" id="tonearm">
+            <div class="tonearm-base"></div>
+            <div class="tonearm-arm"></div>
+            <div class="tonearm-head"></div>
+          </div>
+          <div class="vinyl-record" id="vinyl-record">
+            <div class="vinyl-grooves"></div>
+            <div class="vinyl-center">
+              <div class="vinyl-center-art" id="vinyl-center-art"></div>
+              <div class="vinyl-spindle"></div>
+            </div>
+          </div>
+        </div>
+        <div class="vinyl-info">
+          <h2 id="vinyl-song-name">—</h2>
+          <p id="vinyl-artist">—</p>
+          <div class="vinyl-controls">
+            <button class="vinyl-ctrl" id="vinyl-prev">⏮</button>
+            <button class="vinyl-ctrl vinyl-play" id="vinyl-play">▶</button>
+            <button class="vinyl-ctrl" id="vinyl-next">⏭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 播放列表面板 -->
+    <div class="queue-panel" id="queue-panel">
+      <div class="queue-header">
+        <span>当前播放 (<span id="queue-count">0</span>)</span>
+        <button id="queue-close">✕</button>
+      </div>
+      <div class="queue-list" id="queue-list"></div>
+    </div>
+
+    <!-- 签到弹窗 -->
+    <div class="modal-overlay" id="checkin-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>每日签到</h3>
+          <button class="modal-close" data-close="checkin-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="checkin-days" id="checkin-days"></div>
+          <p class="checkin-tip">连续签到奖励更多云币！</p>
+          <button class="btn-primary" id="do-checkin">立即签到</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 解锁弹窗 -->
+    <div class="modal-overlay" id="unlock-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>解锁歌单</h3>
+          <button class="modal-close" data-close="unlock-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <p id="unlock-msg">需要 200 云币解锁此歌单</p>
+          <button class="btn-primary" id="do-unlock">确认解锁</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/lyrics.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
