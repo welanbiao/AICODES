@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>AI卡牌 · 界面预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0b1220;
+      --ink-soft: #152238;
+      --brass: #c9a227;
+      --brass-dim: #8a7020;
+      --mist: #d7e0ec;
+      --mist-dim: #9aa8bc;
+      --jade: #3d8b7a;
+      --crimson: #b23a48;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #060a12;
+      color: var(--mist);
+      font-family: "Noto Sans SC", sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px 40px;
+    }
+    .stage {
+      width: min(390px, 100%);
+    }
+    .label {
+      font-family: "Noto Serif SC", serif;
+      color: var(--brass);
+      margin-bottom: 10px;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+    }
+    .phone {
+      position: relative;
+      border: 1px solid rgba(201, 162, 39, 0.35);
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        radial-gradient(520px 280px at 30% 8%, rgba(201, 162, 39, 0.14), transparent 60%),
+        linear-gradient(165deg, #0b1220 0%, #101a2e 48%, #152238 100%);
+      min-height: 720px;
+      box-shadow: 0 0 0 8px #0a0f18, 0 24px 60px rgba(0,0,0,.45);
+    }
+    .notch {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--mist-dim);
+      font-size: 11px;
+    }
+    .screen {
+      display: none;
+      padding: 8px 20px 88px;
+      min-height: 680px;
+      animation: fade .35s ease;
+    }
+    .screen.active { display: block; }
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 40px;
+      margin: 8px 0 4px;
+      color: var(--brass);
+      font-weight: 700;
+    }
+    h2 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 24px;
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+    .sub { color: var(--mist-dim); font-size: 14px; line-height: 1.5; margin-bottom: 18px; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .jade { color: var(--jade); }
+    .action {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(154, 168, 188, 0.12);
+      cursor: pointer;
+    }
+    .action strong {
+      display: block;
+      font-family: "Noto Serif SC", serif;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .action span { color: var(--mist-dim); font-size: 13px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(201,162,39,.35);
+      color: var(--mist-dim);
+      font-size: 12px;
+      margin: 0 6px 8px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .chip.on {
+      background: var(--brass);
+      color: var(--ink);
+      border-color: var(--brass);
+    }
+    .chip.jade.on {
+      background: var(--jade);
+      border-color: var(--jade);
+      color: var(--ink);
+    }
+    .card {
+      border: 1px solid rgba(138,112,32,.55);
+      background: rgba(21,34,56,.85);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .card.selected { border-color: var(--brass); border-width: 2px; }
+    .grade {
+      background: var(--brass);
+      color: var(--ink);
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--brass);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-family: inherit;
+    }
+    .btn.secondary { background: var(--mist-dim); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .nav {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: rgba(11,18,32,.92);
+      border-top: 1px solid rgba(201,162,39,.18);
+      padding: 10px 6px 16px;
+    }
+    .nav button {
+      background: none;
+      border: 0;
+      color: var(--mist-dim);
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .nav button.on { color: var(--brass); }
+    .field {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(154,168,188,.35);
+      border-radius: 8px;
+      color: var(--mist);
+      padding: 12px;
+      margin-bottom: 10px;
+      font-family: inherit;
+    }
+    .field:focus { outline: 1px solid var(--brass); }
+    .battle-line {
+      height: 3px;
+      margin: 16px 0;
+      background: linear-gradient(90deg, transparent, var(--brass), transparent);
+      position: relative;
+    }
+    .battle-line::after {
+      content: "";
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--brass);
+      left: 40%;
+      top: -3.5px;
+      box-shadow: 0 0 16px rgba(201,162,39,.7);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(.8); opacity: .6; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    .round { margin-bottom: 14px; }
+    .hint { color: var(--mist-dim); font-size: 12px; margin: 8px 0 14px; }
+    .tabs { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="label">AI卡牌 · 浏览器预览（非真机）</div>
+    <div class="phone">
+      <div class="notch">9:41</div>
+
+      <section class="screen active" id="home">
+        <h1>AI卡牌</h1>
+        <p class="sub">共创人物 · 共创战场 · 联机排位由 AI 裁决</p>
+        <div class="row">
+          <div>
+            <div>旅人 · 新锐</div>
+            <div class="jade">综合评分 86</div>
+          </div>
+          <button class="chip on" onclick="show('profile')">荣耀册</button>
+        </div>
+        <p class="hint">队列 1v1:1 · 3v3:0 · 进行中:0</p>
+        <div class="action" onclick="show('create')">
+          <strong>铸造卡牌</strong>
+          <span>提示词审核后生成人物与初创评级</span>
+        </div>
+        <div class="action" onclick="show('field')">
+          <strong>构筑战场</strong>
+          <span>最多三十字，守擂提示词将前置</span>
+        </div>
+        <div class="action" onclick="show('ranked')">
+          <strong>排位对决</strong>
+          <span>联机真人匹配 / 本地练习战</span>
+        </div>
+        <div style="margin-top:22px">
+          <h2 style="font-size:20px">我的卡组</h2>
+          <p class="sub" style="margin-bottom:10px">演示对手卡不计入收藏勋章</p>
+          <div class="card">
+            <div class="row"><strong>青岚剑客</strong><span class="grade">SR</span></div>
+            <p class="sub" style="margin:8px 0">踏风而行的旅剑</p>
+            <div class="jade" style="font-size:12px;margin-bottom:6px">初创 SR · 对战 R · 荣耀 N</div>
+            <div>· 裂风：迅捷斩击前方</div>
+            <div>· 归燕：拉开距离反击</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="create">
+        <button class="chip" onclick="show('home')">返回</button>
+        <h2>铸造卡牌</h2>
+        <p class="sub">禁止无敌/无限/影响AI；最多3技能；描述≤20字</p>
+        <input class="field" placeholder="名称" value="青岚剑客" />
+        <textarea class="field" rows="2" placeholder="人物设定">踏风而行的旅剑</textarea>
+        <input class="field" placeholder="技能一名" value="裂风" />
+        <input class="field" placeholder="技能一描述≤20字" value="迅捷斩击前方" />
+        <button class="btn" onclick="toast('将提交 AI 审核与初创评级')">提交 AI 审核与初创评级</button>
+      </section>
+
+      <section class="screen" id="field">
+        <button class="chip" onclick="show('home')">返回</button>
+        <h2>构筑战场</h2>
+        <p class="sub">守擂者战场提示词前置，挑战者拼接其后</p>
+        <input class="field" placeholder="标题" value="残灯石廊" />
+        <textarea class="field" rows="2" placeholder="描述≤30字">残灯摇曳的石廊战场</textarea>
+        <button class="btn" onclick="toast('战场将进入 AI 审核')">提交 AI 审核</button>
+      </section>
+
+      <section class="screen" id="ranked">
+        <button class="chip" onclick="show('home')">返回</button>
+        <h2>排位对决</h2>
+        <p class="sub">联机：入队匹配真人 → 服务端统一演算战报</p>
+        <p class="hint">队列 1v1:1 · 3v3:0 · 进行中:0</p>
+        <div class="tabs">
+          <span class="chip on" data-group="kind">联机排位</span>
+          <span class="chip" data-group="kind">练习战</span>
+        </div>
+        <div class="tabs">
+          <span class="chip on" data-group="mode">一对一</span>
+          <span class="chip" data-group="mode">三对三</span>
+        </div>
+        <div class="tabs">
+          <span class="chip jade" data-group="role">偏好守擂</span>
+          <span class="chip jade on" data-group="role">偏好挑战</span>
+          <span class="chip jade" data-group="role">任意身份</span>
+        </div>
+        <p style="margin:10px 0 6px">选择战场提示词</p>
+        <div class="card selected" style="cursor:pointer">残灯石廊｜残灯摇曳的石廊战场</div>
+        <p style="margin:10px 0 6px">选择卡组（1/1）</p>
+        <div class="card selected">
+          <div class="row"><strong>青岚剑客</strong><span class="grade">SR</span></div>
+          <div class="jade" style="font-size:12px;margin-top:6px">已选作出战</div>
+        </div>
+        <button class="btn" onclick="show('battle')">开始联机匹配</button>
+      </section>
+
+      <section class="screen" id="battle">
+        <button class="chip" onclick="show('ranked')">返回</button>
+        <h2>联机演武</h2>
+        <p class="sub" id="matchStatus">排队中 · 位置 1</p>
+        <div class="battle-line"></div>
+        <p class="hint">守擂提示词将前置，挑战者拼接其后。双方共享同一服务端战报。</p>
+        <button class="btn secondary" id="cancelBtn" onclick="finishMatch()">模拟匹配成功</button>
+        <div id="report" style="display:none;margin-top:18px">
+          <h2 style="font-size:22px">联机 · 挑战方胜 vs 青石守卫</h2>
+          <p class="sub">双方踏入共创战场，挑战方撕开裂隙逆转。</p>
+          <p class="hint">共创战场：【守擂战场】残灯摇曳的石廊战场｜【挑战增补】风沙漫卷的试炼场</p>
+          <div class="jade" style="margin-bottom:10px">你的身份：挑战者</div>
+          <div class="round">
+            <span class="grade">第1回合</span>
+            <p>双方踏入共创战场，守擂提示词先定局势。</p>
+          </div>
+          <div class="round">
+            <span class="grade">第2回合</span>
+            <p>技能交锋，场地共鸣掀起通用特效浪潮。</p>
+          </div>
+          <div class="round">
+            <span class="grade">第3回合</span>
+            <p>挑战方在增补战场中找到破绽，逆转取胜。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="profile">
+        <button class="chip" onclick="show('home')">返回</button>
+        <h2>荣耀册</h2>
+        <p class="sub">联机排位分同步至匹配服天梯</p>
+        <input class="field" value="旅人" />
+        <div>段位：新锐</div>
+        <div class="jade">综合评分 86</div>
+        <div class="hint">荣耀分 24 · 排位分 40 · 连胜 1</div>
+        <p style="color:var(--brass);margin:14px 0 6px">联机天梯</p>
+        <div class="hint">甲 · 54分 · 1胜0负</div>
+        <div class="hint">乙 · 34分 · 0胜1负</div>
+        <p style="color:var(--brass);margin:14px 0 6px">勋章</p>
+        <div class="card">
+          <strong>初创者</strong>
+          <div class="hint" style="margin:4px 0 0">创建第一张卡牌</div>
+        </div>
+        <div class="card">
+          <strong>联阵</strong>
+          <div class="hint" style="margin:4px 0 0">赢得首场真人联机排位</div>
+        </div>
+      </section>
+
+      <nav class="nav">
+        <button class="on" data-go="home">大厅</button>
+        <button data-go="create">铸造</button>
+        <button data-go="ranked">排位</button>
+        <button data-go="profile">荣耀</button>
+      </nav>
+    </div>
+  </div>
+  <script>
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav button').forEach(b => {
+        b.classList.toggle('on', b.dataset.go === id || (id === 'field' && b.dataset.go === 'create') || (id === 'battle' && b.dataset.go === 'ranked'));
+      });
+      if (id === 'battle') {
+        document.getElementById('report').style.display = 'none';
+        document.getElementById('cancelBtn').style.display = 'block';
+        document.getElementById('matchStatus').textContent = '排队中 · 位置 1';
+      }
+    }
+    function finishMatch() {
+      document.getElementById('matchStatus').textContent = '对战完成';
+      document.getElementById('cancelBtn').style.display = 'none';
+      document.getElementById('report').style.display = 'block';
+    }
+    function toast(msg) { alert(msg); }
+    document.querySelectorAll('.nav button').forEach(b => {
+      b.addEventListener('click', () => show(b.dataset.go));
+    });
+    document.querySelectorAll('.chip[data-group]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const g = chip.dataset.group;
+        document.querySelectorAll(`.chip[data-group="${g}"]`).forEach(c => c.classList.remove('on'));
+        chip.classList.add('on');
+      });
+    });
+  </script>
+</body>
+</html>

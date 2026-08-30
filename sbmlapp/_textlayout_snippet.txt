@@ -1,0 +1,9 @@
+LINE 170 PATH d:\code\sbmlapp\src\components\DrawingScreen.tsx
+textLayout(stepIndex, guide)
+      coverage = measureTextCoverageTransformed(
+        paint,
+        guide,
+        layout.font,
+        layout.x,
+        layout.y,
+      )

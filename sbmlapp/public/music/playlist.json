@@ -1,0 +1,22 @@
+[
+  {
+    "id": "twinkle",
+    "title": "一闪一闪亮晶晶",
+    "src": "/music/twinkle.wav"
+  },
+  {
+    "id": "little-lamb",
+    "title": "玛丽有只小羊羔",
+    "src": "/music/little-lamb.wav"
+  },
+  {
+    "id": "happy-day",
+    "title": "快乐画画歌",
+    "src": "/music/happy-day.wav"
+  },
+  {
+    "id": "row-boat",
+    "title": "划船歌",
+    "src": "/music/row-boat.wav"
+  }
+]

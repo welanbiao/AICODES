@@ -1,0 +1,83 @@
+.bgm {
+  position: absolute;
+  z-index: 41;
+  top: 10px;
+  right: 88px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.bgm-main,
+.bgm-more {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid #5a8fb8;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
+  font-size: 1.15rem;
+  display: grid;
+  place-items: center;
+}
+
+.bgm-main:active,
+.bgm-more:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.bgm-panel {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  left: auto;
+  transform: none;
+  width: 220px;
+  background: rgba(255, 252, 245, 0.97);
+  border: 3px solid #5a8fb8;
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 8px 20px rgba(0, 40, 80, 0.2);
+}
+
+.bgm-now {
+  font-size: 0.85rem;
+  color: #8a6a4a;
+  margin-bottom: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+.bgm-panel ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.bgm-panel li button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #5c3d1e;
+  font-size: 0.95rem;
+}
+
+.bgm-panel li button.active,
+.bgm-panel li button:hover {
+  background: #ffe9a8;
+}
+
+.bgm-next {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: #5bb5f0;
+  color: #fff;
+  font-size: 0.9rem;
+}

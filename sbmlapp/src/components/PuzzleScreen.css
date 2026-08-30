@@ -1,0 +1,80 @@
+.puzzle {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: repeating-linear-gradient(
+    90deg,
+    #f7f0d8 0px,
+    #f7f0d8 18px,
+    #efe6c4 18px,
+    #efe6c4 36px
+  );
+}
+
+.puzzle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.p-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #f3e2b8;
+  border: 2px solid #d4b878;
+  font-size: 1.4rem;
+  box-shadow: 0 3px 0 #c4a868;
+}
+
+.p-btn.back {
+  position: absolute;
+  left: 12px;
+}
+
+.p-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #c4a868;
+}
+
+.p-timer {
+  min-width: 160px;
+  text-align: center;
+  padding: 10px 28px;
+  background: #e85a6a;
+  color: #fff;
+  font-size: 1.2rem;
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  border-radius: 8px 8px 18px 18px;
+  box-shadow: 0 4px 0 #c44050;
+  clip-path: polygon(4% 0, 96% 0, 100% 100%, 0 100%);
+}
+
+.puzzle-hint {
+  text-align: center;
+  padding: 6px 16px;
+  color: #5c3d1e;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  animation: fade-in 0.3s ease;
+}
+
+.puzzle-stage {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.puzzle-stage canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}

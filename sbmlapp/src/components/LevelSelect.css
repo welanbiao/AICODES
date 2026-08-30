@@ -1,0 +1,115 @@
+.levels {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.35), transparent 50%),
+    linear-gradient(180deg, #7ec8ef 0%, #4aa3dc 45%, #3a9fd8 70%, #e8c878 100%);
+  padding: 2vh 3vw;
+}
+
+.levels-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 1.5vh;
+  flex-shrink: 0;
+}
+
+.levels-bar h2 {
+  font-size: clamp(1.4rem, 4vmin, 2rem);
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+}
+
+.levels-count {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+
+.back-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #5c3d1e;
+  font-size: 1.5rem;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.back-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.levels-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 2vh;
+}
+
+.levels-section {
+  color: #fff;
+  font-size: 1.15rem;
+  margin: 12px 0 10px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+
+.level-card {
+  background: #fffef8;
+  border-radius: 16px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 4px solid #5a8fb8;
+  box-shadow: 0 4px 0 #3f6f94;
+  animation: card-in 0.35s ease-out both;
+}
+
+.level-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #3f6f94;
+}
+
+.level-emoji {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  min-height: 1.8rem;
+}
+
+.level-title {
+  font-size: 1rem;
+  color: #5c3d1e;
+  word-break: break-all;
+  text-align: center;
+}
+
+.level-num {
+  font-size: 0.75rem;
+  color: #8a6a4a;
+  font-family: system-ui, sans-serif;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
