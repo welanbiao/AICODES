@@ -2,15 +2,22 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#C20C0C">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>云村音乐 · 仿真游戏</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
 </head>
 <body>
   <div class="app">
+    <!-- 移动端侧栏遮罩 -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- 左侧导航栏 -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="logo">
         <span class="logo-icon">☁</span>
         <span class="logo-text">云村音乐</span>
@@ -70,7 +77,10 @@
     <!-- 主内容区 -->
     <main class="main">
       <header class="top-bar">
-        <div class="nav-arrows">
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="打开菜单">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="nav-arrows desktop-only">
           <button class="arrow-btn" disabled title="后退">‹</button>
           <button class="arrow-btn" disabled title="前进">›</button>
         </div>
@@ -84,8 +94,8 @@
             <span id="coin-count">520</span>
           </div>
           <button class="top-btn" id="checkin-btn">签到</button>
-          <button class="top-btn vip-btn">黑胶 VIP</button>
-          <div class="top-avatar">🎧</div>
+          <button class="top-btn vip-btn desktop-only">黑胶 VIP</button>
+          <div class="top-avatar desktop-only">🎧</div>
         </div>
       </header>
 
@@ -222,6 +232,26 @@
 
     <!-- Toast 提示 -->
     <div class="toast" id="toast"></div>
+
+    <!-- 移动端底部导航 -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+      <a class="mobile-tab active" data-page="discover">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <span>发现</span>
+      </a>
+      <a class="mobile-tab" data-page="mymusic">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span>我的</span>
+      </a>
+      <a class="mobile-tab" data-page="game">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        <span>任务</span>
+      </a>
+      <a class="mobile-tab" id="mobile-more-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span>更多</span>
+      </a>
+    </nav>
   </div>
 
   <script src="js/data.js"></script>

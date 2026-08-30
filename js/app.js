@@ -21,10 +21,53 @@ const state = {
   timer: null,
   lyricsOpen: false,
   vinylOpen: false,
+  sidebarOpen: false,
+  playerExpanded: false,
 };
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
+function closeSidebar() {
+  state.sidebarOpen = false;
+  $('#sidebar')?.classList.remove('open');
+  $('#sidebar-backdrop')?.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function openSidebar() {
+  state.sidebarOpen = true;
+  $('#sidebar')?.classList.add('open');
+  $('#sidebar-backdrop')?.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function syncMobileTabs(page) {
+  $$('.mobile-tab[data-page]').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.page === page);
+  });
+}
+
+function navigateTo(page, navEl) {
+  sfx(() => AudioEngine.sfxClick());
+  state.page = page;
+  $$('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+  const sidebarItem = $(`.nav-item[data-page="${page}"]`);
+  if (sidebarItem) sidebarItem.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  syncMobileTabs(page);
+  closeSidebar();
+  if (state.lyricsOpen && isMobile()) {
+    state.lyricsOpen = false;
+    $('#lyrics-panel')?.classList.remove('open');
+    $('#lyrics-btn')?.classList.remove('active-extra');
+  }
+  renderPage();
+}
 
 function saveState() {
   localStorage.setItem('liked', JSON.stringify([...state.liked]));
@@ -604,16 +647,28 @@ function updateProgress() {
   $('#progress-fill').style.width = pct + '%';
   $('#progress-thumb').style.left = pct + '%';
   $('#current-time').textContent = formatTime(state.currentTime);
+  document.querySelector('.player-bar')?.style.setProperty('--mobile-progress', pct + '%');
   updateLyricsHighlight();
 }
 
-function seekTo(e) {
+function seekFromEvent(e) {
   if (state.queueIndex < 0) return;
   const track = $('#progress-track');
   const rect = track.getBoundingClientRect();
-  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
   state.currentTime = pct * state.queue[state.queueIndex].duration;
   updateProgress();
+}
+
+function seekTo(e) {
+  seekFromEvent(e);
+}
+
+function toggleMobilePlayer() {
+  if (!isMobile()) return;
+  state.playerExpanded = !state.playerExpanded;
+  $('.player-bar')?.classList.toggle('expanded', state.playerExpanded);
 }
 
 function toggleLike(songId) {
@@ -821,22 +876,52 @@ function initEvents() {
   $$('.nav-item[data-page]').forEach(el => {
     el.addEventListener('click', (e) => {
       e.preventDefault();
-      sfx(() => AudioEngine.sfxClick());
-      state.page = el.dataset.page;
-      $$('.nav-item').forEach(n => n.classList.remove('active'));
-      el.classList.add('active');
-      renderPage();
+      navigateTo(el.dataset.page, el);
     });
+  });
+
+  $$('.mobile-tab[data-page]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateTo(el.dataset.page, el);
+    });
+  });
+
+  $('#mobile-menu-btn')?.addEventListener('click', () => {
+    state.sidebarOpen ? closeSidebar() : openSidebar();
+  });
+
+  $('#mobile-more-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openSidebar();
+  });
+
+  $('#sidebar-backdrop')?.addEventListener('click', closeSidebar);
+
+  window.addEventListener('resize', () => {
+    if (!isMobile()) {
+      closeSidebar();
+      state.playerExpanded = false;
+      $('.player-bar')?.classList.remove('expanded');
+    }
+  });
+
+  const playerInfo = $('.player-info');
+  playerInfo?.addEventListener('click', (e) => {
+    if (isMobile() && state.queueIndex >= 0) {
+      e.stopPropagation();
+      toggleMobilePlayer();
+    }
   });
 
   $('#search-input').addEventListener('input', (e) => {
     state.searchQuery = e.target.value.trim();
     if (state.searchQuery) {
       state.page = 'search';
+      syncMobileTabs('');
       renderPage();
     } else if (state.page === 'search') {
-      state.page = 'discover';
-      renderPage();
+      navigateTo('discover');
     }
   });
 
@@ -844,7 +929,17 @@ function initEvents() {
   $('#next-btn').addEventListener('click', playNext);
   $('#prev-btn').addEventListener('click', playPrev);
   $('#mode-btn').addEventListener('click', cyclePlayMode);
-  $('#progress-track').addEventListener('click', seekTo);
+
+  const progressTrack = $('#progress-track');
+  progressTrack.addEventListener('click', seekTo);
+  progressTrack.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    seekFromEvent(e);
+  }, { passive: false });
+  progressTrack.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    seekFromEvent(e);
+  }, { passive: false });
 
   $('#player-like').addEventListener('click', () => {
     if (state.queueIndex >= 0) toggleLike(state.queue[state.queueIndex].id);
@@ -903,7 +998,8 @@ function initEvents() {
     $('#lyrics-btn').classList.remove('active-extra');
   });
 
-  $('#player-cover').addEventListener('click', () => {
+  $('#player-cover').addEventListener('click', (e) => {
+    e.stopPropagation();
     if (state.queueIndex < 0) return;
     state.vinylOpen = true;
     $('#vinyl-overlay').classList.add('show');
@@ -939,6 +1035,8 @@ function initEvents() {
 
   document.body.addEventListener('click', () => AudioEngine.resume(), { once: true });
 
+  document.body.addEventListener('touchstart', () => AudioEngine.resume(), { once: true });
+
   $$('.modal-overlay').forEach(el => {
     el.addEventListener('click', (e) => {
       if (e.target === el) el.classList.remove('show');
@@ -948,13 +1046,22 @@ function initEvents() {
 
 // ===== 启动 =====
 function init() {
-  loadState();
-  updateHeader();
-  renderMyPlaylistsNav();
-  renderPage();
-  initEvents();
-  AudioEngine.setVolume(state.volume);
-  $('#volume-slider').value = state.volume * 100;
+  try {
+    loadState();
+    updateHeader();
+    renderMyPlaylistsNav();
+    renderPage();
+    initEvents();
+    AudioEngine.setVolume(state.volume);
+    const vol = $('#volume-slider');
+    if (vol) vol.value = state.volume * 100;
+  } catch (err) {
+    console.error(err);
+    const content = $('#content');
+    if (content) {
+      content.innerHTML = '<div class="empty-page"><div class="empty-page-icon">⚠️</div><div class="empty-page-text">加载出错：' + err.message + '<br><br>请双击 start.bat 或 index.html 打开</div></div>';
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

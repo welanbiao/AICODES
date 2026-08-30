@@ -19,6 +19,8 @@
   --player-height: 70px;
   --sidebar-width: 200px;
   --topbar-height: 70px;
+  --mobile-tab-height: 56px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --shadow: 0 1px 3px rgba(0,0,0,.08);
   --radius: 8px;
 }
@@ -30,6 +32,8 @@ html, body {
   color: var(--text);
   overflow: hidden;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .app {
@@ -1484,15 +1488,334 @@ html, body {
 .empty-page-icon { font-size: 64px; margin-bottom: 16px; opacity: .5; }
 .empty-page-text { font-size: 15px; }
 
-/* ===== 响应式 ===== */
+/* ===== 移动端通用 ===== */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 150;
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.sidebar-backdrop.show {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-menu-btn svg { width: 22px; height: 22px; }
+
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--mobile-tab-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: #fff;
+  border-top: 1px solid var(--border);
+  z-index: 110;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  height: var(--mobile-tab-height);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s;
+}
+.mobile-tab svg { width: 22px; height: 22px; }
+.mobile-tab.active { color: var(--red); }
+
+.desktop-only { display: flex; }
+
+/* ===== 平板 ===== */
 @media (max-width: 900px) {
-  .sidebar { width: 60px; min-width: 60px; }
-  .logo-text, .nav-item span, .nav-section, .sidebar-footer, .user-info { display: none; }
-  .nav-item { justify-content: center; padding: 12px; }
-  .nav-item svg { width: 22px; height: 22px; }
-  .logo { justify-content: center; padding: 14px 0; }
-  .player-song { width: 160px; }
-  .player-extra { display: none; }
   .game-stats { grid-template-columns: repeat(2, 1fr); }
   .playlist-detail-header { flex-direction: column; align-items: center; text-align: center; }
+  .banner-item { flex: 0 0 280px; height: 120px; }
+}
+
+/* ===== 手机端 ===== */
+@media (max-width: 768px) {
+  :root {
+    --player-height: 56px;
+    --topbar-height: 52px;
+    --sidebar-width: 260px;
+  }
+
+  .desktop-only { display: none !important; }
+
+  .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+  .mobile-bottom-nav { display: flex; }
+
+  .app { flex-direction: column; }
+
+  /* 侧栏改为抽屉 */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    z-index: 160;
+    transform: translateX(-100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    box-shadow: 4px 0 20px rgba(0,0,0,.2);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .logo-text, .nav-item span, .nav-section-title, .user-info { display: inline; }
+  .nav-item { justify-content: flex-start; padding: 12px 16px; font-size: 14px; }
+  .nav-item svg { width: 20px; height: 20px; }
+  .logo { padding: 16px; }
+
+  /* 主内容全宽 */
+  .main {
+    width: 100%;
+    padding-bottom: calc(var(--player-height) + var(--mobile-tab-height) + var(--safe-bottom));
+  }
+
+  .top-bar {
+    padding: 0 12px;
+    gap: 8px;
+    height: var(--topbar-height);
+  }
+
+  .search-box {
+    max-width: none;
+    flex: 1;
+    padding: 8px 12px;
+  }
+  .search-box input { font-size: 14px; }
+
+  .top-actions { gap: 6px; }
+  .coin-display { padding: 4px 8px; font-size: 12px; }
+  .top-btn { padding: 6px 10px; font-size: 11px; }
+
+  .content {
+    padding: 12px 16px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .page-title { font-size: 20px; margin-bottom: 16px; }
+
+  /* Banner */
+  .banner-carousel { gap: 10px; margin-bottom: 20px; }
+  .banner-item { flex: 0 0 85vw; height: 110px; }
+  .banner-item .banner-bg { font-size: 16px; }
+
+  /* 歌单网格 */
+  .playlist-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 10px;
+    margin-bottom: 24px;
+  }
+  .playlist-name { font-size: 12px; }
+  .play-icon { width: 36px; height: 36px; font-size: 14px; }
+
+  .my-music-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* 歌单详情 */
+  .playlist-detail-header {
+    padding: 16px;
+    gap: 16px;
+  }
+  .detail-cover { width: 140px; height: 140px; font-size: 36px; }
+  .detail-title { font-size: 20px; }
+  .detail-meta { flex-wrap: wrap; gap: 8px; }
+  .detail-actions { flex-wrap: wrap; justify-content: center; }
+  .btn-play-all { padding: 10px 28px; font-size: 15px; min-height: 44px; }
+
+  /* 歌曲列表 → 卡片式 */
+  .song-table thead { display: none; }
+  .song-table tbody tr {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .song-table td { border: none; padding: 8px 4px; }
+  .col-index { width: 28px; flex-shrink: 0; font-size: 12px; }
+  .col-title { flex: 1; min-width: 0; }
+  .col-artist, .col-album { display: none; }
+  .col-duration { width: 40px; flex-shrink: 0; font-size: 11px; }
+  .col-action { width: 36px; flex-shrink: 0; }
+  .song-mini-cover { width: 42px; height: 42px; }
+  .song-like-btn { font-size: 20px; padding: 8px; min-width: 44px; min-height: 44px; }
+
+  /* 任务页 */
+  .game-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 22px; }
+  .task-item { flex-wrap: wrap; padding: 14px; gap: 10px; }
+  .task-status { min-height: 36px; min-width: 64px; }
+
+  /* 评论区 */
+  .comment-section { padding: 14px; }
+  .comment-input-wrap { flex-direction: column; }
+  .btn-comment { min-height: 44px; }
+
+  /* 底部播放器 - 迷你模式 */
+  .player-bar {
+    bottom: calc(var(--mobile-tab-height) + var(--safe-bottom));
+    height: var(--player-height);
+    padding: 0 10px;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+    flex-wrap: wrap;
+    align-content: center;
+  }
+
+  .player-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--red-light);
+    width: var(--mobile-progress, 0%);
+    transition: width .1s linear;
+    z-index: 1;
+  }
+
+  .player-bar.expanded {
+    height: auto;
+    min-height: 120px;
+    flex-direction: column;
+    padding: 10px 16px 12px;
+    gap: 8px;
+    bottom: calc(var(--mobile-tab-height) + var(--safe-bottom));
+    z-index: 105;
+  }
+
+  .player-bar.expanded .player-song { max-width: 100%; width: 100%; }
+  .player-bar.expanded .player-controls { width: 100%; }
+  .player-bar.expanded .progress-bar { display: flex; }
+  .player-bar.expanded .mode-btn,
+  .player-bar.expanded #queue-btn { display: flex; }
+  .player-bar.expanded .player-extra { width: 100%; justify-content: center; }
+
+  .player-song {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    max-width: 45%;
+  }
+
+  .player-cover { width: 40px; height: 40px; }
+
+  .player-controls {
+    flex: 0 0 auto;
+    max-width: none;
+    gap: 0;
+  }
+
+  .control-buttons { gap: 8px; }
+  .ctrl-btn {
+    font-size: 20px;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .play-btn { width: 40px; height: 40px; font-size: 16px; }
+  .mode-btn, #queue-btn { display: none; }
+
+  .progress-bar { display: none; }
+
+  .player-extra {
+    width: auto;
+    gap: 4px;
+  }
+  .extra-btn {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #volume-btn { display: none; }
+
+  /* 歌词面板 - 全屏 */
+  .lyrics-panel {
+    right: 0 !important;
+    left: 0;
+    width: 100%;
+    bottom: calc(var(--mobile-tab-height) + var(--player-height) + var(--safe-bottom));
+    height: auto;
+    top: var(--topbar-height);
+    transform: translateY(110%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+  }
+  .lyrics-panel.open { transform: translateY(0); }
+  .lyrics-line { font-size: 15px; line-height: 2.2; }
+  .lyrics-line.active { font-size: 18px; }
+
+  /* 播放列表 - 底部弹出 */
+  .queue-panel {
+    right: 0 !important;
+    left: 0;
+    width: 100%;
+    bottom: calc(var(--mobile-tab-height) + var(--safe-bottom));
+    height: 55vh;
+    transform: translateY(110%);
+    transition: transform .3s;
+    border-radius: 16px 16px 0 0;
+  }
+  .queue-panel.open { transform: translateY(0); }
+
+  /* 黑胶播放器 */
+  .vinyl-player-wrap { width: 240px; height: 240px; }
+  .vinyl-close { top: -40px; right: 0; }
+  .vinyl-info h2 { font-size: 18px; }
+  .vinyl-ctrl { width: 48px; height: 48px; }
+  .vinyl-ctrl.vinyl-play { width: 60px; height: 60px; }
+
+  /* 弹窗 */
+  .modal { width: 92vw; margin: 0 16px; }
+  .checkin-days { flex-wrap: wrap; }
+  .checkin-day { width: 40px; height: 52px; }
+  .btn-primary { min-height: 44px; width: 100%; max-width: 280px; }
+
+  /* Toast */
+  .toast {
+    top: auto;
+    bottom: calc(var(--mobile-tab-height) + var(--player-height) + 20px + var(--safe-bottom));
+    max-width: 90vw;
+    text-align: center;
+  }
+}
+
+/* 超小屏 */
+@media (max-width: 380px) {
+  .playlist-grid { grid-template-columns: repeat(2, 1fr); }
+  .player-song { max-width: 40%; }
+  .player-song-name { font-size: 12px; }
+  .extra-btn:not(#lyrics-btn) { display: none; }
 }
