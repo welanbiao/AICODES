@@ -1,0 +1,12 @@
+---
+description: Always use SSH for git; auto-commit and auto-merge after changes
+alwaysApply: true
+---
+
+# Git: SSH + auto commit / merge
+
+- Use SSH remotes only (`git@github.com:...`). Never switch origin back to HTTPS.
+- Rely on `core.sshCommand` / Git's bundled SSH (`C:/Program Files/Git/usr/bin/ssh.exe`).
+- After finishing a task with file changes: `git add`, commit with a clear message, `git pull --no-rebase` (merge remote), then `git push` over SSH.
+- Do not commit secrets (`.env`, credentials, keys, tokens).
+- If the stop/afterFileEdit auto-git hook already committed and pushed, do not create a duplicate empty commit.
