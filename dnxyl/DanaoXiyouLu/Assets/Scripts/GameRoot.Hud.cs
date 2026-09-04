@@ -3,7 +3,6 @@ using UnityEngine.UI;
 
 public partial class GameRoot
 {
-    RawImage _hudPortrait;
     Text _stageText;
     Text _xiuText;
     Text _hpText;
