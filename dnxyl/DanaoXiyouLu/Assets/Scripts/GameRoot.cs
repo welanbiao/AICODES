@@ -80,9 +80,17 @@ public partial class GameRoot : MonoBehaviour
 
     void BuildSun()
     {
-        var existing = Object.FindFirstObjectByType<Light>();
-        if (existing != null && existing.type == LightType.Directional) _sun = existing;
-        else
+        _sun = null;
+        var lights = Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
+        for (int i = 0; i < lights.Length; i++)
+        {
+            if (lights[i].type == LightType.Directional)
+            {
+                _sun = lights[i];
+                break;
+            }
+        }
+        if (_sun == null)
         {
             var go = new GameObject("Sun");
             _sun = go.AddComponent<Light>();
