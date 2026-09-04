@@ -136,7 +136,6 @@ public partial class GameRoot : MonoBehaviour
                 Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "wood2"));
             Danao.Prim(_boat, "pole", PrimitiveType.Cylinder, new Vector3(0.5f, 0.7f, -0.4f), new Vector3(0.04f, 0.7f, 0.04f), Mats.Cloth);
         }
-        if (_hudPortrait != null) _hudPortrait.texture = Tex.FacePortrait(stage);
     }
 
     void Update()
