@@ -30,6 +30,7 @@ public class Mob : MonoBehaviour
         col.height = 2.2f;
         col.radius = 0.62f;
         col.center = new Vector3(0, 1.0f, 0);
+        col.isTrigger = true;
         var rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.useGravity = false;
