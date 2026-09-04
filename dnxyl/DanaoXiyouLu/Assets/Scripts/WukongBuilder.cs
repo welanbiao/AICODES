@@ -53,8 +53,10 @@ public static class WukongBuilder
         var head = BuildHead(neck, s, form);
         head.localPosition = new Vector3(0, 0.14f * s, 0.02f);
 
-        var lShoulder = Danao.Node(torso, "lShoulder", new Vector3(-0.20f * s, 0.40f * s, 0));
-        var rShoulder = Danao.Node(torso, "rShoulder", new Vector3(0.20f * s, 0.40f * s, 0));
+        var lShoulder = Danao.Node(torso, "lShoulder", new Vector3(-0.22f * s, 0.40f * s, 0));
+        var rShoulder = Danao.Node(torso, "rShoulder", new Vector3(0.22f * s, 0.40f * s, 0));
+        Danao.Mesh(lShoulder, "cap", MeshForge.Sphere(12, 10), Vector3.zero, Vector3.one * 0.13f * s, Mats.Fur);
+        Danao.Mesh(rShoulder, "cap", MeshForge.Sphere(12, 10), Vector3.zero, Vector3.one * 0.13f * s, Mats.Fur);
         var lArm = BuildArm(lShoulder, s, false);
         var rArm = BuildArm(rShoulder, s, true);
 
