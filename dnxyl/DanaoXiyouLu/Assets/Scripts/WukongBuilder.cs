@@ -12,7 +12,7 @@ public static class WukongBuilder
     public static GameObject Build(int form, Transform parent)
     {
         if (form <= 1) return BuildStone(parent);
-        float h = form == 2 ? 0.90f : form == 3 ? 1.16f : form == 4 ? 1.46f : 1.74f;
+        float h = form == 2 ? 1.45f : form == 3 ? 1.85f : form == 4 ? 2.25f : 2.65f;
         WukongOutfit o = form <= 3 ? WukongOutfit.Bare : form == 4 ? WukongOutfit.Cloth : WukongOutfit.Robe;
         return BuildMonkey(parent, h, o, form);
     }
