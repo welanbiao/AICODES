@@ -55,6 +55,7 @@ public partial class GameRoot
         root.transform.position = pos;
         var vis = EnemyBuilder.Build(k, root.transform);
         vis.transform.localPosition = Vector3.zero;
+        vis.transform.localScale = Vector3.one * 1.75f;
         var mob = root.AddComponent<Mob>();
         mob.Init(k, player, stage);
         root.transform.LookAt(new Vector3(player.position.x, pos.y, player.position.z));
