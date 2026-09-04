@@ -74,9 +74,9 @@ public partial class GameRoot
         switch (stage)
         {
             case 1:
-                Danao.Prim(parent, "crystal", PrimitiveType.Cube, pos + Vector3.up * 1.2f,
-                    new Vector3(0.5f, 2.4f, 0.5f), Quaternion.Euler(12, pos.z * 20, 18),
-                    Mats.Solid(Danao.WuXing[Random.Range(0, 5)], Color.white, Color.white * 0.2f, "cr" + Random.Range(0, 99)));
+                Danao.Mesh(parent, "crystal", MeshForge.Crystal(), pos + Vector3.up * 0.9f,
+                    new Vector3(0.55f, 1.6f, 0.55f), Quaternion.Euler(12, pos.z * 20, 18),
+                    Mats.Spirit(Random.Range(0, 5)));
                 break;
             case 2:
                 Danao.Prim(parent, "tree", PrimitiveType.Cylinder, pos + Vector3.up * 0.8f, new Vector3(0.18f, 0.8f, 0.18f),
