@@ -445,6 +445,26 @@ public static class Mats
         }
     }
 
+    public static Shader CloudShader
+    {
+        get
+        {
+            if (_cloud == null) _cloud = Shader.Find("Danao/Cloud");
+            if (_cloud == null) _cloud = GlowShader;
+            return _cloud;
+        }
+    }
+
+    public static Shader SunShader
+    {
+        get
+        {
+            if (_sun == null) _sun = Shader.Find("Danao/Sun");
+            if (_sun == null) _sun = GlowShader;
+            return _sun;
+        }
+    }
+
     public static Material Solid(Color c, Color rim, Color emit, string key)
     {
         if (Cache.ContainsKey(key)) return Cache[key];
