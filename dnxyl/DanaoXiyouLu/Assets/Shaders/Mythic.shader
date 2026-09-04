@@ -15,14 +15,12 @@ Shader "Danao/Mythic"
         Tags { "RenderType"="Opaque" "Queue"="Geometry" }
         LOD 200
         CGPROGRAM
-        #pragma surface surf Lambert vertex:vert
+        #pragma surface surf Lambert
         sampler2D _MainTex;
         fixed4 _Color;
         fixed4 _RimColor;
         half _RimPower;
         fixed4 _Emission;
-        fixed4 _Spec;
-        half _Gloss;
         struct Input
         {
             float2 uv_MainTex;
@@ -30,18 +28,12 @@ Shader "Danao/Mythic"
             float3 worldNormal;
             float4 color : COLOR;
         };
-        void vert(inout appdata_full v)
-        {
-            // keep vertex color
-        }
         void surf(Input IN, inout SurfaceOutput o)
         {
             fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color * IN.color;
             half rim = 1.0 - saturate(dot(normalize(IN.viewDir), IN.worldNormal));
             o.Albedo = c.rgb;
             o.Emission = _Emission.rgb + _RimColor.rgb * pow(rim, _RimPower);
-            o.Specular = _Gloss;
-            o.Gloss = _Gloss;
             o.Alpha = c.a;
         }
         ENDCG
