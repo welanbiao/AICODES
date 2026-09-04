@@ -70,33 +70,33 @@ public partial class GameRoot
                         Mats.Solid(Danao.WuXing[Random.Range(0, 5)], Color.white, Color.white * 0.2f, "cr" + Random.Range(0, 99)));
                 break;
             case 2:
-                Danao.Prim(parent, "tree", PrimitiveType.Cylinder, pos + Vector3.up * 0.8f, new Vector3(0.18f, 0.8f, 0.18f),
+                Danao.Prim(parent, "tree", PrimitiveType.Cylinder, pos + Vector3.up * 1.3f, new Vector3(0.28f, 1.3f, 0.28f),
                     Mats.Solid(new Color(0.35f, 0.2f, 0.1f), "bark"));
-                Danao.Prim(parent, "leaf", PrimitiveType.Sphere, pos + Vector3.up * 1.9f, new Vector3(1.1f, 0.9f, 1.1f),
+                Danao.Prim(parent, "leaf", PrimitiveType.Sphere, pos + Vector3.up * 3.0f, new Vector3(1.8f, 1.5f, 1.8f),
                     Mats.Solid(new Color(0.2f, 0.55f, 0.18f), "leaf"));
                 if (Random.value > 0.6f)
-                    Danao.Prim(parent, "peach", PrimitiveType.Sphere, pos + new Vector3(0.3f, 1.7f, 0.2f), Vector3.one * 0.18f,
+                    Danao.Prim(parent, "peach", PrimitiveType.Sphere, pos + new Vector3(0.45f, 2.6f, 0.3f), Vector3.one * 0.32f,
                         Mats.Solid(new Color(1f, 0.45f, 0.4f), "peach"));
                 break;
             case 3:
-                Danao.Prim(parent, "rock", PrimitiveType.Sphere, pos + Vector3.up * 0.3f, new Vector3(1.4f, 0.7f, 1.1f),
+                Danao.Prim(parent, "rock", PrimitiveType.Sphere, pos + Vector3.up * 0.5f, new Vector3(2.2f, 1.1f, 1.8f),
                     Mats.Solid(new Color(0.3f, 0.35f, 0.4f), "seaRock"));
-                Danao.Prim(parent, "foam", PrimitiveType.Sphere, pos + new Vector3(0, 0.15f, 0.4f), new Vector3(0.8f, 0.12f, 0.8f),
+                Danao.Prim(parent, "foam", PrimitiveType.Sphere, pos + new Vector3(0, 0.22f, 0.5f), new Vector3(1.3f, 0.2f, 1.3f),
                     Mats.White);
                 break;
             case 4:
-                Danao.Prim(parent, "pine", PrimitiveType.Cylinder, pos + Vector3.up * 1.1f, new Vector3(0.16f, 1.1f, 0.16f),
+                Danao.Prim(parent, "pine", PrimitiveType.Cylinder, pos + Vector3.up * 1.8f, new Vector3(0.26f, 1.8f, 0.26f),
                     Mats.Solid(new Color(0.28f, 0.18f, 0.1f), "pine"));
-                Danao.Prim(parent, "pneed", PrimitiveType.Sphere, pos + Vector3.up * 2.3f, new Vector3(0.9f, 1.3f, 0.9f),
+                Danao.Prim(parent, "pneed", PrimitiveType.Sphere, pos + Vector3.up * 3.7f, new Vector3(1.5f, 2.1f, 1.5f),
                     Mats.Solid(new Color(0.12f, 0.38f, 0.22f), "pneed"));
                 if (Random.value > 0.7f)
-                    Danao.Prim(parent, "lantern", PrimitiveType.Sphere, pos + new Vector3(side * 0.4f, 1.4f, 0), Vector3.one * 0.22f,
+                    Danao.Prim(parent, "lantern", PrimitiveType.Sphere, pos + new Vector3(side * 0.5f, 2.2f, 0), Vector3.one * 0.36f,
                         Mats.Solid(new Color(1f, 0.5f, 0.15f), Color.yellow, new Color(0.5f, 0.2f, 0), "lan"));
                 break;
             default:
-                Danao.Prim(parent, "pillar", PrimitiveType.Cylinder, pos + Vector3.up * 1.4f, new Vector3(0.28f, 1.4f, 0.28f), Mats.White);
-                Danao.Prim(parent, "cap", PrimitiveType.Cylinder, pos + Vector3.up * 2.85f, new Vector3(0.45f, 0.08f, 0.45f), Mats.Gold);
-                Danao.Prim(parent, "cloud", PrimitiveType.Sphere, pos + new Vector3(0, 3.4f, 0), new Vector3(1.6f, 0.5f, 1.1f), Mats.White);
+                Danao.Prim(parent, "pillar", PrimitiveType.Cylinder, pos + Vector3.up * 2.2f, new Vector3(0.42f, 2.2f, 0.42f), Mats.White);
+                Danao.Prim(parent, "cap", PrimitiveType.Cylinder, pos + Vector3.up * 4.5f, new Vector3(0.7f, 0.12f, 0.7f), Mats.Gold);
+                Danao.Prim(parent, "cloud", PrimitiveType.Sphere, pos + new Vector3(0, 5.4f, 0), new Vector3(2.5f, 0.8f, 1.8f), Mats.White);
                 break;
         }
     }

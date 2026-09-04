@@ -138,11 +138,11 @@ public partial class GameRoot : MonoBehaviour
         if (stage == 3)
         {
             _boat = Danao.Node(player, "Boat", new Vector3(0, 0.05f, 0.1f));
-            Danao.Prim(_boat, "hull", PrimitiveType.Cube, new Vector3(0, 0.08f, 0), new Vector3(1.4f, 0.18f, 2.4f),
+            Danao.Prim(_boat, "hull", PrimitiveType.Cube, new Vector3(0, 0.12f, 0), new Vector3(2.1f, 0.28f, 3.6f),
                 Mats.Solid(new Color(0.45f, 0.28f, 0.12f), "wood"));
-            Danao.Prim(_boat, "head", PrimitiveType.Cube, new Vector3(0, 0.16f, 1.1f), new Vector3(0.9f, 0.12f, 0.4f),
+            Danao.Prim(_boat, "head", PrimitiveType.Cube, new Vector3(0, 0.24f, 1.65f), new Vector3(1.35f, 0.18f, 0.55f),
                 Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "wood2"));
-            Danao.Prim(_boat, "pole", PrimitiveType.Cylinder, new Vector3(0.5f, 0.7f, -0.4f), new Vector3(0.04f, 0.7f, 0.04f), Mats.Cloth);
+            Danao.Prim(_boat, "pole", PrimitiveType.Cylinder, new Vector3(0.7f, 1.05f, -0.5f), new Vector3(0.06f, 1.05f, 0.06f), Mats.Cloth);
         }
     }
 
