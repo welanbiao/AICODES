@@ -26,14 +26,37 @@ public partial class GameRoot
     {
         var go = new GameObject("Chunk_" + index);
         go.transform.position = new Vector3(0, 0, index * ChunkLen);
-        Danao.Prim(go.transform, "ground", PrimitiveType.Cube, new Vector3(0, -0.08f, ChunkLen * 0.5f),
-            new Vector3(11f, 0.16f, ChunkLen), Mats.Ground(stage));
 
-        Color rail = stage == 5 ? Danao.Trim : (stage == 3 ? new Color(0.2f, 0.45f, 0.7f) : new Color(0.35f, 0.22f, 0.12f));
-        Danao.Prim(go.transform, "railL", PrimitiveType.Cube, new Vector3(-5.2f, 0.25f, ChunkLen * 0.5f),
-            new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
-        Danao.Prim(go.transform, "railR", PrimitiveType.Cube, new Vector3(5.2f, 0.25f, ChunkLen * 0.5f),
-            new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+        if (stage == 1)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                float x = Mathf.Lerp(-4.0f, 4.0f, (i + 0.5f) / 5f);
+                Color c = Color.Lerp(Color.white, Danao.WuXing[i], 0.55f);
+                c.a = 0.92f;
+                var strip = Danao.Mesh(go.transform, "lane" + i, MeshForge.Quad(),
+                    new Vector3(x, -0.04f, ChunkLen * 0.5f),
+                    new Vector3(1.85f, 1f, ChunkLen),
+                    Mats.Cloud(c, "lane" + i + stage));
+                strip.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            Color bank = Color.Lerp(Color.white, new Color(1f, 0.82f, 0.55f), 0.35f);
+            bank.a = 0.8f;
+            Danao.Mesh(go.transform, "bankL", MeshForge.Sphere(14, 10), new Vector3(-5.4f, 0.15f, ChunkLen * 0.5f),
+                new Vector3(1.6f, 0.7f, ChunkLen * 0.92f), Mats.Cloud(bank, "bank"));
+            Danao.Mesh(go.transform, "bankR", MeshForge.Sphere(14, 10), new Vector3(5.4f, 0.15f, ChunkLen * 0.5f),
+                new Vector3(1.6f, 0.7f, ChunkLen * 0.92f), Mats.Cloud(bank, "bank"));
+        }
+        else
+        {
+            Danao.Prim(go.transform, "ground", PrimitiveType.Cube, new Vector3(0, -0.08f, ChunkLen * 0.5f),
+                new Vector3(11f, 0.16f, ChunkLen), Mats.Ground(stage));
+            Color rail = stage == 5 ? Danao.Trim : (stage == 3 ? new Color(0.2f, 0.45f, 0.7f) : new Color(0.35f, 0.22f, 0.12f));
+            Danao.Prim(go.transform, "railL", PrimitiveType.Cube, new Vector3(-5.2f, 0.25f, ChunkLen * 0.5f),
+                new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+            Danao.Prim(go.transform, "railR", PrimitiveType.Cube, new Vector3(5.2f, 0.25f, ChunkLen * 0.5f),
+                new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+        }
 
         for (int i = 0; i < 6; i++)
         {
