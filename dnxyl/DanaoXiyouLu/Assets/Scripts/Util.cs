@@ -493,6 +493,18 @@ public static class Mats
     public static Material EyeGold { get { return Solid(new Color(0.95f, 0.72f, 0.12f), Color.yellow, new Color(0.55f, 0.32f, 0.02f), "eyeg"); } }
 }
 
+public class FaceCam : MonoBehaviour
+{
+    void LateUpdate()
+    {
+        var cam = Camera.main;
+        if (cam == null) return;
+        Vector3 dir = transform.position - cam.transform.position;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        transform.rotation = Quaternion.LookRotation(dir);
+    }
+}
+
 public class BobSpin : MonoBehaviour
 {
     public Vector3 spin = new Vector3(0, 40, 0);

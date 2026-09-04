@@ -116,7 +116,7 @@ public partial class GameRoot : MonoBehaviour
         rb.isKinematic = true;
         rb.useGravity = false;
         p.AddComponent<PlayerHit>();
-        _heroLight = Danao.Glow(player, Danao.Gold, 1.3f, 8f);
+        _heroLight = Danao.Glow(player, Danao.Gold, 0.45f, 4.5f);
     }
 
     public void RebuildModel()
