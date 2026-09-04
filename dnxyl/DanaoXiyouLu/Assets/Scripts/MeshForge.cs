@@ -199,6 +199,26 @@ public static class MeshForge
         }));
     }
 
+    public static Mesh Peak()
+    {
+        return Get("peak4", () => BuildPeak(40, 22));
+    }
+
+    public static Mesh FetusEgg()
+    {
+        return Get("fetusEgg", () => BuildSphere(40, 30, WarpEgg));
+    }
+
+    public static Mesh FetusBody()
+    {
+        return Get("fetusBody", () => BuildSphere(28, 20, WarpFetus));
+    }
+
+    public static Mesh Quad()
+    {
+        return Get("quad", BuildQuad);
+    }
+
     static Vector3 WarpHead(Vector3 p)
     {
         float peach = 1f + 0.14f * Mathf.Exp(-p.y * p.y * 4.2f) - 0.22f * Mathf.Max(0f, -p.y - 0.12f);
