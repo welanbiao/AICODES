@@ -310,13 +310,8 @@ public partial class GameRoot : MonoBehaviour
         Vfx.Burst(player.position + Vector3.up, Color.red, 12);
         if (hp <= 0)
         {
-            hp = Mathf.Max(40, maxHp / 2);
-            if (stage == 1)
-            {
-                for (int i = 0; i < 5; i++) wuXing[i] = Mathf.Max(0, wuXing[i] - 40);
-            }
-            else xiuwei = (long)(xiuwei * 0.95);
-            FloatText.Show(player.position, "元神不稳", new Color(1f, 0.4f, 0.4f));
+            RestartRun();
+            return;
         }
     }
 
