@@ -116,12 +116,8 @@ public class GateTrigger : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (_used) return;
-        if (other.GetComponentInParent<PlayerHit>() == null && other.GetComponentInParent<GameRoot>() == null)
-        {
-            if (other.transform.root != GameRoot.I.player) return;
-        }
-        if (GameRoot.I == null || !GameRoot.I.IsPlayerCollider(other)) return;
+        if (_used || GameRoot.I == null) return;
+        if (!GameRoot.I.IsPlayerCollider(other)) return;
         _used = true;
         GameRoot.I.ApplyGate(this);
         Destroy(gameObject);
