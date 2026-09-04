@@ -418,6 +418,8 @@ public static class Mats
 {
     static Shader _mythic;
     static Shader _glow;
+    static Shader _cloud;
+    static Shader _sun;
     static readonly Dictionary<string, Material> Cache = new Dictionary<string, Material>();
 
     public static Shader MythicShader
