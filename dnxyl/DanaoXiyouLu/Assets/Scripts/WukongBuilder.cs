@@ -26,7 +26,7 @@ public static class WukongBuilder
         var shell = Mats.Painted(Color.white, Danao.Gold, new Color(0.28f, 0.16f, 0.04f), "fetusShell", "Tex/tex_fetus_stone");
         Danao.Mesh(sit, "egg", MeshForge.FetusEgg(), Vector3.zero, Vector3.one * 1.35f, shell);
         Danao.Mesh(sit, "core", MeshForge.FetusBody(), new Vector3(0.02f, -0.02f, 0.04f), Vector3.one * 1.05f,
-            Mats.Solid(new Color(1f, 0.82f, 0.35f), Color.white, new Color(0.7f, 0.4f, 0.05f), "fetusGold"));
+            Mats.Solid(new Color(1f, 0.82f, 0.35f), Color.white, new Color(0.7f, 0.4f, 0.05f), "goldFetusCore"));
         Danao.Mesh(sit, "head", MeshForge.Sphere(18, 14), new Vector3(0.02f, 0.16f, 0.10f), new Vector3(0.22f, 0.20f, 0.22f),
             Mats.Solid(new Color(1f, 0.84f, 0.42f), "skinFetusHead"));
         Danao.Mesh(sit, "armL", MeshForge.Capsule(10, 6), new Vector3(-0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, 35),

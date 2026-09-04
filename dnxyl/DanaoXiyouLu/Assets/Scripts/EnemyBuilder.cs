@@ -47,7 +47,6 @@ public static class EnemyBuilder
 
     static GameObject Spirit(Transform parent, int elem)
     {
-        Color c = Danao.WuXing[elem];
         var root = Danao.Node(parent, "Spirit_" + Danao.WuXingNames[elem], Vector3.up * 0.62f).gameObject;
         var mat = Mats.Spirit(elem);
         switch (elem)
