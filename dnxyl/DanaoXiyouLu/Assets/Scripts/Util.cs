@@ -401,7 +401,13 @@ public static class Mats
         m.SetColor("_Color", c);
         m.SetColor("_RimColor", rim);
         m.SetColor("_Emission", emit);
-        m.SetTexture("_MainTex", Tex.Noise);
+        m.SetFloat("_Gloss", 0.55f);
+        Texture2D tex = Tex.Noise;
+        if (key.StartsWith("skin") || key == "skin") tex = Tex.Skin;
+        else if (key.StartsWith("fur") || key == "fur" || key.StartsWith("hair") || key == "hair") tex = Tex.Fur;
+        else if (key.StartsWith("robe") || key == "robe") tex = Tex.Silk;
+        else if (key.StartsWith("gold") || key == "gold" || key == "trim") tex = Tex.Gold;
+        m.SetTexture("_MainTex", tex);
         Cache[key] = m;
         return m;
     }
