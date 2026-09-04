@@ -47,6 +47,12 @@ public class Mob : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 6f);
             transform.position += dir.normalized * speed * Time.deltaTime;
         }
+        float dist = Vector3.Distance(new Vector3(p.x, 0, p.z), new Vector3(t.x, 0, t.z));
+        if (dist < 1.15f)
+        {
+            GameRoot.I.HurtPlayer(6 + GameRoot.I.stage * 2);
+            transform.position += Vector3.forward * 1.8f;
+        }
         if (p.z < _player.position.z - 1.6f)
         {
             GameRoot.I.HurtPlayer(8 + GameRoot.I.stage * 3);

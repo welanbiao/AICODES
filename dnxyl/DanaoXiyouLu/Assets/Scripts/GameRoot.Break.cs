@@ -66,10 +66,9 @@ public partial class GameRoot
 
         if (from == 1)
         {
-            xiuwei += 600;
             for (int i = 0; i < 5; i++) wuXing[i] = 0;
         }
-
+        xiuwei = 0;
         stage = from + 1;
         maxHp = 100 + stage * 20;
         hp = maxHp;
