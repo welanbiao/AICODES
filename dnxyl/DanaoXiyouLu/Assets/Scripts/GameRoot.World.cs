@@ -26,14 +26,24 @@ public partial class GameRoot
     {
         var go = new GameObject("Chunk_" + index);
         go.transform.position = new Vector3(0, 0, index * ChunkLen);
-        Danao.Prim(go.transform, "ground", PrimitiveType.Cube, new Vector3(0, -0.08f, ChunkLen * 0.5f),
-            new Vector3(11f, 0.16f, ChunkLen), Mats.Ground(stage));
+        Danao.Prim(go.transform, "ground", PrimitiveType.Cube, new Vector3(0, -0.12f, ChunkLen * 0.5f),
+            new Vector3(stage == 1 ? 14f : 12f, 0.28f, ChunkLen), Mats.Ground(stage));
 
-        Color rail = stage == 5 ? Danao.Trim : (stage == 3 ? new Color(0.2f, 0.45f, 0.7f) : new Color(0.35f, 0.22f, 0.12f));
-        Danao.Prim(go.transform, "railL", PrimitiveType.Cube, new Vector3(-5.2f, 0.25f, ChunkLen * 0.5f),
-            new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
-        Danao.Prim(go.transform, "railR", PrimitiveType.Cube, new Vector3(5.2f, 0.25f, ChunkLen * 0.5f),
-            new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+        if (stage == 1)
+        {
+            Danao.Prim(go.transform, "cliffL", PrimitiveType.Cube, new Vector3(-7.6f, -4.5f, ChunkLen * 0.5f),
+                new Vector3(2.2f, 9f, ChunkLen), Mats.Solid(new Color(0.36f, 0.30f, 0.32f), "cliff"));
+            Danao.Prim(go.transform, "cliffR", PrimitiveType.Cube, new Vector3(7.6f, -4.5f, ChunkLen * 0.5f),
+                new Vector3(2.2f, 9f, ChunkLen), Mats.Solid(new Color(0.36f, 0.30f, 0.32f), "cliff"));
+        }
+        else
+        {
+            Color rail = stage == 5 ? Danao.Trim : (stage == 3 ? new Color(0.2f, 0.45f, 0.7f) : new Color(0.35f, 0.22f, 0.12f));
+            Danao.Prim(go.transform, "railL", PrimitiveType.Cube, new Vector3(-5.6f, 0.35f, ChunkLen * 0.5f),
+                new Vector3(0.28f, 0.9f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+            Danao.Prim(go.transform, "railR", PrimitiveType.Cube, new Vector3(5.6f, 0.35f, ChunkLen * 0.5f),
+                new Vector3(0.28f, 0.9f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+        }
 
         for (int i = 0; i < 6; i++)
         {
