@@ -115,7 +115,7 @@ public partial class GameRoot
 
         Danao.Mesh(go.transform, "base", MeshForge.Cylinder(18), new Vector3(0, 0.12f, 0), new Vector3(0.85f, 0.24f, 0.85f), stone);
         Danao.Mesh(go.transform, "post", MeshForge.Cylinder(16), new Vector3(0, 0.62f, 0), new Vector3(0.18f, 0.55f, 0.18f), stone);
-        Danao.Mesh(go.transform, "plaque", MeshForge.Cylinder(4), new Vector3(0, 1.18f, 0), new Vector3(1.05f, 0.62f, 0.12f), Quaternion.Euler(0, 45, 0), dark);
+        Danao.Prim(go.transform, "plaque", PrimitiveType.Cube, new Vector3(0, 1.18f, 0), new Vector3(0.95f, 0.58f, 0.08f), dark);
         Danao.Prim(go.transform, "rimL", PrimitiveType.Cube, new Vector3(-0.48f, 1.18f, 0), new Vector3(0.06f, 0.68f, 0.14f), Mats.Gold);
         Danao.Prim(go.transform, "rimR", PrimitiveType.Cube, new Vector3(0.48f, 1.18f, 0), new Vector3(0.06f, 0.68f, 0.14f), Mats.Gold);
         Danao.Prim(go.transform, "rimT", PrimitiveType.Cube, new Vector3(0, 1.50f, 0), new Vector3(1.02f, 0.06f, 0.14f), Mats.Gold);

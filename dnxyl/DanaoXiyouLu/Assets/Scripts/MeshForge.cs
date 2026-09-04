@@ -65,12 +65,40 @@ public static class MeshForge
 
     public static Mesh WukongHead()
     {
-        return Get("wkHead", () => BuildSphere(40, 28, WarpHead));
+        return Get("wkHead3", () => BuildSphere(44, 30, WarpHead));
     }
 
     public static Mesh WukongHairCap()
     {
-        return Get("wkHair", () => BuildSphere(28, 16, WarpHairCap));
+        return Get("wkHair3", () => BuildSphere(32, 18, WarpHairCap));
+    }
+
+    public static Mesh Peach()
+    {
+        return Get("peach", () => BuildSphere(22, 16, p =>
+        {
+            p.x *= 1.08f;
+            p.z *= 1.02f;
+            p.y *= 0.96f;
+            float crease = Mathf.Exp(-p.x * p.x * 55f) * Mathf.Max(0f, p.y);
+            p.x *= 1f - crease * 0.18f;
+            if (p.y > 0.25f) p *= 0.92f;
+            return p * 0.5f;
+        }));
+    }
+
+    public static Mesh Gourd()
+    {
+        return Get("gourd", () => Lathe(new[]
+        {
+            new Vector2(0.00f, -0.50f),
+            new Vector2(0.28f, -0.42f),
+            new Vector2(0.38f, -0.18f),
+            new Vector2(0.16f, 0.02f),
+            new Vector2(0.28f, 0.22f),
+            new Vector2(0.24f, 0.40f),
+            new Vector2(0.00f, 0.50f)
+        }, 20));
     }
 
     public static Mesh Ear()
