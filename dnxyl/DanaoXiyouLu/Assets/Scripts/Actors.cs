@@ -27,13 +27,14 @@ public class Mob : MonoBehaviour
         if (element >= 0) xiuReward = Random.Range(8, 13);
 
         var col = gameObject.AddComponent<CapsuleCollider>();
-        col.height = 1.6f;
-        col.radius = 0.45f;
-        col.center = new Vector3(0, 0.7f, 0);
-        col.isTrigger = true;
+        col.height = 2.2f;
+        col.radius = 0.62f;
+        col.center = new Vector3(0, 1.0f, 0);
         var rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.useGravity = false;
+        _dodge = Random.value > 0.5f ? 1 : -1;
+        _dodgeX = Random.Range(2.2f, 3.4f);
     }
 
     void Update()
