@@ -124,6 +124,14 @@ public partial class GameRoot : MonoBehaviour
     {
         if (_model != null) Destroy(_model);
         _model = WukongBuilder.Build(stage, modelSlot);
+        modelSlot.localScale = Vector3.one * (stage == 1 ? 2.15f : 1.7f);
+        var col = player.GetComponent<CapsuleCollider>();
+        if (col != null)
+        {
+            col.height = stage == 1 ? 2.0f : 2.6f;
+            col.radius = stage == 1 ? 0.7f : 0.58f;
+            col.center = new Vector3(0, col.height * 0.5f, 0);
+        }
         _run = _model.GetComponent<RunCycle>();
         if (_boat != null) Destroy(_boat.gameObject);
         _boat = null;
