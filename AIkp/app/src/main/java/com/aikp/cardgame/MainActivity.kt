@@ -25,14 +25,19 @@ class MainActivity : ComponentActivity() {
                     onClearMessage = vm::clearMessage,
                     onCreateCard = vm::createCard,
                     onCreateWorld = vm::createWorld,
-                    onStartMatch = vm::startMatch,
+                    onStartMatch = { kind, mode, cards, worldId, role, opponents ->
+                        vm.startMatch(kind, mode, cards, worldId, role, opponents)
+                    },
                     onCancelQueue = vm::cancelQueue,
                     onRefreshLobby = vm::refreshLobby,
                     onUpdateNickname = vm::updateNickname,
                     onClaimCharacter = vm::claimWorldCharacter,
                     onLogin = vm::login,
-                    onRegister = vm::register,
-                    onLogout = vm::logout
+                    onLogout = vm::logout,
+                    onRefreshUsers = vm::refreshManagedUsers,
+                    onAdminCreateUser = vm::adminCreateUser,
+                    onAdminResetPassword = vm::adminResetPassword,
+                    onAdminDeleteUser = vm::adminDeleteUser
                 )
             }
         }

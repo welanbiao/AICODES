@@ -64,18 +64,27 @@ Android 模拟器默认 `http://10.0.2.2:8787`。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/v1/auth/register` | 注册（账号+密码+昵称）→ token；用户写入 `ai-bridge/data/users.json` |
 | POST | `/v1/auth/login` | 登录 → token |
 | POST | `/v1/auth/logout` | 退出（Bearer token） |
 | GET | `/v1/auth/me` | 当前用户 |
 | PUT | `/v1/auth/profile` | 更新昵称等资料 |
+| GET/PUT | `/v1/me/content` | 拉取/保存用户世界与卡牌存档 |
 | POST | `/v1/match/queue` | 携带卡组 + **小世界** 入队（同 worldId 才配对） |
 | GET | `/v1/match/ticket/:id` | 轮询匹配/战报 |
 | DELETE | `/v1/match/ticket/:id` | 取消排队 |
 | GET | `/v1/match/lobby` | 队列人数 |
 | GET | `/v1/match/leaderboard` | 内存天梯 |
 
-Android / Web 启动后需先**注册或登录**；会话 token 本地保存，用户档案落在服务器 JSON 文件。
+Android / Web 启动后需先**登录**（已关闭公开注册）。默认管理员：`kjxgl` / `kjx.123`，普通账号仅管理员可在「我的 → 账号管理」中添加。会话 token 本地保存，用户档案落在服务器 JSON 文件。
+
+### 管理员接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/v1/admin/users` | 账号列表（需管理员 token） |
+| POST | `/v1/admin/users` | 创建普通账号 |
+| PUT | `/v1/admin/users/:id/password` | 重置密码 |
+| DELETE | `/v1/admin/users/:id` | 删除普通账号 |
 
 ## 预览
 
@@ -101,3 +110,10 @@ npm run dev
 4. **排位** — 选同一世界的卡组开战  
 5. **战报** — 入场/通用特效与回合叙事  
 6. **卡册 / 荣耀册** — 查看收藏与勋章
+
+## 文档
+
+- 玩法流程：[`docs/GAME_FLOW.md`](docs/GAME_FLOW.md)
+- **防侵权备案汇总**（设定 / 规则 / 界面 / 开发说明 / 资产清单 / **界面截图附录**）：[`docs/防侵权备案_产品设定与开发说明.md`](docs/防侵权备案_产品设定与开发说明.md)
+- Word 导出：[`docs/防侵权备案_产品设定与开发说明.docx`](docs/防侵权备案_产品设定与开发说明.docx)
+- 截图原图：[`docs/screenshots/`](docs/screenshots/)

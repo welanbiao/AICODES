@@ -377,6 +377,17 @@ class GameRepository(
         dao.upsertPlayer(player.copy(medals = medals.toList()).toEntity())
     }
 
+    suspend fun mergeCloudContent(worlds: List<SmallWorld>, cards: List<Card>) {
+        worlds.filter { !it.isOfficial }.forEach { dao.upsertWorld(it.toEntity()) }
+        cards.filterNot { it.id.startsWith("demo_") }.forEach { dao.upsertCard(it.toEntity()) }
+    }
+
+    suspend fun snapshotForSync(): Pair<List<SmallWorld>, List<Card>> {
+        val worlds = dao.getAllWorlds().map { it.toDomain() }.filter { !it.isOfficial }
+        val cards = dao.getAllCards().map { it.toDomain() }.filterNot { it.id.startsWith("demo_") }
+        return worlds to cards
+    }
+
     suspend fun seedDemoOpponentCards(): List<Card> {
         val demo = listOf(
             Card(

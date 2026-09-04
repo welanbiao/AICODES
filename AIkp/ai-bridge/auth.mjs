@@ -1,6 +1,9 @@
 /**
- * 用户注册/登录：数据写入服务器本地 JSON 文件。
+ * 用户登录 + 管理员账号管理。
+ * 禁止公开注册；普通账号仅管理员可创建。
  * 文件：ai-bridge/data/users.json
+ *
+ * 内置管理员：kjxgl / kjx.123
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -13,6 +16,9 @@ const USERS_FILE = path.join(DATA_DIR, "users.json");
 
 const USERNAME_RE = /^[a-zA-Z0-9_\u4e00-\u9fff]{3,16}$/;
 const SESSION_DAYS = 30;
+
+export const ADMIN_USERNAME = "kjxgl";
+const ADMIN_PASSWORD = "kjx.123";
 
 function emptyStore() {
   return { users: [], sessions: {} };
@@ -60,10 +66,13 @@ function verifyPassword(password, salt, expectedHash) {
 }
 
 function publicUser(user) {
+  const role = user.role === "admin" ? "admin" : "user";
   return {
     id: user.id,
     username: user.username,
     nickname: user.nickname,
+    role,
+    isAdmin: role === "admin",
     rankPoints: user.rankPoints || 0,
     gloryScore: user.gloryScore || 0,
     winStreak: user.winStreak || 0,
@@ -96,10 +105,73 @@ function findUserById(store, id) {
   return store.users.find((u) => u.id === id);
 }
 
-export function registerUser({ username, password, nickname }) {
+function revokeUserSessions(store, userId) {
+  for (const [token, sess] of Object.entries(store.sessions)) {
+    if (sess?.userId === userId) delete store.sessions[token];
+  }
+}
+
+function upsertAdmin(store) {
+  const { salt, hash } = hashPassword(ADMIN_PASSWORD);
+  const now = Date.now();
+  let admin = findUserByUsername(store, ADMIN_USERNAME);
+  if (!admin) {
+    admin = {
+      id: `u_admin_${crypto.randomBytes(4).toString("hex")}`,
+      username: ADMIN_USERNAME,
+      passwordSalt: salt,
+      passwordHash: hash,
+      nickname: "管理员",
+      role: "admin",
+      rankPoints: 0,
+      gloryScore: 0,
+      winStreak: 0,
+      wins: 0,
+      losses: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.users.push(admin);
+  } else {
+    admin.role = "admin";
+    admin.passwordSalt = salt;
+    admin.passwordHash = hash;
+    admin.updatedAt = now;
+    if (!admin.nickname) admin.nickname = "管理员";
+  }
+  // 旧数据无 role 字段时默认普通用户
+  for (const u of store.users) {
+    if (u.username.toLowerCase() === ADMIN_USERNAME.toLowerCase()) u.role = "admin";
+    else if (!u.role) u.role = "user";
+  }
+  return admin;
+}
+
+/** 启动时确保管理员账号存在且密码为约定值 */
+export function bootstrapAuth() {
+  const store = readStore();
+  upsertAdmin(store);
+  writeStore(store);
+  return { admin: ADMIN_USERNAME, users: store.users.length };
+}
+
+function requireAdminFromToken(token) {
+  if (!token) throw new Error("未登录");
+  const store = readStore();
+  purgeExpired(store);
+  const sess = store.sessions[token];
+  if (!sess || sess.expiresAt < Date.now()) throw new Error("未登录或登录已过期");
+  const user = findUserById(store, sess.userId);
+  if (!user) throw new Error("用户不存在");
+  if (user.role !== "admin") throw new Error("需要管理员权限");
+  return { store, admin: user };
+}
+
+function createUserRecord(store, { username, password, nickname, role = "user" }) {
   const name = String(username || "").trim();
   const pass = String(password || "");
   const nick = String(nickname || name).trim().slice(0, 12) || name.slice(0, 12);
+  const userRole = role === "admin" ? "admin" : "user";
 
   if (!USERNAME_RE.test(name)) {
     throw new Error("账号需 3~16 位（字母/数字/下划线/中文）");
@@ -107,11 +179,11 @@ export function registerUser({ username, password, nickname }) {
   if (pass.length < 6 || pass.length > 64) {
     throw new Error("密码需 6~64 位");
   }
-
-  const store = readStore();
-  purgeExpired(store);
   if (findUserByUsername(store, name)) {
     throw new Error("账号已存在");
+  }
+  if (name.toLowerCase() === ADMIN_USERNAME.toLowerCase() && userRole !== "admin") {
+    throw new Error("保留账号名不可用");
   }
 
   const { salt, hash } = hashPassword(pass);
@@ -122,6 +194,7 @@ export function registerUser({ username, password, nickname }) {
     passwordSalt: salt,
     passwordHash: hash,
     nickname: nick,
+    role: userRole,
     rankPoints: 0,
     gloryScore: 0,
     winStreak: 0,
@@ -131,9 +204,12 @@ export function registerUser({ username, password, nickname }) {
     updatedAt: now,
   };
   store.users.push(user);
-  const session = issueToken(store, user.id);
-  writeStore(store);
-  return { token: session.token, expiresAt: session.expiresAt, user: publicUser(user) };
+  return user;
+}
+
+/** @deprecated 公开注册已关闭 */
+export function registerUser() {
+  throw new Error("已关闭公开注册，请联系管理员开通账号");
 }
 
 export function loginUser({ username, password }) {
@@ -142,11 +218,13 @@ export function loginUser({ username, password }) {
   if (!name || !pass) throw new Error("请输入账号和密码");
 
   const store = readStore();
+  upsertAdmin(store);
   purgeExpired(store);
   const user = findUserByUsername(store, name);
   if (!user || !verifyPassword(pass, user.passwordSalt, user.passwordHash)) {
     throw new Error("账号或密码错误");
   }
+  if (!user.role) user.role = user.username.toLowerCase() === ADMIN_USERNAME.toLowerCase() ? "admin" : "user";
   const session = issueToken(store, user.id);
   user.updatedAt = Date.now();
   writeStore(store);
@@ -199,6 +277,56 @@ export function updateUserProfile(token, patch = {}) {
   return publicUser(user);
 }
 
+export function adminListUsers(token) {
+  const { store } = requireAdminFromToken(token);
+  writeStore(store); // 若 purge 了过期会话
+  return {
+    users: store.users
+      .map(publicUser)
+      .sort((a, b) => (a.isAdmin === b.isAdmin ? a.username.localeCompare(b.username) : a.isAdmin ? -1 : 1)),
+  };
+}
+
+export function adminCreateUser(token, body) {
+  const { store } = requireAdminFromToken(token);
+  const user = createUserRecord(store, {
+    username: body.username,
+    password: body.password,
+    nickname: body.nickname,
+    role: "user",
+  });
+  writeStore(store);
+  return { user: publicUser(user) };
+}
+
+export function adminResetPassword(token, userId, password) {
+  const { store } = requireAdminFromToken(token);
+  const user = findUserById(store, userId);
+  if (!user) throw new Error("用户不存在");
+  const pass = String(password || "");
+  if (pass.length < 6 || pass.length > 64) throw new Error("密码需 6~64 位");
+  const { salt, hash } = hashPassword(pass);
+  user.passwordSalt = salt;
+  user.passwordHash = hash;
+  user.updatedAt = Date.now();
+  revokeUserSessions(store, user.id);
+  writeStore(store);
+  return { user: publicUser(user), ok: true };
+}
+
+export function adminDeleteUser(token, userId) {
+  const { store, admin } = requireAdminFromToken(token);
+  const user = findUserById(store, userId);
+  if (!user) throw new Error("用户不存在");
+  if (user.id === admin.id || user.role === "admin" || user.username.toLowerCase() === ADMIN_USERNAME.toLowerCase()) {
+    throw new Error("不能删除管理员账号");
+  }
+  store.users = store.users.filter((u) => u.id !== user.id);
+  revokeUserSessions(store, user.id);
+  writeStore(store);
+  return { ok: true };
+}
+
 export function parseBearer(req) {
   const h = req.headers?.authorization || req.headers?.Authorization || "";
   const m = String(h).match(/^Bearer\s+(.+)$/i);
@@ -209,5 +337,9 @@ export function parseBearer(req) {
 export function authStats() {
   const store = readStore();
   purgeExpired(store);
-  return { users: store.users.length, sessions: Object.keys(store.sessions).length };
+  return {
+    users: store.users.length,
+    sessions: Object.keys(store.sessions).length,
+    admin: ADMIN_USERNAME,
+  };
 }

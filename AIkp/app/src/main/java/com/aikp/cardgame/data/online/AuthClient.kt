@@ -18,6 +18,8 @@ data class AuthUserDto(
     val id: String = "",
     val username: String = "",
     val nickname: String = "",
+    val role: String = "user",
+    val isAdmin: Boolean = false,
     val rankPoints: Int = 0,
     val gloryScore: Int = 0,
     val winStreak: Int = 0,
@@ -39,6 +41,11 @@ data class AuthMeDto(
 )
 
 @Serializable
+data class AdminUsersDto(
+    val users: List<AuthUserDto> = emptyList()
+)
+
+@Serializable
 private data class AuthCredentialsBody(
     val username: String,
     val password: String,
@@ -48,6 +55,11 @@ private data class AuthCredentialsBody(
 @Serializable
 private data class AuthNicknameBody(
     val nickname: String
+)
+
+@Serializable
+private data class PasswordBody(
+    val password: String
 )
 
 class AuthClient(
@@ -63,9 +75,6 @@ class AuthClient(
         encodeDefaults = true
     }
 ) {
-    suspend fun register(username: String, password: String, nickname: String): Result<AuthResponseDto> =
-        postAuth("/v1/auth/register", AuthCredentialsBody(username, password, nickname))
-
     suspend fun login(username: String, password: String): Result<AuthResponseDto> =
         postAuth("/v1/auth/login", AuthCredentialsBody(username, password))
 
@@ -110,6 +119,78 @@ class AuthClient(
                 .post("{}".toRequestBody("application/json".toMediaType()))
                 .build()
             client.newCall(httpReq).execute().use { /* ignore */ }
+            Unit
+        }
+    }
+
+    suspend fun listUsers(token: String): Result<List<AuthUserDto>> = withContext(Dispatchers.IO) {
+        runCatching {
+            val httpReq = Request.Builder()
+                .url("$baseUrl/v1/admin/users")
+                .header("Authorization", "Bearer $token")
+                .get()
+                .build()
+            client.newCall(httpReq).execute().use { resp ->
+                val raw = resp.body?.string().orEmpty()
+                if (!resp.isSuccessful) error(parseError(raw) ?: "加载账号失败")
+                json.decodeFromString(AdminUsersDto.serializer(), raw).users
+            }
+        }
+    }
+
+    suspend fun createUser(
+        token: String,
+        username: String,
+        password: String,
+        nickname: String
+    ): Result<AuthUserDto> = withContext(Dispatchers.IO) {
+        runCatching {
+            val body = json.encodeToString(
+                AuthCredentialsBody.serializer(),
+                AuthCredentialsBody(username, password, nickname)
+            ).toRequestBody("application/json".toMediaType())
+            val httpReq = Request.Builder()
+                .url("$baseUrl/v1/admin/users")
+                .header("Authorization", "Bearer $token")
+                .post(body)
+                .build()
+            client.newCall(httpReq).execute().use { resp ->
+                val raw = resp.body?.string().orEmpty()
+                if (!resp.isSuccessful) error(parseError(raw) ?: "创建失败")
+                json.decodeFromString(AuthMeDto.serializer(), raw).user
+            }
+        }
+    }
+
+    suspend fun resetPassword(token: String, userId: String, password: String): Result<AuthUserDto> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val body = json.encodeToString(PasswordBody.serializer(), PasswordBody(password))
+                    .toRequestBody("application/json".toMediaType())
+                val httpReq = Request.Builder()
+                    .url("$baseUrl/v1/admin/users/${java.net.URLEncoder.encode(userId, Charsets.UTF_8.name())}/password")
+                    .header("Authorization", "Bearer $token")
+                    .put(body)
+                    .build()
+                client.newCall(httpReq).execute().use { resp ->
+                    val raw = resp.body?.string().orEmpty()
+                    if (!resp.isSuccessful) error(parseError(raw) ?: "重置失败")
+                    json.decodeFromString(AuthMeDto.serializer(), raw).user
+                }
+            }
+        }
+
+    suspend fun deleteUser(token: String, userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val httpReq = Request.Builder()
+                .url("$baseUrl/v1/admin/users/${java.net.URLEncoder.encode(userId, Charsets.UTF_8.name())}")
+                .header("Authorization", "Bearer $token")
+                .delete()
+                .build()
+            client.newCall(httpReq).execute().use { resp ->
+                val raw = resp.body?.string().orEmpty()
+                if (!resp.isSuccessful) error(parseError(raw) ?: "删除失败")
+            }
             Unit
         }
     }

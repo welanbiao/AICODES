@@ -1,17 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  adminCreateUser,
+  adminDeleteUser,
+  adminListUsers,
+  adminResetPassword,
+  cancelMatchTicket,
+  enqueueMatch,
   fetchMe,
+  fetchUserContent,
   loadAuthSession,
   loginAccount,
   logoutAccount,
+  pollMatchTicket,
+  pushUserContent,
   rateCard,
-  registerAccount,
   reviewText,
   saveAuthSession,
   updateProfileNickname,
   validateCard,
   validateWorld,
   type AuthSession,
+  type AuthUser,
+  type CloudCard,
+  type CloudWorld,
+  type MatchTicket,
 } from './api'
 import { composeBattleReport } from './battleNarration'
 import { CharacterArtCard } from './CharacterArtCard'
@@ -44,11 +56,54 @@ function parseCardSkills(raw: string[]): Skill[] {
   })
 }
 
+/** 备案截图：`?filing=1&screen=home`（screen 可为 auth / home / worlds / world / create / createWorld / ranked / battle / collection / profile） */
+function readFilingScreen(): Screen | 'auth' | null {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('filing') !== '1') return null
+  const raw = params.get('screen') || 'home'
+  if (raw === 'auth') return 'auth'
+  const allowed: Screen[] = [
+    'home',
+    'worlds',
+    'world',
+    'createWorld',
+    'create',
+    'ranked',
+    'battle',
+    'collection',
+    'profile',
+  ]
+  return (allowed.includes(raw as Screen) ? raw : 'home') as Screen
+}
+
+const FILING_SESSION: AuthSession = {
+  token: 'filing-demo-token',
+  user: {
+    id: 'filing_user',
+    username: 'aikp_filing',
+    nickname: '备案旅人',
+    role: 'user',
+    isAdmin: false,
+    rankPoints: 42,
+    gloryScore: 18,
+    winStreak: 1,
+    wins: 3,
+    losses: 1,
+  },
+}
+
 export default function App() {
-  const [session, setSession] = useState<AuthSession | null>(() => loadAuthSession())
-  const [authReady, setAuthReady] = useState(!loadAuthSession())
+  const filingScreen = useMemo(() => readFilingScreen(), [])
+  const [session, setSession] = useState<AuthSession | null>(() =>
+    filingScreen && filingScreen !== 'auth' ? FILING_SESSION : loadAuthSession(),
+  )
+  const [authReady, setAuthReady] = useState(Boolean(filingScreen) || !loadAuthSession())
 
   useEffect(() => {
+    if (filingScreen) {
+      setAuthReady(true)
+      return
+    }
     const cached = loadAuthSession()
     if (!cached) {
       setAuthReady(true)
@@ -60,12 +115,16 @@ export default function App() {
         saveAuthSession(next)
         setSession(next)
       })
-      .catch(() => {
-        saveAuthSession(null)
-        setSession(null)
+      .catch(async (err) => {
+        // 仅明确未授权时清会话；网络故障保留登录态
+        const msg = err instanceof Error ? err.message : String(err)
+        if (/未登录|过期|失效|401|HTTP 401/i.test(msg)) {
+          saveAuthSession(null)
+          setSession(null)
+        }
       })
       .finally(() => setAuthReady(true))
-  }, [])
+  }, [filingScreen])
 
   if (!authReady) {
     return (
@@ -75,6 +134,16 @@ export default function App() {
           <p className="sub">校验登录…</p>
         </section>
       </div>
+    )
+  }
+
+  if (filingScreen === 'auth' || (!session && !filingScreen)) {
+    return (
+      <AuthGate
+        onAuthed={(s) => {
+          setSession(s)
+        }}
+      />
     )
   }
 
@@ -93,18 +162,18 @@ export default function App() {
       session={session}
       onSession={(s) => setSession(s)}
       onLogout={async () => {
+        if (filingScreen) return
         await logoutAccount(session.token)
         setSession(null)
       }}
+      filingScreen={filingScreen && filingScreen !== 'auth' ? filingScreen : undefined}
     />
   )
 }
 
 function AuthGate({ onAuthed }: { onAuthed: (s: AuthSession) => void }) {
-  const [modeRegister, setModeRegister] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [nickname, setNickname] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -112,9 +181,7 @@ function AuthGate({ onAuthed }: { onAuthed: (s: AuthSession) => void }) {
     setBusy(true)
     setError(null)
     try {
-      const session = modeRegister
-        ? await registerAccount(username.trim(), password, nickname.trim() || username.trim())
-        : await loginAccount(username.trim(), password)
+      const session = await loginAccount(username.trim(), password)
       onAuthed(session)
     } catch (e) {
       setError(e instanceof Error ? e.message : '失败')
@@ -127,7 +194,7 @@ function AuthGate({ onAuthed }: { onAuthed: (s: AuthSession) => void }) {
     <div className="app">
       <section className="screen hall">
         <h2 className="section-title">AI卡牌</h2>
-        <p className="sub">{modeRegister ? '注册账号 · 数据存于服务器文件' : '登录进入小世界'}</p>
+        <p className="sub">登录进入小世界 · 账号由管理员开通</p>
         <input
           className="field"
           placeholder="账号（3~16位）"
@@ -138,27 +205,16 @@ function AuthGate({ onAuthed }: { onAuthed: (s: AuthSession) => void }) {
         <input
           className="field"
           type="password"
-          placeholder="密码（至少6位）"
+          placeholder="密码"
           value={password}
           onChange={(e) => setPassword(e.target.value.slice(0, 64))}
           disabled={busy}
         />
-        {modeRegister && (
-          <input
-            className="field"
-            placeholder="昵称（可选）"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value.slice(0, 12))}
-            disabled={busy}
-          />
-        )}
         {error && <p className="error-box">{error}</p>}
         <button className="art-cta" disabled={busy || username.length < 3 || password.length < 6} onClick={submit}>
-          {busy ? '请稍候…' : modeRegister ? '注册并进入' : '登录'}
+          {busy ? '请稍候…' : '登录'}
         </button>
-        <button className="chip" disabled={busy} onClick={() => setModeRegister((v) => !v)}>
-          {modeRegister ? '已有账号？去登录' : '没有账号？去注册'}
-        </button>
+        <p className="hint">已关闭公开注册，请联系管理员开通账号</p>
         <p className="hint">需先启动 ai-bridge（默认 http://127.0.0.1:8787）</p>
       </section>
     </div>
@@ -169,40 +225,185 @@ function GameApp({
   session,
   onSession,
   onLogout,
+  filingScreen,
 }: {
   session: AuthSession
   onSession: (s: AuthSession) => void
   onLogout: () => void
+  filingScreen?: Screen
 }) {
-  const [screen, setScreen] = useState<Screen>('home')
+  const [screen, setScreen] = useState<Screen>(filingScreen ?? 'home')
   const [kind, setKind] = useState<Kind>('online')
   const [mode, setMode] = useState<Mode>('1v1')
   const [role, setRole] = useState<RolePref>('challenger')
-  const [matchPhase, setMatchPhase] = useState<'idle' | 'queued' | 'finished'>('idle')
+  const [matchPhase, setMatchPhase] = useState<'idle' | 'queued' | 'finished'>(
+    filingScreen === 'battle' ? 'finished' : 'idle',
+  )
+  const [matchTicketId, setMatchTicketId] = useState<string | null>(null)
+  const [matchStatusText, setMatchStatusText] = useState('同世界排队中')
+  const [onlineReport, setOnlineReport] = useState<{
+    title: string
+    summary: string
+    rounds: { round: number; narrative: string }[]
+  } | null>(null)
   const [nickname, setNickname] = useState(session.user.nickname)
+  const [managedUsers, setManagedUsers] = useState<AuthUser[]>([])
+  const [newUser, setNewUser] = useState('')
+  const [newPass, setNewPass] = useState('')
+  const [newNick, setNewNick] = useState('')
+  const isAdmin = Boolean(session.user.isAdmin || session.user.role === 'admin')
+
+  useEffect(() => {
+    if (!isAdmin || filingScreen) return
+    adminListUsers(session.token)
+      .then(setManagedUsers)
+      .catch(() => setManagedUsers([]))
+  }, [isAdmin, session.token, filingScreen])
+
   const [worlds, setWorlds] = useState<SmallWorld[]>(officialWorlds)
   const [activeWorldId, setActiveWorldId] = useState(officialWorlds[0].id)
-  const [genreFilter, setGenreFilter] = useState<WorldGenre | 'ALL'>('ALL')
-  const [cards, setCards] = useState<CardItem[]>([])
-  const [selectedCardId, setSelectedCardId] = useState('')
+  const [genreFilter, setGenreFilter] = useState<WorldGenre | 'ALL'>(
+    filingScreen === 'worlds' ? 'CLASSICS' : 'ALL',
+  )
+  const seedPresets = officialWorlds[0].presets.slice(0, 4)
+  const [cards, setCards] = useState<CardItem[]>(() =>
+    filingScreen
+      ? seedPresets.map((p) => ({
+          id: p.id,
+          name: p.name,
+          lore: p.lore,
+          grade: p.grade,
+          skills: p.skills.map((s) => `${s.name}：${s.description}`),
+          worldId: p.worldId,
+          worldTitle: officialWorlds[0].title,
+          comment: `入世 · ${p.roleHint}`,
+        }))
+      : [],
+  )
+  const [selectedCardId, setSelectedCardId] = useState(filingScreen ? seedPresets[0]?.id ?? '' : '')
+  const [selectedOpponentIds, setSelectedOpponentIds] = useState<string[]>(
+    filingScreen && seedPresets[1] ? [seedPresets[1].id] : [],
+  )
 
-  const [cardName, setCardName] = useState('')
-  const [cardLore, setCardLore] = useState('')
-  const [skill1Name, setSkill1Name] = useState('')
-  const [skill1Desc, setSkill1Desc] = useState('')
-  const [skill2Name, setSkill2Name] = useState('')
-  const [skill2Desc, setSkill2Desc] = useState('')
+  function parseSkillLine(raw: string): { name: string; description: string } {
+    const idx = raw.indexOf('：')
+    if (idx < 0) return { name: raw, description: '' }
+    return { name: raw.slice(0, idx), description: raw.slice(idx + 1) }
+  }
+
+  function toCloudWorlds(list: SmallWorld[]): CloudWorld[] {
+    return list
+      .filter((w) => !w.official)
+      .map((w) => ({
+        id: w.id,
+        title: w.title,
+        genre: w.genre,
+        sourceHint: w.sourceHint,
+        lore: w.lore,
+        reviewedLore: w.lore,
+        fullLore: w.fullLore,
+        canonHint: w.canonHint,
+        coverKey: w.coverKey,
+        isOfficial: false,
+        createdAt: Date.now(),
+      }))
+  }
+
+  function toCloudCards(list: CardItem[]): CloudCard[] {
+    return list.map((c) => {
+      const skills = c.skills.map(parseSkillLine)
+      return {
+        id: c.id,
+        name: c.name,
+        lore: c.lore,
+        skills,
+        worldId: c.worldId,
+        worldTitle: c.worldTitle,
+        createGrade: c.grade,
+        battleGrade: c.grade,
+        gloryGrade: c.grade,
+        reviewedLore: c.lore,
+        reviewedSkills: skills,
+        createdAt: Date.now(),
+      }
+    })
+  }
+
+  async function syncPush(nextWorlds: SmallWorld[], nextCards: CardItem[]) {
+    if (filingScreen) return
+    try {
+      await pushUserContent(session.token, {
+        worlds: toCloudWorlds(nextWorlds),
+        cards: toCloudCards(nextCards),
+      })
+    } catch {
+      /* 本地仍保留，下次再推 */
+    }
+  }
+
+  useEffect(() => {
+    if (filingScreen) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const cloud = await fetchUserContent(session.token)
+        if (cancelled) return
+        const customWorlds: SmallWorld[] = (cloud.worlds || []).map((w) => ({
+          id: w.id,
+          title: w.title,
+          genre: (w.genre as WorldGenre) || 'CUSTOM',
+          sourceHint: w.sourceHint || '',
+          lore: w.reviewedLore || w.lore,
+          fullLore: w.fullLore || w.lore,
+          canonHint: w.canonHint || '',
+          coverKey: (w.coverKey as SmallWorld['coverKey']) || 'novel',
+          official: false,
+          presets: [],
+        }))
+        setWorlds([...officialWorlds, ...customWorlds.filter((w) => !officialWorlds.some((o) => o.id === w.id))])
+        const cloudCards: CardItem[] = (cloud.cards || []).map((c) => ({
+          id: c.id,
+          name: c.name,
+          lore: c.reviewedLore || c.lore,
+          grade: c.createGrade || c.battleGrade || 'R',
+          skills: (c.reviewedSkills || c.skills || []).map((s) => `${s.name}：${s.description}`),
+          worldId: c.worldId,
+          worldTitle: c.worldTitle,
+        }))
+        setCards(cloudCards)
+        if (cloudCards[0]) setSelectedCardId(cloudCards[0].id)
+      } catch {
+        /* keep local defaults */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [session.token, filingScreen])
+
+  const [cardName, setCardName] = useState(filingScreen === 'create' ? '行者' : '')
+  const [cardLore, setCardLore] = useState(
+    filingScreen === 'create' ? '西行护僧，神通多变，受金箍约束。' : '',
+  )
+  const [skill1Name, setSkill1Name] = useState(filingScreen === 'create' ? '筋斗云' : '')
+  const [skill1Desc, setSkill1Desc] = useState(filingScreen === 'create' ? '疾驰闪避敌手锋芒' : '')
+  const [skill2Name, setSkill2Name] = useState(filingScreen === 'create' ? '棒影' : '')
+  const [skill2Desc, setSkill2Desc] = useState(filingScreen === 'create' ? '短促连击破防' : '')
   const [skill3Name, setSkill3Name] = useState('')
   const [skill3Desc, setSkill3Desc] = useState('')
   const [query, setQuery] = useState('')
   const [faction, setFaction] = useState<string | null>(null)
   const [editing, setEditing] = useState<WorldPreset | null>(null)
 
-  const [wTitle, setWTitle] = useState('')
-  const [wGenre, setWGenre] = useState<WorldGenre>('NOVEL')
-  const [wSource, setWSource] = useState('')
-  const [wLore, setWLore] = useState('')
-  const [wCanon, setWCanon] = useState('')
+  const [wTitle, setWTitle] = useState(filingScreen === 'createWorld' ? '夜雨江湖' : '')
+  const [wGenre, setWGenre] = useState<WorldGenre>(filingScreen === 'createWorld' ? 'NOVEL' : 'NOVEL')
+  const [wSource, setWSource] = useState(filingScreen === 'createWorld' ? '自创武侠' : '')
+  const [wLore, setWLore] = useState(
+    filingScreen === 'createWorld' ? '江南雨巷刀光剑影，门派恩怨一夜了结' : '',
+  )
+  const [wCanon, setWCanon] = useState(
+    filingScreen === 'createWorld' ? '兵刃轻功内力；禁枪械飞升' : '',
+  )
 
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -234,24 +435,183 @@ function GameApp({
 
   const battleReport = useMemo(() => {
     const mine = cards.find((c) => c.id === selectedCardId)
-    const foe = world.presets.find((p) => p.id !== selectedCardId) ?? world.presets[0]
+    const foePreset =
+      world.presets.find((p) => selectedOpponentIds.includes(p.id)) ??
+      world.presets.find((p) => p.id !== selectedCardId) ??
+      world.presets[0]
+    const asChallenger = role !== 'defender'
+    const foe = {
+      name: foePreset?.name ?? '守擂者',
+      skill: foePreset?.skills[0]?.name ?? '护体',
+    }
+    const self = {
+      name: mine?.name ?? '挑战者',
+      skill: (mine?.skills[0] ?? '试探').split('：')[0],
+    }
     return composeBattleReport(
       world.title,
       world.lore,
-      { name: foe?.name ?? '守擂者', skill: foe?.skills[0]?.name ?? '护体' },
-      {
-        name: mine?.name ?? '挑战者',
-        skill: (mine?.skills[0] ?? '试探').split('：')[0],
-      },
+      asChallenger ? foe : self,
+      asChallenger ? self : foe,
       true,
     )
-  }, [cards, selectedCardId, world])
+  }, [cards, selectedCardId, selectedOpponentIds, world, role])
+
+  useEffect(() => {
+    setSelectedOpponentIds([])
+  }, [activeWorldId, mode])
+
+  useEffect(() => {
+    if (kind !== 'practice') setSelectedOpponentIds([])
+  }, [kind])
+
+  function toggleOpponent(id: string) {
+    const teamSize = mode === '3v3' ? 3 : 1
+    setSelectedOpponentIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id)
+      if (prev.length >= teamSize) return prev
+      return [...prev, id]
+    })
+  }
 
   function go(next: Screen) {
-    if (next === 'battle') setMatchPhase('queued')
+    if (next !== 'battle') {
+      setMatchPhase('idle')
+      setMatchTicketId(null)
+      setOnlineReport(null)
+    }
     setError(null)
     setStatus(null)
     setScreen(next)
+  }
+
+  async function startFight() {
+    if (!selectedCardId) return
+    const mine = cards.find((c) => c.id === selectedCardId)
+    if (!mine) return
+    setError(null)
+
+    const teamSize = mode === '3v3' ? 3 : 1
+    const team =
+      teamSize === 1
+        ? [mine]
+        : worldCards.slice(0, 3)
+    if (team.length !== teamSize) {
+      setError(`三对三需要本世界至少 ${teamSize} 张卡`)
+      return
+    }
+
+    if (kind === 'practice' || filingScreen) {
+      const need = mode === '3v3' ? 3 : 1
+      if (!filingScreen && selectedOpponentIds.length !== need) {
+        setError(`练习战请选择 ${need} 名系统默认对手`)
+        return
+      }
+      setMatchPhase('finished')
+      setOnlineReport(null)
+      go('battle')
+      return
+    }
+
+    setBusy(true)
+    setMatchPhase('queued')
+    setMatchStatusText('正在进入同世界匹配队列…')
+    setOnlineReport(null)
+    go('battle')
+    try {
+      const roleMap = { defender: 'DEFENDER', challenger: 'CHALLENGER', any: 'ANY' } as const
+      const ticket = await enqueueMatch({
+        playerId: session.user.id,
+        nickname: nickname || session.user.nickname,
+        rankPoints: session.user.rankPoints || 0,
+        mode: mode === '3v3' ? 'THREE_V_THREE' : 'ONE_V_ONE',
+        preferredRole: roleMap[role],
+        cards: team.map((c) => {
+          const skills = c.skills.map(parseSkillLine)
+          return {
+            id: c.id,
+            name: c.name,
+            lore: c.lore,
+            skills,
+            reviewedLore: c.lore,
+            reviewedSkills: skills,
+            createGrade: c.grade,
+            battleGrade: c.grade,
+            gloryGrade: c.grade,
+            worldId: c.worldId,
+            worldTitle: c.worldTitle,
+          }
+        }),
+        world: {
+          id: world.id,
+          title: world.title,
+          lore: world.lore,
+          reviewedLore: world.lore,
+          canonHint: world.canonHint,
+          genre: world.genre,
+          sourceHint: world.sourceHint,
+        },
+        battlefield: {
+          id: world.id,
+          title: world.title,
+          description: world.lore,
+          reviewedDescription: world.lore,
+        },
+      })
+      setMatchTicketId(ticket.ticketId)
+      setMatchStatusText(
+        ticket.status === 'queued'
+          ? `同世界排队中 · 位置 ${ticket.queuePosition ?? 1}`
+          : `状态：${ticket.status}`,
+      )
+
+      let latest: MatchTicket = ticket
+      for (let i = 0; i < 90; i++) {
+        if (['finished', 'timeout', 'cancelled'].includes(latest.status)) break
+        await new Promise((r) => setTimeout(r, 2000))
+        latest = await pollMatchTicket(ticket.ticketId)
+        setMatchStatusText(
+          latest.status === 'queued'
+            ? `同世界排队中 · 位置 ${latest.queuePosition ?? 1}${latest.opponent?.nickname ? ` · 对手将匹配` : ''}`
+            : latest.status === 'matched' || latest.status === 'battling'
+              ? `已匹配${latest.opponent?.nickname ? ` · vs ${latest.opponent.nickname}` : ''}，演算对战中…`
+              : `状态：${latest.status}`,
+        )
+        if (latest.status === 'finished') break
+      }
+
+      if (latest.status !== 'finished' || !latest.match?.result) {
+        throw new Error(latest.status === 'timeout' ? '匹配超时，请重试' : '匹配未完成')
+      }
+      const result = latest.match.result
+      setOnlineReport({
+        title: `联机 · ${result.winnerSide === 'DEFENDER' ? '守擂方胜' : '挑战方胜'}`,
+        summary: result.summary || '',
+        rounds: (result.rounds || []).map((r) => ({ round: r.round, narrative: r.narrative })),
+      })
+      setMatchPhase('finished')
+      showToast('对战结束')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '匹配失败')
+      setMatchPhase('idle')
+      setMatchStatusText('匹配失败')
+      go('ranked')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function cancelFight() {
+    if (matchTicketId) {
+      try {
+        await cancelMatchTicket(matchTicketId)
+      } catch {
+        /* ignore */
+      }
+    }
+    setMatchTicketId(null)
+    setMatchPhase('idle')
+    go('ranked')
   }
 
   function showToast(msg: string) {
@@ -296,9 +656,11 @@ function GameApp({
       worldTitle: world.title,
       comment: `入世 · ${preset.roleHint}`,
     }
-    setCards((prev) => [item, ...prev])
+    const nextCards = [item, ...cards]
+    setCards(nextCards)
     setSelectedCardId(item.id)
-    showToast(`已选用「${preset.name}」`)
+    void syncPush(worlds, nextCards)
+    showToast(`「${preset.name}」已入库并同步`)
   }
 
   async function submitWorld() {
@@ -329,9 +691,13 @@ function GameApp({
         official: false,
         presets: [],
       }
-      setWorlds((prev) => [item, ...prev])
+      setWorlds((prev) => {
+        const next = [item, ...prev]
+        void syncPush(next, cards)
+        return next
+      })
       setActiveWorldId(item.id)
-      showToast(`小世界「${item.title}」已开启`)
+      showToast(`小世界「${item.title}」已开启并同步`)
       go('world')
     } catch (e) {
       setError(e instanceof Error ? e.message : '审核失败')
@@ -375,9 +741,13 @@ function GameApp({
         worldTitle: world.title,
         comment: rate.comment,
       }
-      setCards((prev) => [item, ...prev])
+      setCards((prev) => {
+        const next = [item, ...prev]
+        void syncPush(worlds, next)
+        return next
+      })
       setSelectedCardId(item.id)
-      showToast(`「${item.name}」已入「${world.title}」`)
+      showToast(`「${item.name}」已入「${world.title}」并同步`)
       setEditing(null)
       go('world')
     } catch (e) {
@@ -677,14 +1047,51 @@ function GameApp({
                   {w.title}｜{w.lore}
                 </div>
               ))}
-              <p>选择卡组 · 仅本世界卡</p>
+              <p>我的卡组 · 仅本世界卡</p>
               {worldCards.map((card) => (
                 <div key={card.id} className={`card ${selectedCardId === card.id ? 'selected' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setSelectedCardId(card.id)}>
                   <div className="row"><strong>{card.name}</strong><span className="grade">{card.grade}</span></div>
                 </div>
               ))}
               {worldCards.length === 0 && <p className="hint">该世界还没有卡，先去选用人物或铸造。</p>}
-              <button className="art-cta battle" onClick={() => go('battle')} disabled={!selectedCardId}>
+              {kind === 'practice' && (
+                <>
+                  <p style={{ margin: '10px 0 6px' }}>
+                    系统对手（{selectedOpponentIds.length}/{mode === '3v3' ? 3 : 1}）· 官方预设
+                  </p>
+                  {world.presets.map((p) => {
+                    const on = selectedOpponentIds.includes(p.id)
+                    return (
+                      <div
+                        key={p.id}
+                        className={`card ${on ? 'selected' : ''}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => toggleOpponent(p.id)}
+                      >
+                        <div className="row">
+                          <strong>{p.name}</strong>
+                          <span className="grade">{p.grade}</span>
+                        </div>
+                        <p className="hint" style={{ margin: '4px 0 0' }}>
+                          {p.nickname || p.roleHint || p.faction}
+                        </p>
+                      </div>
+                    )
+                  })}
+                  {world.presets.length === 0 && (
+                    <p className="hint">当前世界暂无系统默认卡，请换官方世界练习。</p>
+                  )}
+                </>
+              )}
+              <button
+                className="art-cta battle"
+                onClick={() => void startFight()}
+                disabled={
+                  !selectedCardId ||
+                  busy ||
+                  (kind === 'practice' && selectedOpponentIds.length !== (mode === '3v3' ? 3 : 1))
+                }
+              >
                 <img src="/art/btn_battle.png" alt="" />
                 <span>{kind === 'online' ? '开始同世界匹配' : '开始练习战'}</span>
               </button>
@@ -693,9 +1100,17 @@ function GameApp({
 
           {screen === 'battle' && (
             <section className="screen battle-bg">
-              <button className="chip" onClick={() => go('ranked')}>返回</button>
-              <h2 className="section-title">{matchPhase === 'finished' ? '联机 · 挑战方胜' : '同世界演武'}</h2>
-              <p className="sub">{matchPhase === 'queued' ? '同世界排队中 · 位置 1' : `${world.title} 战场交锋`}</p>
+              <button className="chip" onClick={() => void cancelFight()} disabled={busy && matchPhase === 'queued'}>
+                {matchPhase === 'queued' ? '取消匹配' : '返回'}
+              </button>
+              <h2 className="section-title">
+                {matchPhase === 'finished'
+                  ? onlineReport?.title || '练习战结束'
+                  : '同世界演武'}
+              </h2>
+              <p className="sub">
+                {matchPhase === 'queued' ? matchStatusText : `${world.title} 战场交锋`}
+              </p>
               {matchPhase === 'queued' && (
                 <>
                   <div className="match-wait" aria-live="polite">
@@ -710,20 +1125,20 @@ function GameApp({
                       </div>
                       <div className="match-wait-spark" />
                     </div>
-                    <div className="match-wait-title">同世界排队中 · 位置 1</div>
+                    <div className="match-wait-title">{matchStatusText}</div>
                     <div className="match-wait-sub">战场：{world.lore}</div>
                     <div className="match-wait-dots" aria-hidden>
                       <i /><i /><i />
                     </div>
                   </div>
-                  <button className="btn secondary" onClick={() => setMatchPhase('finished')}>模拟匹配成功</button>
+                  {error && <pre className="error-box">{error}</pre>}
                 </>
               )}
               {matchPhase === 'finished' && (
                 <>
                   <p className="hint">【小世界·{world.title}】{world.lore}</p>
-                  <p className="hint">{battleReport.summary}</p>
-                  {battleReport.rounds.map((r) => (
+                  <p className="hint">{onlineReport?.summary || battleReport.summary}</p>
+                  {(onlineReport?.rounds || battleReport.rounds).map((r) => (
                     <div className="round" key={r.round}>
                       <span className="grade">第{r.round}回合</span>
                       <p>{r.narrative}</p>
@@ -758,7 +1173,10 @@ function GameApp({
           {screen === 'profile' && (
             <section className="screen hall">
               <h2 className="section-title">荣耀册</h2>
-              <p className="sub">账号 {session.user.username}</p>
+              <p className="sub">
+                账号 {session.user.username}
+                {isAdmin ? ' · 管理员' : ''}
+              </p>
               <input className="field" value={nickname} onChange={(e) => setNickname(e.target.value.slice(0, 12))} />
               <button
                 className="art-cta compact"
@@ -784,7 +1202,121 @@ function GameApp({
               <div>段位：新锐</div>
               <div className="jade">综合评分 {86 + cards.length * 4}</div>
               <div className="hint">小世界 {worlds.length} · 卡牌 {cards.length}</div>
-              <button className="chip" onClick={onLogout}>退出登录</button>
+
+              {isAdmin && (
+                <>
+                  <h2 className="section-title" style={{ fontSize: 20, marginTop: 18 }}>
+                    账号管理
+                  </h2>
+                  <p className="hint">仅管理员可添加普通用户账号</p>
+                  <input
+                    className="field"
+                    placeholder="新账号"
+                    value={newUser}
+                    onChange={(e) => setNewUser(e.target.value.slice(0, 16))}
+                    disabled={busy}
+                  />
+                  <input
+                    className="field"
+                    type="password"
+                    placeholder="新密码（至少6位）"
+                    value={newPass}
+                    onChange={(e) => setNewPass(e.target.value.slice(0, 64))}
+                    disabled={busy}
+                  />
+                  <input
+                    className="field"
+                    placeholder="昵称（可选）"
+                    value={newNick}
+                    onChange={(e) => setNewNick(e.target.value.slice(0, 12))}
+                    disabled={busy}
+                  />
+                  <button
+                    className="art-cta compact"
+                    disabled={busy || newUser.length < 3 || newPass.length < 6}
+                    onClick={async () => {
+                      setBusy(true)
+                      setError(null)
+                      try {
+                        await adminCreateUser(
+                          session.token,
+                          newUser.trim(),
+                          newPass,
+                          newNick.trim() || newUser.trim(),
+                        )
+                        setManagedUsers(await adminListUsers(session.token))
+                        setNewUser('')
+                        setNewPass('')
+                        setNewNick('')
+                        showToast('账号已创建')
+                      } catch (e) {
+                        setError(e instanceof Error ? e.message : '创建失败')
+                      } finally {
+                        setBusy(false)
+                      }
+                    }}
+                  >
+                    添加普通账号
+                  </button>
+                  {error && <pre className="error-box">{error}</pre>}
+                  {managedUsers.map((u) => (
+                    <div className="card" key={u.id}>
+                      <div className="row">
+                        <strong>
+                          {u.username} · {u.nickname}
+                          {u.isAdmin || u.role === 'admin' ? ' · 管理员' : ''}
+                        </strong>
+                      </div>
+                      {!(u.isAdmin || u.role === 'admin') && (
+                        <div className="cta-row" style={{ marginTop: 8 }}>
+                          <button
+                            className="chip"
+                            disabled={busy}
+                            onClick={async () => {
+                              const pwd = window.prompt(`为 ${u.username} 设置新密码（至少6位）`)
+                              if (!pwd || pwd.length < 6) return
+                              setBusy(true)
+                              try {
+                                await adminResetPassword(session.token, u.id, pwd)
+                                showToast('密码已重置')
+                              } catch (e) {
+                                setError(e instanceof Error ? e.message : '重置失败')
+                              } finally {
+                                setBusy(false)
+                              }
+                            }}
+                          >
+                            重置密码
+                          </button>
+                          <button
+                            className="chip"
+                            disabled={busy}
+                            onClick={async () => {
+                              if (!window.confirm(`删除账号 ${u.username}？`)) return
+                              setBusy(true)
+                              try {
+                                await adminDeleteUser(session.token, u.id)
+                                setManagedUsers(await adminListUsers(session.token))
+                                showToast('已删除')
+                              } catch (e) {
+                                setError(e instanceof Error ? e.message : '删除失败')
+                              } finally {
+                                setBusy(false)
+                              }
+                            }}
+                          >
+                            删除
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
+
+              <button className="chip" onClick={onLogout}>
+                退出登录
+              </button>
             </section>
           )}
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.aikp.cardgame.data.GameRepository
 import com.aikp.cardgame.data.online.AuthClient
+import com.aikp.cardgame.data.online.ContentClient
 import com.aikp.cardgame.data.online.LeaderboardEntryDto
 import com.aikp.cardgame.data.online.MatchmakingClient
 import com.aikp.cardgame.data.online.QueueRequest
@@ -41,6 +42,8 @@ data class HomeUiState(
     val playerUsername: String = "",
     val playerNickname: String = "旅人",
     val isLoggedIn: Boolean = false,
+    val isAdmin: Boolean = false,
+    val managedUsers: List<com.aikp.cardgame.data.online.AuthUserDto> = emptyList(),
     val playerTier: String = "新锐",
     val gloryScore: Int = 0,
     val rankPoints: Int = 0,
@@ -66,7 +69,8 @@ data class HomeUiState(
 class AppViewModel(
     private val repo: GameRepository,
     private val matchmaking: MatchmakingClient = MatchmakingClient(),
-    private val auth: AuthClient = AuthClient()
+    private val auth: AuthClient = AuthClient(),
+    private val content: ContentClient = ContentClient()
 ) : ViewModel() {
 
     private val ephemeral = MutableStateFlow(Ephemeral())
@@ -80,7 +84,9 @@ class AppViewModel(
         val matchStatusText: String? = null,
         val queueTicketId: String? = null,
         val lobbyOnlineHint: String? = null,
-        val leaderboard: List<LeaderboardEntryDto> = emptyList()
+        val leaderboard: List<LeaderboardEntryDto> = emptyList(),
+        val isAdmin: Boolean = false,
+        val managedUsers: List<com.aikp.cardgame.data.online.AuthUserDto> = emptyList()
     )
 
     val uiState: StateFlow<HomeUiState> = combine(
@@ -95,6 +101,8 @@ class AppViewModel(
             playerUsername = player.username,
             playerNickname = player.nickname,
             isLoggedIn = player.isLoggedIn,
+            isAdmin = epi.isAdmin,
+            managedUsers = epi.managedUsers,
             playerTier = player.playerTier,
             gloryScore = player.gloryScore,
             rankPoints = player.rankPoints,
@@ -139,23 +147,36 @@ class AppViewModel(
                     gloryScore = user.gloryScore,
                     winStreak = user.winStreak
                 )
+                ephemeral.update { it.copy(isAdmin = user.isAdmin || user.role == "admin") }
+                if (user.isAdmin || user.role == "admin") refreshManagedUsers()
+                pullAndPushContent(player.authToken)
             },
-            onFailure = { repo.clearAuthSession() }
+            onFailure = { err ->
+                val msg = err.message.orEmpty()
+                if (msg.contains("未登录") || msg.contains("过期") || msg.contains("失效") || msg.contains("401")) {
+                    repo.clearAuthSession()
+                    ephemeral.update { it.copy(isAdmin = false, managedUsers = emptyList()) }
+                }
+                // 网络失败保留本地登录态
+            }
         )
     }
 
-    fun register(username: String, password: String, nickname: String) {
-        viewModelScope.launch {
-            ephemeral.update { it.copy(busy = true, busyTip = "注册中…") }
-            auth.register(username.trim(), password, nickname.trim()).fold(
-                onSuccess = { applyAuth(it) },
-                onFailure = { err ->
-                    ephemeral.update {
-                        it.copy(busy = false, message = err.message ?: "注册失败")
-                    }
-                }
+    private suspend fun pullAndPushContent(token: String) {
+        content.fetchContent(token).onSuccess { cloud ->
+            repo.mergeCloudContent(
+                worlds = cloud.worlds.map { it.toDomain() },
+                cards = cloud.cards.map { it.toDomain() }
             )
         }
+        pushContentQuiet(token)
+    }
+
+    private suspend fun pushContentQuiet(token: String? = null) {
+        val t = token ?: repo.currentPlayer().authToken
+        if (t.isBlank()) return
+        val (worlds, cards) = repo.snapshotForSync()
+        content.pushContent(t, worlds, cards)
     }
 
     fun login(username: String, password: String) {
@@ -177,12 +198,19 @@ class AppViewModel(
             val token = repo.currentPlayer().authToken
             if (token.isNotBlank()) auth.logout(token)
             repo.clearAuthSession()
-            ephemeral.update { it.copy(message = "已退出登录") }
+            ephemeral.update {
+                it.copy(
+                    message = "已退出登录",
+                    isAdmin = false,
+                    managedUsers = emptyList()
+                )
+            }
         }
     }
 
     private suspend fun applyAuth(resp: com.aikp.cardgame.data.online.AuthResponseDto) {
         val user = resp.user
+        val admin = user.isAdmin || user.role == "admin"
         repo.applyAuthSession(
             userId = user.id,
             username = user.username,
@@ -193,9 +221,71 @@ class AppViewModel(
             winStreak = user.winStreak
         )
         ephemeral.update {
-            it.copy(busy = false, message = "欢迎，${user.nickname}")
+            it.copy(busy = false, message = "欢迎，${user.nickname}", isAdmin = admin)
         }
+        if (admin) refreshManagedUsers()
+        pullAndPushContent(resp.token)
         refreshLobby()
+    }
+
+    fun refreshManagedUsers() {
+        viewModelScope.launch {
+            val token = repo.currentPlayer().authToken
+            if (token.isBlank()) return@launch
+            auth.listUsers(token).fold(
+                onSuccess = { list -> ephemeral.update { it.copy(managedUsers = list) } },
+                onFailure = { err ->
+                    ephemeral.update { it.copy(message = err.message ?: "加载账号列表失败") }
+                }
+            )
+        }
+    }
+
+    fun adminCreateUser(username: String, password: String, nickname: String) {
+        viewModelScope.launch {
+            ephemeral.update { it.copy(busy = true, busyTip = "创建账号…") }
+            val token = repo.currentPlayer().authToken
+            auth.createUser(token, username.trim(), password, nickname.trim().ifBlank { username.trim() }).fold(
+                onSuccess = {
+                    ephemeral.update { epi -> epi.copy(busy = false, message = "已创建账号 ${username.trim()}") }
+                    refreshManagedUsers()
+                },
+                onFailure = { err ->
+                    ephemeral.update { it.copy(busy = false, message = err.message ?: "创建失败") }
+                }
+            )
+        }
+    }
+
+    fun adminResetPassword(userId: String, password: String) {
+        viewModelScope.launch {
+            ephemeral.update { it.copy(busy = true, busyTip = "重置密码…") }
+            val token = repo.currentPlayer().authToken
+            auth.resetPassword(token, userId, password).fold(
+                onSuccess = {
+                    ephemeral.update { it.copy(busy = false, message = "密码已重置") }
+                },
+                onFailure = { err ->
+                    ephemeral.update { it.copy(busy = false, message = err.message ?: "重置失败") }
+                }
+            )
+        }
+    }
+
+    fun adminDeleteUser(userId: String) {
+        viewModelScope.launch {
+            ephemeral.update { it.copy(busy = true, busyTip = "删除账号…") }
+            val token = repo.currentPlayer().authToken
+            auth.deleteUser(token, userId).fold(
+                onSuccess = {
+                    ephemeral.update { it.copy(busy = false, message = "账号已删除") }
+                    refreshManagedUsers()
+                },
+                onFailure = { err ->
+                    ephemeral.update { it.copy(busy = false, message = err.message ?: "删除失败") }
+                }
+            )
+        }
     }
 
     fun clearMessage() {
@@ -247,11 +337,12 @@ class AppViewModel(
         viewModelScope.launch {
             ephemeral.update { it.copy(busy = true, busyTip = "审核小世界中…") }
             val result = repo.createWorld(title, genre, sourceHint, lore, canonHint)
+            if (result.isSuccess) pushContentQuiet()
             ephemeral.update {
                 it.copy(
                     busy = false,
                     message = result.fold(
-                        onSuccess = { world -> "小世界「${world.title}」已开启，背景即战场" },
+                        onSuccess = { world -> "小世界「${world.title}」已开启并同步云端" },
                         onFailure = { err -> err.message ?: "创建失败" }
                     )
                 )
@@ -269,11 +360,12 @@ class AppViewModel(
         viewModelScope.launch {
             ephemeral.update { it.copy(busy = true, busyTip = "审核卡牌是否越界…") }
             val result = repo.createCard(worldId, name, lore, skills, imageUri)
+            if (result.isSuccess) pushContentQuiet()
             ephemeral.update {
                 it.copy(
                     busy = false,
                     message = result.fold(
-                        onSuccess = { card -> "「${card.name}」已入「${card.worldTitle}」· ${card.createGrade.label}" },
+                        onSuccess = { card -> "「${card.name}」已入「${card.worldTitle}」并同步 · ${card.createGrade.label}" },
                         onFailure = { err -> err.message ?: "创建失败" }
                     )
                 )
@@ -285,11 +377,12 @@ class AppViewModel(
         viewModelScope.launch {
             ephemeral.update { it.copy(busy = true, busyTip = "领取世界角色…") }
             val result = repo.claimWorldCharacter(preset)
+            if (result.isSuccess) pushContentQuiet()
             ephemeral.update {
                 it.copy(
                     busy = false,
                     message = result.fold(
-                        onSuccess = { card -> "已领取「${card.name}」· ${card.createGrade.label}" },
+                        onSuccess = { card -> "已领取「${card.name}」并同步 · ${card.createGrade.label}" },
                         onFailure = { err -> err.message ?: "领取失败" }
                     )
                 )
@@ -302,10 +395,17 @@ class AppViewModel(
         mode: MatchMode,
         myCardIds: List<String>,
         worldId: String,
-        preferredRole: MatchRole?
+        preferredRole: MatchRole?,
+        opponentCardIds: List<String> = emptyList()
     ) {
         when (kind) {
-            PlayKind.PRACTICE -> startPracticeMatch(mode, myCardIds, worldId, preferredRole != MatchRole.DEFENDER)
+            PlayKind.PRACTICE -> startPracticeMatch(
+                mode = mode,
+                myCardIds = myCardIds,
+                worldId = worldId,
+                asChallenger = preferredRole != MatchRole.DEFENDER,
+                opponentCardIds = opponentCardIds
+            )
             PlayKind.ONLINE -> startOnlineMatch(mode, myCardIds, worldId, preferredRole)
         }
     }
@@ -326,11 +426,54 @@ class AppViewModel(
         }
     }
 
+    private fun resolvePracticeOpponents(worldId: String, opponentCardIds: List<String>, teamSize: Int): List<Card> {
+        val state = uiState.value
+        val world = state.worlds.find { it.id == worldId }
+        val presets = WorldCatalog.presetsFor(worldId)
+        val fromSelection = opponentCardIds.mapNotNull { id ->
+            presets.find { it.id == id }?.let { p ->
+                Card(
+                    id = "practice_${p.id}",
+                    name = p.name,
+                    lore = p.lore,
+                    skills = p.skills,
+                    worldId = p.worldId,
+                    worldTitle = world?.title.orEmpty(),
+                    createGrade = p.suggestedGrade,
+                    battleGrade = p.suggestedGrade,
+                    gloryGrade = p.suggestedGrade,
+                    reviewedLore = p.lore,
+                    reviewedSkills = p.skills
+                )
+            } ?: state.cards.find { it.id == id && it.id.startsWith("demo_") }
+        }
+        if (fromSelection.size >= teamSize) return fromSelection.take(teamSize)
+        val demos = state.cards.filter { it.id.startsWith("demo_") }
+        if (demos.size >= teamSize) return demos.take(teamSize)
+        // 官方人物自动补足
+        return presets.take(teamSize).map { p ->
+            Card(
+                id = "practice_${p.id}",
+                name = p.name,
+                lore = p.lore,
+                skills = p.skills,
+                worldId = p.worldId,
+                worldTitle = world?.title.orEmpty(),
+                createGrade = p.suggestedGrade,
+                battleGrade = p.suggestedGrade,
+                gloryGrade = p.suggestedGrade,
+                reviewedLore = p.lore,
+                reviewedSkills = p.skills
+            )
+        }
+    }
+
     private fun startPracticeMatch(
         mode: MatchMode,
         myCardIds: List<String>,
         worldId: String,
-        asChallenger: Boolean
+        asChallenger: Boolean,
+        opponentCardIds: List<String>
     ) {
         viewModelScope.launch {
             ephemeral.update { it.copy(busy = true, busyTip = "练习战演算中…", matchStatusText = "练习战演算中…") }
@@ -346,9 +489,9 @@ class AppViewModel(
                 return@launch
             }
 
-            val opponents = state.cards.filter { it.id.startsWith("demo_") }.take(mode.teamSize)
+            val opponents = resolvePracticeOpponents(worldId, opponentCardIds, mode.teamSize)
             if (opponents.size < mode.teamSize) {
-                ephemeral.update { it.copy(busy = false, message = "对手卡组不足，请重启应用") }
+                ephemeral.update { it.copy(busy = false, message = "请选择系统默认对手卡牌（或进入官方世界）") }
                 return@launch
             }
 
@@ -365,7 +508,9 @@ class AppViewModel(
                     matchStatusText = null,
                     lastMatch = result.getOrNull(),
                     message = result.fold(
-                        onSuccess = { match -> "练习战完成：${match.result.summary}" },
+                        onSuccess = { match ->
+                            "练习战完成：vs ${opponents.joinToString("、") { it.name }} · ${match.result.summary}"
+                        },
                         onFailure = { err -> err.message ?: "对战失败" }
                     )
                 )

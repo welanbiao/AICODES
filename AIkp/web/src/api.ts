@@ -8,11 +8,14 @@ export type AuthUser = {
   id: string
   username: string
   nickname: string
+  role?: string
+  isAdmin?: boolean
   rankPoints: number
   gloryScore: number
   winStreak: number
   wins: number
   losses: number
+  createdAt?: number
 }
 
 export type AuthSession = {
@@ -47,12 +50,6 @@ async function authRequest(path: string, body: Record<string, string>): Promise<
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
   if (!data.token || !data.user) throw new Error('响应无效')
   return { token: data.token, user: data.user }
-}
-
-export async function registerAccount(username: string, password: string, nickname: string) {
-  const session = await authRequest('/v1/auth/register', { username, password, nickname })
-  saveAuthSession(session)
-  return session
 }
 
 export async function loginAccount(username: string, password: string) {
@@ -100,6 +97,59 @@ export async function updateProfileNickname(token: string, nickname: string): Pr
   if (!res.ok) throw new Error(data.error || '更新失败')
   if (!data.user) throw new Error('响应无效')
   return data.user
+}
+
+export async function adminListUsers(token: string): Promise<AuthUser[]> {
+  const res = await fetch(`${API_BASE}/v1/admin/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = (await res.json()) as { error?: string; users?: AuthUser[] }
+  if (!res.ok) throw new Error(data.error || '加载账号失败')
+  return data.users || []
+}
+
+export async function adminCreateUser(
+  token: string,
+  username: string,
+  password: string,
+  nickname: string,
+): Promise<AuthUser> {
+  const res = await fetch(`${API_BASE}/v1/admin/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ username, password, nickname }),
+  })
+  const data = (await res.json()) as { error?: string; user?: AuthUser }
+  if (!res.ok) throw new Error(data.error || '创建失败')
+  if (!data.user) throw new Error('响应无效')
+  return data.user
+}
+
+export async function adminResetPassword(token: string, userId: string, password: string): Promise<AuthUser> {
+  const res = await fetch(`${API_BASE}/v1/admin/users/${encodeURIComponent(userId)}/password`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ password }),
+  })
+  const data = (await res.json()) as { error?: string; user?: AuthUser }
+  if (!res.ok) throw new Error(data.error || '重置失败')
+  if (!data.user) throw new Error('响应无效')
+  return data.user
+}
+
+export async function adminDeleteUser(token: string, userId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/v1/admin/users/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = (await res.json()) as { error?: string }
+  if (!res.ok) throw new Error(data.error || '删除失败')
 }
 
 export type ReviewResult = {
@@ -252,4 +302,113 @@ export function validateWorld(title: string, source: string, lore: string, canon
   BANNED.filter((w) => (title + source + lore + canon).includes(w)).forEach((w) => errors.push(`世界设定含限制词：${w}`))
   return errors
 }
+
+export type CloudWorld = {
+  id: string
+  title: string
+  genre: string
+  sourceHint: string
+  lore: string
+  reviewedLore?: string
+  fullLore?: string
+  canonHint: string
+  coverKey?: string
+  isOfficial?: boolean
+  creatorId?: string | null
+  createdAt?: number
+}
+
+export type CloudCard = {
+  id: string
+  name: string
+  lore: string
+  skills: { name: string; description: string }[]
+  worldId: string
+  worldTitle: string
+  imageUri?: string | null
+  createGrade?: string
+  battleGrade?: string
+  gloryGrade?: string
+  wins?: number
+  losses?: number
+  createdAt?: number
+  reviewedLore?: string
+  reviewedSkills?: { name: string; description: string }[]
+}
+
+export type UserContent = {
+  worlds: CloudWorld[]
+  cards: CloudCard[]
+  updatedAt?: number
+}
+
+export async function fetchUserContent(token: string): Promise<UserContent> {
+  const res = await fetch(`${API_BASE}/v1/me/content`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = (await res.json()) as UserContent & { error?: string }
+  if (!res.ok) throw new Error(data.error || '拉取存档失败')
+  return {
+    worlds: Array.isArray(data.worlds) ? data.worlds : [],
+    cards: Array.isArray(data.cards) ? data.cards : [],
+    updatedAt: data.updatedAt,
+  }
+}
+
+export async function pushUserContent(token: string, content: { worlds: CloudWorld[]; cards: CloudCard[] }) {
+  const res = await fetch(`${API_BASE}/v1/me/content`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(content),
+  })
+  const data = (await res.json()) as UserContent & { error?: string }
+  if (!res.ok) throw new Error(data.error || '保存存档失败')
+  return data
+}
+
+export type MatchTicket = {
+  ticketId: string
+  status: string
+  mode?: string
+  preferredRole?: string
+  assignedRole?: string | null
+  opponent?: { playerId?: string; nickname?: string } | null
+  matchId?: string | null
+  queuePosition?: number | null
+  match?: {
+    result?: {
+      winnerSide?: string
+      summary?: string
+      rounds?: { round: number; narrative: string; effectHint?: string }[]
+    }
+    worldTitle?: string
+    battlefieldMerged?: string
+  } | null
+}
+
+export async function enqueueMatch(body: Record<string, unknown>): Promise<MatchTicket> {
+  const res = await fetch(`${API_BASE}/v1/match/queue`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const data = (await res.json()) as MatchTicket & { error?: string }
+  if (!res.ok) throw new Error(data.error || '进入匹配失败')
+  return data
+}
+
+export async function pollMatchTicket(ticketId: string): Promise<MatchTicket> {
+  const res = await fetch(`${API_BASE}/v1/match/ticket/${encodeURIComponent(ticketId)}`)
+  const data = (await res.json()) as MatchTicket & { error?: string }
+  if (!res.ok) throw new Error(data.error || '查询匹配失败')
+  return data
+}
+
+export async function cancelMatchTicket(ticketId: string): Promise<void> {
+  await fetch(`${API_BASE}/v1/match/ticket/${encodeURIComponent(ticketId)}`, { method: 'DELETE' })
+}
+
 

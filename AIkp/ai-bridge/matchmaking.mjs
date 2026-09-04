@@ -11,7 +11,7 @@ import {
   worldBattlefieldLine,
 } from "./battleEngine.mjs";
 
-const QUEUE_TTL_MS = 90_000;
+const QUEUE_TTL_MS = 180_000;
 const MATCH_TTL_MS = 30 * 60_000;
 const RANK_BAND = 250;
 
@@ -26,6 +26,9 @@ const queues = {
 };
 /** simple leaderboard playerId -> stats */
 const ladder = new Map();
+
+/** set on enqueue so ticket polls can retry pairing */
+let completeAiFn = null;
 
 export function lobbySnapshot() {
   return {
@@ -152,6 +155,9 @@ function assignRoles(a, b) {
 
 function findPartner(ticket) {
   const list = queues[ticket.mode] || [];
+  const waitedMs = Date.now() - (ticket.createdAt || Date.now());
+  const ignoreRole = waitedMs > 12_000;
+
   let best = null;
   let bestScore = Infinity;
   for (const id of list) {
@@ -160,7 +166,7 @@ function findPartner(ticket) {
     if (!other || other.status !== "queued") continue;
     if (other.playerId === ticket.playerId) continue;
     if (ticket.worldId && other.worldId && ticket.worldId !== other.worldId) continue;
-    if (!rolesCompatible(ticket.preferredRole, other.preferredRole)) continue;
+    if (!ignoreRole && !rolesCompatible(ticket.preferredRole, other.preferredRole)) continue;
     const rankDiff = Math.abs(ticket.rankPoints - other.rankPoints);
     if (rankDiff > RANK_BAND) continue;
     const score = rankDiff;
@@ -177,7 +183,22 @@ function findPartner(ticket) {
       if (!other || other.status !== "queued") continue;
       if (other.playerId === ticket.playerId) continue;
       if (ticket.worldId && other.worldId && ticket.worldId !== other.worldId) continue;
-      if (!rolesCompatible(ticket.preferredRole, other.preferredRole)) continue;
+      if (!ignoreRole && !rolesCompatible(ticket.preferredRole, other.preferredRole)) continue;
+      const score = Math.abs(ticket.rankPoints - other.rankPoints);
+      if (score < bestScore) {
+        best = other;
+        bestScore = score;
+      }
+    }
+  }
+  // last resort: same world + any role + any rank
+  if (!best && waitedMs > 20_000) {
+    for (const id of list) {
+      if (id === ticket.id) continue;
+      const other = tickets.get(id);
+      if (!other || other.status !== "queued") continue;
+      if (other.playerId === ticket.playerId) continue;
+      if (ticket.worldId && other.worldId && ticket.worldId !== other.worldId) continue;
       const score = Math.abs(ticket.rankPoints - other.rankPoints);
       if (score < bestScore) {
         best = other;
@@ -313,6 +334,7 @@ function publicOpponent(ticket) {
 
 export function enqueue(body, completeAi) {
   cleanup();
+  completeAiFn = completeAi;
   const data = sanitizePayload(body);
   // cancel previous queued tickets for same player
   for (const [id, t] of tickets) {
@@ -356,6 +378,12 @@ export function ticketStatus(ticketId) {
   cleanup();
   const t = tickets.get(ticketId);
   if (!t) return null;
+  if (t.status === "queued" && completeAiFn) {
+    const partner = findPartner(t);
+    if (partner && partner.status === "queued") {
+      pairTickets(t, partner, completeAiFn);
+    }
+  }
   return ticketView(t);
 }
 

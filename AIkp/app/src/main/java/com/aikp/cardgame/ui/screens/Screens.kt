@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
@@ -89,6 +91,7 @@ import com.aikp.cardgame.ui.components.HallBackground
 import com.aikp.cardgame.ui.components.SectionTitle
 import com.aikp.cardgame.ui.components.WorldCoverCard
 import com.aikp.cardgame.ui.theme.Brass
+import com.aikp.cardgame.ui.theme.Crimson
 import com.aikp.cardgame.ui.theme.Ink
 import com.aikp.cardgame.ui.theme.Jade
 import com.aikp.cardgame.ui.theme.Mist
@@ -125,14 +128,17 @@ fun AikpNav(
     onClearMessage: () -> Unit,
     onCreateCard: (String, String, String, List<SkillDraft>, String?) -> Unit,
     onCreateWorld: (String, WorldGenre, String, String, String) -> Unit,
-    onStartMatch: (PlayKind, MatchMode, List<String>, String, MatchRole?) -> Unit,
+    onStartMatch: (PlayKind, MatchMode, List<String>, String, MatchRole?, List<String>) -> Unit,
     onCancelQueue: () -> Unit,
     onRefreshLobby: () -> Unit,
     onUpdateNickname: (String) -> Unit,
     onClaimCharacter: (WorldCharacterPreset) -> Unit,
     onLogin: (String, String) -> Unit,
-    onRegister: (String, String, String) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onRefreshUsers: () -> Unit = {},
+    onAdminCreateUser: (String, String, String) -> Unit = { _, _, _ -> },
+    onAdminResetPassword: (String, String) -> Unit = { _, _ -> },
+    onAdminDeleteUser: (String) -> Unit = {}
 ) {
     val nav = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
@@ -188,8 +194,7 @@ fun AikpNav(
             if (!state.isLoggedIn) {
                 AuthScreen(
                     busy = state.busy,
-                    onLogin = onLogin,
-                    onRegister = onRegister
+                    onLogin = onLogin
                 )
                 BusyOverlay(visible = state.busy, tip = state.busyTip)
             } else {
@@ -239,8 +244,8 @@ fun AikpNav(
                 composable(Routes.RANKED) {
                     RankedScreen(
                         state = state,
-                        onFight = { kind, mode, cards, worldId, role ->
-                            onStartMatch(kind, mode, cards, worldId, role)
+                        onFight = { kind, mode, cards, worldId, role, opponents ->
+                            onStartMatch(kind, mode, cards, worldId, role, opponents)
                             nav.navigate(Routes.BATTLE)
                         },
                         onCancelQueue = onCancelQueue,
@@ -256,7 +261,16 @@ fun AikpNav(
                 }
                 composable(Routes.COLLECTION) { CollectionScreen(state, nav) }
                 composable(Routes.PROFILE) {
-                    ProfileScreen(state, onUpdateNickname, onRefreshLobby, onLogout)
+                    ProfileScreen(
+                        state = state,
+                        onUpdateNickname = onUpdateNickname,
+                        onRefreshLobby = onRefreshLobby,
+                        onLogout = onLogout,
+                        onRefreshUsers = onRefreshUsers,
+                        onAdminCreateUser = onAdminCreateUser,
+                        onAdminResetPassword = onAdminResetPassword,
+                        onAdminDeleteUser = onAdminDeleteUser
+                    )
                 }
             }
             BusyOverlay(
@@ -583,7 +597,7 @@ internal fun SkillInputs(
 @Composable
 private fun RankedScreen(
     state: HomeUiState,
-    onFight: (PlayKind, MatchMode, List<String>, String, MatchRole?) -> Unit,
+    onFight: (PlayKind, MatchMode, List<String>, String, MatchRole?, List<String>) -> Unit,
     onCancelQueue: () -> Unit,
     onRefreshLobby: () -> Unit
 ) {
@@ -592,13 +606,32 @@ private fun RankedScreen(
     var preferDefender by remember { mutableStateOf(false) }
     var preferChallenger by remember { mutableStateOf(true) }
     val selected = remember { mutableStateListOf<String>() }
+    val selectedOpponents = remember { mutableStateListOf<String>() }
     var worldId by remember { mutableStateOf(state.worlds.firstOrNull()?.id) }
     val world = state.worlds.find { it.id == worldId } ?: state.worlds.firstOrNull()
     val myCards = state.cards.filterNot { it.id.startsWith("demo_") }
         .filter { world == null || it.worldId == world.id || it.worldId.isBlank() }
+    val systemOpponents = remember(worldId) {
+        val presets = worldId?.let { state.presetsFor(it) }.orEmpty()
+        if (presets.isNotEmpty()) {
+            presets.map { p ->
+                Triple(p.id, p.name, "${p.suggestedGrade.label} · ${p.nickname.ifBlank { p.roleHint }}")
+            }
+        } else {
+            state.cards.filter { it.id.startsWith("demo_") }.map { c ->
+                Triple(c.id, c.name, "系统演示 · ${c.createGrade.label}")
+            }
+        }
+    }
 
     LaunchedEffect(Unit) { onRefreshLobby() }
-    LaunchedEffect(worldId) { selected.clear() }
+    LaunchedEffect(worldId, mode) {
+        selected.clear()
+        selectedOpponents.clear()
+    }
+    LaunchedEffect(kind) {
+        if (kind != PlayKind.PRACTICE) selectedOpponents.clear()
+    }
 
     HallBackground(art = R.drawable.bg_battle) {
         SectionTitle("排位对决", "同一小世界匹配；战场锁定为该世界背景")
@@ -612,8 +645,8 @@ private fun RankedScreen(
         }
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(selected = mode == MatchMode.ONE_V_ONE, onClick = { mode = MatchMode.ONE_V_ONE; selected.clear() }, label = { Text("一对一") }, colors = chipColors())
-            FilterChip(selected = mode == MatchMode.THREE_V_THREE, onClick = { mode = MatchMode.THREE_V_THREE; selected.clear() }, label = { Text("三对三") }, colors = chipColors())
+            FilterChip(selected = mode == MatchMode.ONE_V_ONE, onClick = { mode = MatchMode.ONE_V_ONE }, label = { Text("一对一") }, colors = chipColors())
+            FilterChip(selected = mode == MatchMode.THREE_V_THREE, onClick = { mode = MatchMode.THREE_V_THREE }, label = { Text("三对三") }, colors = chipColors())
         }
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -624,7 +657,7 @@ private fun RankedScreen(
         Spacer(Modifier.height(10.dp))
         Text("选择小世界（战场）", color = Mist)
         Spacer(Modifier.height(6.dp))
-        LazyColumn(modifier = Modifier.height(120.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        LazyColumn(modifier = Modifier.height(100.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             items(state.worlds) { w ->
                 Text(
                     "${w.title}｜${w.battlefieldPrompt}",
@@ -637,9 +670,12 @@ private fun RankedScreen(
             Text("题材约束：${world.canonHint}", color = Jade, style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(Modifier.height(8.dp))
-        Text("选择卡组（${selected.size}/${mode.teamSize}）· 仅本世界卡", color = Mist)
+        Text("我的卡组（${selected.size}/${mode.teamSize}）· 仅本世界卡", color = Mist)
         Spacer(Modifier.height(6.dp))
-        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(
+            modifier = Modifier.height(if (kind == PlayKind.PRACTICE) 140.dp else 220.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(myCards) { card ->
                 CardTile(card, selected = selected.contains(card.id)) {
                     if (selected.contains(card.id)) selected.remove(card.id)
@@ -650,6 +686,36 @@ private fun RankedScreen(
                 item { Text("该世界还没有卡。去世界页铸造或选用人物。", color = MistDim) }
             }
         }
+        if (kind == PlayKind.PRACTICE) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "系统对手（${selectedOpponents.size}/${mode.teamSize}）· 官方预设 / 演示卡",
+                color = Mist
+            )
+            Spacer(Modifier.height(6.dp))
+            LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(systemOpponents, key = { it.first }) { (id, name, meta) ->
+                    val on = selectedOpponents.contains(id)
+                    Text(
+                        "$name｜$meta",
+                        color = if (on) Brass else MistDim,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, if (on) Brass else Brass.copy(alpha = 0.2f), RoundedCornerShape(10.dp))
+                            .clickable {
+                                if (on) selectedOpponents.remove(id)
+                                else if (selectedOpponents.size < mode.teamSize) selectedOpponents.add(id)
+                            }
+                            .padding(10.dp)
+                    )
+                }
+                if (systemOpponents.isEmpty()) {
+                    item { Text("当前世界暂无系统默认卡，请换官方世界练习。", color = MistDim) }
+                }
+            }
+        } else {
+            Spacer(Modifier.weight(1f))
+        }
         if (state.queueTicketId != null) {
             Text(state.matchStatusText ?: "匹配中…", color = Jade)
             Spacer(Modifier.height(8.dp))
@@ -657,10 +723,11 @@ private fun RankedScreen(
                 Text("取消匹配")
             }
         } else {
+            val practiceReady = kind != PlayKind.PRACTICE || selectedOpponents.size == mode.teamSize
             ArtCta(
                 art = R.drawable.btn_battle,
                 title = if (kind == PlayKind.ONLINE) "开始同世界匹配" else "开始练习战",
-                enabled = selected.size == mode.teamSize && worldId != null && !state.busy
+                enabled = selected.size == mode.teamSize && worldId != null && !state.busy && practiceReady
             ) {
                 val wid = worldId ?: return@ArtCta
                 val role = when {
@@ -668,7 +735,14 @@ private fun RankedScreen(
                     preferChallenger && !preferDefender -> MatchRole.CHALLENGER
                     else -> null
                 }
-                onFight(kind, mode, selected.toList(), wid, role)
+                onFight(
+                    kind,
+                    mode,
+                    selected.toList(),
+                    wid,
+                    role,
+                    if (kind == PlayKind.PRACTICE) selectedOpponents.toList() else emptyList()
+                )
             }
         }
     }
@@ -781,15 +855,12 @@ private fun CollectionScreen(state: HomeUiState, nav: NavHostController) {
 @Composable
 private fun AuthScreen(
     busy: Boolean,
-    onLogin: (String, String) -> Unit,
-    onRegister: (String, String, String) -> Unit
+    onLogin: (String, String) -> Unit
 ) {
-    var modeRegister by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var nickname by remember { mutableStateOf("") }
     HallBackground {
-        SectionTitle("AI卡牌", if (modeRegister) "注册账号 · 数据存于服务器文件" else "登录进入小世界")
+        SectionTitle("AI卡牌", "登录进入小世界 · 账号由管理员开通")
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = username,
@@ -804,42 +875,23 @@ private fun AuthScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { if (it.length <= 64) password = it },
-            label = { Text("密码（至少6位）") },
+            label = { Text("密码") },
             modifier = Modifier.fillMaxWidth(),
             colors = fieldColors(),
             singleLine = true,
             enabled = !busy
         )
-        if (modeRegister) {
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = nickname,
-                onValueChange = { if (it.length <= 12) nickname = it },
-                label = { Text("昵称（可选）") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = fieldColors(),
-                singleLine = true,
-                enabled = !busy
-            )
-        }
         Spacer(Modifier.height(16.dp))
         Button(
-            onClick = {
-                if (modeRegister) onRegister(username, password, nickname.ifBlank { username })
-                else onLogin(username, password)
-            },
+            onClick = { onLogin(username, password) },
             enabled = !busy && username.isNotBlank() && password.length >= 6,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = Brass, contentColor = Ink)
         ) {
-            Text(if (modeRegister) "注册并进入" else "登录")
+            Text("登录")
         }
-        TextButton(
-            onClick = { modeRegister = !modeRegister },
-            enabled = !busy
-        ) {
-            Text(if (modeRegister) "已有账号？去登录" else "没有账号？去注册", color = Brass)
-        }
+        Spacer(Modifier.height(8.dp))
+        Text("已关闭公开注册，请联系管理员开通账号", color = MistDim, style = MaterialTheme.typography.bodySmall)
         Text("需先启动 ai-bridge（默认 8787）", color = MistDim, style = MaterialTheme.typography.bodySmall)
     }
 }
@@ -849,14 +901,29 @@ private fun ProfileScreen(
     state: HomeUiState,
     onUpdateNickname: (String) -> Unit,
     onRefreshLobby: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onRefreshUsers: () -> Unit,
+    onAdminCreateUser: (String, String, String) -> Unit,
+    onAdminResetPassword: (String, String) -> Unit,
+    onAdminDeleteUser: (String) -> Unit
 ) {
     var nickname by remember(state.playerNickname) { mutableStateOf(state.playerNickname) }
-    LaunchedEffect(Unit) { onRefreshLobby() }
+    var newUser by remember { mutableStateOf("") }
+    var newPass by remember { mutableStateOf("") }
+    var newNick by remember { mutableStateOf("") }
+    var resetTargetId by remember { mutableStateOf<String?>(null) }
+    var resetPass by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        onRefreshLobby()
+        if (state.isAdmin) onRefreshUsers()
+    }
     HallBackground {
-        SectionTitle("荣耀册", "联机排位分同步至匹配服天梯")
+        SectionTitle("荣耀册", if (state.isAdmin) "管理员 · 账号管理" else "联机排位分同步至匹配服天梯")
         Spacer(Modifier.height(12.dp))
-        Text("账号：${state.playerUsername}", color = MistDim)
+        Text(
+            "账号：${state.playerUsername}${if (state.isAdmin) "（管理员）" else ""}",
+            color = MistDim
+        )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = nickname,
@@ -874,6 +941,107 @@ private fun ProfileScreen(
         Text("综合评分 ${state.compositeScore}", color = Jade)
         Text("荣耀分 ${state.gloryScore} · 排位分 ${state.rankPoints} · 连胜 ${state.winStreak}", color = MistDim)
         Text("小世界 ${state.worlds.size} · 卡牌 ${state.cards.count { !it.id.startsWith("demo_") }}", color = MistDim)
+
+        if (state.isAdmin) {
+            Spacer(Modifier.height(14.dp))
+            Text("账号管理", color = Brass, style = MaterialTheme.typography.titleLarge)
+            Text("仅管理员可添加普通用户账号", color = MistDim, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = newUser,
+                onValueChange = { if (it.length <= 16) newUser = it },
+                label = { Text("新账号") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = fieldColors(),
+                singleLine = true,
+                enabled = !state.busy
+            )
+            OutlinedTextField(
+                value = newPass,
+                onValueChange = { if (it.length <= 64) newPass = it },
+                label = { Text("新密码（至少6位）") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = fieldColors(),
+                singleLine = true,
+                enabled = !state.busy
+            )
+            OutlinedTextField(
+                value = newNick,
+                onValueChange = { if (it.length <= 12) newNick = it },
+                label = { Text("昵称（可选）") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = fieldColors(),
+                singleLine = true,
+                enabled = !state.busy
+            )
+            Spacer(Modifier.height(6.dp))
+            Button(
+                onClick = {
+                    onAdminCreateUser(newUser, newPass, newNick)
+                    newUser = ""
+                    newPass = ""
+                    newNick = ""
+                },
+                enabled = !state.busy && newUser.length >= 3 && newPass.length >= 6,
+                colors = ButtonDefaults.buttonColors(containerColor = Jade, contentColor = Ink)
+            ) { Text("添加普通账号") }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onRefreshUsers, enabled = !state.busy) {
+                Text("刷新列表", color = Brass)
+            }
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.heightIn(max = 220.dp)
+            ) {
+                items(state.managedUsers, key = { it.id }) { user ->
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Brass.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+                            .padding(10.dp)
+                    ) {
+                        Text(
+                            "${user.username} · ${user.nickname}${if (user.isAdmin) " · 管理员" else ""}",
+                            color = Mist
+                        )
+                        if (!user.isAdmin) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                TextButton(
+                                    onClick = {
+                                        resetTargetId = user.id
+                                        resetPass = ""
+                                    },
+                                    enabled = !state.busy
+                                ) { Text("重置密码", color = Brass) }
+                                TextButton(
+                                    onClick = { onAdminDeleteUser(user.id) },
+                                    enabled = !state.busy
+                                ) { Text("删除", color = Crimson) }
+                            }
+                            if (resetTargetId == user.id) {
+                                OutlinedTextField(
+                                    value = resetPass,
+                                    onValueChange = { if (it.length <= 64) resetPass = it },
+                                    label = { Text("新密码") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = fieldColors(),
+                                    singleLine = true
+                                )
+                                TextButton(
+                                    onClick = {
+                                        onAdminResetPassword(user.id, resetPass)
+                                        resetTargetId = null
+                                        resetPass = ""
+                                    },
+                                    enabled = resetPass.length >= 6
+                                ) { Text("确认重置", color = Jade) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Spacer(Modifier.height(12.dp))
         Text("联机天梯", color = Brass)
         LazyColumn(modifier = Modifier.height(110.dp)) {

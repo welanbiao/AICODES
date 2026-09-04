@@ -10,15 +10,20 @@
 import http from "node:http";
 import { Agent } from "@cursor/sdk";
 import {
+  adminCreateUser,
+  adminDeleteUser,
+  adminListUsers,
+  adminResetPassword,
   authStats,
+  bootstrapAuth,
   loginUser,
   logoutUser,
   parseBearer,
-  registerUser,
   updateUserProfile,
   userFromToken,
 } from "./auth.mjs";
 import { cancelTicket, enqueue, getLeaderboard, lobbySnapshot, ticketStatus } from "./matchmaking.mjs";
+import { getUserContent, putUserContent, upsertUserCard, upsertUserWorld } from "./userContent.mjs";
 
 const PORT = Number(process.env.PORT || 8787);
 const MODEL = process.env.CURSOR_MODEL || "composer-2.5";
@@ -134,8 +139,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && path === "/v1/auth/register") {
-      const body = await readBody(req);
-      return json(res, 200, registerUser(body));
+      return json(res, 403, { error: "已关闭公开注册，请联系管理员开通账号" });
     }
 
     if (req.method === "POST" && path === "/v1/auth/login") {
@@ -159,6 +163,53 @@ const server = http.createServer(async (req, res) => {
       if (!token) return json(res, 401, { error: "未登录" });
       const body = await readBody(req);
       return json(res, 200, { user: updateUserProfile(token, body) });
+    }
+
+    if (req.method === "GET" && path === "/v1/admin/users") {
+      const token = parseBearer(req);
+      return json(res, 200, adminListUsers(token));
+    }
+
+    if (req.method === "POST" && path === "/v1/admin/users") {
+      const token = parseBearer(req);
+      const body = await readBody(req);
+      return json(res, 200, adminCreateUser(token, body));
+    }
+
+    if (req.method === "PUT" && path.startsWith("/v1/admin/users/") && path.endsWith("/password")) {
+      const token = parseBearer(req);
+      const userId = decodeURIComponent(path.slice("/v1/admin/users/".length, -"/password".length));
+      const body = await readBody(req);
+      return json(res, 200, adminResetPassword(token, userId, body.password));
+    }
+
+    if (req.method === "DELETE" && path.startsWith("/v1/admin/users/")) {
+      const token = parseBearer(req);
+      const userId = decodeURIComponent(path.slice("/v1/admin/users/".length));
+      return json(res, 200, adminDeleteUser(token, userId));
+    }
+
+    if (req.method === "GET" && path === "/v1/me/content") {
+      const token = parseBearer(req);
+      return json(res, 200, getUserContent(token));
+    }
+
+    if (req.method === "PUT" && path === "/v1/me/content") {
+      const token = parseBearer(req);
+      const body = await readBody(req);
+      return json(res, 200, putUserContent(token, body));
+    }
+
+    if (req.method === "PUT" && path === "/v1/me/worlds") {
+      const token = parseBearer(req);
+      const body = await readBody(req);
+      return json(res, 200, upsertUserWorld(token, body.world || body));
+    }
+
+    if (req.method === "PUT" && path === "/v1/me/cards") {
+      const token = parseBearer(req);
+      const body = await readBody(req);
+      return json(res, 200, upsertUserCard(token, body.card || body));
     }
 
     if (req.method === "GET" && path === "/v1/match/lobby") {
@@ -208,8 +259,11 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
+  const boot = bootstrapAuth();
   console.log(`[aikp] http://127.0.0.1:${PORT}`);
   console.log(`[aikp] model=${MODEL} key=${process.env.CURSOR_API_KEY ? "yes" : "no"}`);
   console.log(`[aikp] matchmaking ready: POST /v1/match/queue`);
-  console.log(`[aikp] auth ready: POST /v1/auth/register | /v1/auth/login`);
+  console.log(`[aikp] auth ready: POST /v1/auth/login (register closed)`);
+  console.log(`[aikp] admin seed: ${boot.admin} · users=${boot.users}`);
+  console.log(`[aikp] admin users API: GET/POST /v1/admin/users`);
 });
