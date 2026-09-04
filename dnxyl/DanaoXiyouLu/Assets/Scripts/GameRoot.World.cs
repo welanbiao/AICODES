@@ -343,7 +343,7 @@ public partial class GameRoot
                 break;
         }
         RenderSettings.fogColor = fog;
-        RenderSettings.fogDensity = 0.016f + stage * 0.001f;
+        RenderSettings.fogDensity = stage == 1 ? 0.0045f : 0.016f + stage * 0.001f;
         RenderSettings.ambientSkyColor = ambS;
         RenderSettings.ambientEquatorColor = ambE;
         RenderSettings.ambientGroundColor = ambG;
@@ -359,7 +359,14 @@ public partial class GameRoot
             RenderSettings.skybox = sky;
         }
         DynamicGI.UpdateEnvironment();
-        if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.7f, 1f) : Danao.Gold;
+        if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.78f, 0.45f) : Danao.Gold;
+        if (_backdrop != null)
+        {
+            Destroy(_backdrop.gameObject);
+            _backdrop = null;
+        }
+        if (stage == 1 && _sun != null)
+            _backdrop = StageBackdrop.Create(_sun);
     }
 
     void ClearWorld(bool resetPath = false)

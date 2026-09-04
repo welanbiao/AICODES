@@ -40,12 +40,23 @@ public class Mob : MonoBehaviour
         Vector3 p = transform.position;
         Vector3 t = _player.position;
         t.y = p.y;
+        if (p.z <= t.z)
+        {
+            transform.position += Vector3.back * speed * 0.35f * Time.deltaTime;
+            if (transform.position.z < t.z - 1.35f) Die(false);
+            return;
+        }
         Vector3 dir = (t - p);
         dir.y = 0;
         if (dir.sqrMagnitude > 0.01f)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 6f);
-            transform.position += dir.normalized * speed * Time.deltaTime;
+            Vector3 look = dir;
+            look.x *= 0.35f;
+            if (look.sqrMagnitude > 0.01f)
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(look), Time.deltaTime * 5f);
+            Vector3 step = new Vector3(dir.x * 0.25f, 0f, dir.z);
+            if (step.sqrMagnitude > 0.01f) step.Normalize();
+            transform.position += step * speed * Time.deltaTime;
         }
         float dist = Vector3.Distance(new Vector3(p.x, 0, p.z), new Vector3(t.x, 0, t.z));
         if (dist < 1.12f && p.z > t.z - 0.25f)
