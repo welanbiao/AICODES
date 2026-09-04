@@ -13,7 +13,7 @@ public partial class GameRoot
         int pack = Random.Range(1, PackSize() + 1);
         for (int i = 0; i < pack; i++)
         {
-            Vector3 pos = player.position + new Vector3(Random.Range(-3.4f, 3.4f), 0, Random.Range(16f, 28f) + i * 1.1f);
+            Vector3 pos = player.position + new Vector3(Random.Range(-4.2f, 4.2f), 0, Random.Range(18f, 32f) + i * 1.4f);
             SpawnMob(PickKind(), pos);
         }
     }

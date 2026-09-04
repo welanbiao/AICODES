@@ -172,7 +172,7 @@ public class PickupOrb : MonoBehaviour
         transform.Rotate(0, 90f * Time.deltaTime, 0);
         if (GameRoot.I != null && GameRoot.I.player != null)
         {
-            if ((transform.position - GameRoot.I.player.position).sqrMagnitude < 1.6f)
+            if ((transform.position - GameRoot.I.player.position).sqrMagnitude < 2.8f)
                 Collect();
         }
     }
