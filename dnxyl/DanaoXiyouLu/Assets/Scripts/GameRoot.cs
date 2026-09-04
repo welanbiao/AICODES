@@ -72,8 +72,8 @@ public partial class GameRoot : MonoBehaviour
             cgo.tag = "MainCamera";
         }
         _cam.clearFlags = CameraClearFlags.Skybox;
-        _cam.fieldOfView = 42f;
-        _cam.farClipPlane = 220f;
+        _cam.fieldOfView = 44f;
+        _cam.farClipPlane = 480f;
         _cam.allowHDR = true;
     }
 
