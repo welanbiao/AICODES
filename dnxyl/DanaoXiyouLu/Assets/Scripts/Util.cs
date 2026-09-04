@@ -523,11 +523,64 @@ public static class Mats
         if (Cache.ContainsKey(key)) return Cache[key];
         var m = new Material(MythicShader);
         m.SetColor("_Color", Color.white);
-        m.SetTexture("_MainTex", Tex.Ground(stage));
+        Texture2D gtex = stage == 1 ? Tex.Res("Tex/tex_cloud_wuxing", Tex.Ground(1)) : Tex.Ground(stage);
+        if (stage == 1 && gtex == Tex.Ground(1)) gtex = Tex.Ground(stage);
+        m.SetTexture("_MainTex", stage == 1 ? Tex.Res("Tex/tex_cloud_wuxing", Tex.Ground(stage)) : Tex.Ground(stage));
         m.SetColor("_RimColor", new Color(1, 0.9f, 0.6f, 1) * 0.25f);
-        m.SetColor("_Emission", Color.black);
+        m.SetColor("_Emission", stage == 1 ? new Color(0.12f, 0.08f, 0.04f) : Color.black);
+        if (stage == 1) m.SetTextureScale("_MainTex", new Vector2(4f, 8f));
         Cache[key] = m;
         return m;
+    }
+
+    public static Material Cloud(Color c, string key)
+    {
+        key = "cloud_" + key;
+        if (Cache.ContainsKey(key)) return Cache[key];
+        var m = new Material(CloudShader);
+        c.a = Mathf.Clamp01(c.a < 0.15f ? 0.72f : c.a);
+        m.SetColor("_Tint", c);
+        m.SetTexture("_MainTex", Tex.Res("Tex/tex_cloud_wuxing", Tex.Soft));
+        m.SetVector("_Scroll", new Vector4(0.028f + key.Length * 0.001f, 0.01f, 0, 0));
+        Cache[key] = m;
+        return m;
+    }
+
+    public static Material SunBall()
+    {
+        if (Cache.ContainsKey("sunBallTex")) return Cache["sunBallTex"];
+        var m = new Material(SunShader);
+        m.SetColor("_Tint", new Color(1f, 0.92f, 0.55f, 1f));
+        m.SetTexture("_MainTex", Tex.Res("Tex/tex_sun", Tex.Soft));
+        m.SetFloat("_Boost", 2.1f);
+        Cache["sunBallTex"] = m;
+        return m;
+    }
+
+    public static Material Painted(Color tint, Color rim, Color emit, string key, string resource)
+    {
+        if (Cache.ContainsKey(key)) return Cache[key];
+        var m = new Material(MythicShader);
+        m.SetColor("_Color", tint);
+        m.SetColor("_RimColor", rim);
+        m.SetColor("_Emission", emit);
+        m.SetTexture("_MainTex", Tex.Res(resource, Tex.Noise));
+        Cache[key] = m;
+        return m;
+    }
+
+    public static Material Spirit(int elem)
+    {
+        string[] files =
+        {
+            "Tex/tex_spirit_metal",
+            "Tex/tex_spirit_wood",
+            "Tex/tex_spirit_water",
+            "Tex/tex_spirit_fire",
+            "Tex/tex_spirit_earth"
+        };
+        Color c = Danao.WuXing[Mathf.Clamp(elem, 0, 4)];
+        return Painted(Color.white, Color.white, c * 0.22f, "spiritPaint" + elem, files[Mathf.Clamp(elem, 0, 4)]);
     }
 
     public static Material Skin { get { return Solid(Danao.Skin, new Color(1, 0.7f, 0.5f), new Color(0.12f, 0.04f, 0.02f), "skin"); } }
