@@ -350,12 +350,17 @@ public partial class GameRoot
                 break;
         }
         RenderSettings.fogColor = fog;
-        RenderSettings.fogDensity = 0.016f + stage * 0.001f;
+        RenderSettings.fogDensity = stage == 1 ? 0.0048f : 0.016f + stage * 0.001f;
+        RenderSettings.fogMode = FogMode.ExponentialSquared;
         RenderSettings.ambientSkyColor = ambS;
         RenderSettings.ambientEquatorColor = ambE;
         RenderSettings.ambientGroundColor = ambG;
         if (_sun != null) { _sun.color = sun; _sun.intensity = 1.05f + stage * 0.05f; }
-        if (_cam != null) _cam.backgroundColor = skyA;
+        if (_cam != null)
+        {
+            _cam.backgroundColor = skyA;
+            _cam.farClipPlane = stage == 1 ? 520f : 260f;
+        }
         var skyShader = Shader.Find("Skybox/Procedural");
         if (skyShader != null)
         {
@@ -367,6 +372,17 @@ public partial class GameRoot
         }
         DynamicGI.UpdateEnvironment();
         if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.7f, 1f) : Danao.Gold;
+        RebuildBackdrop();
+    }
+
+    void RebuildBackdrop()
+    {
+        if (_backdrop != null)
+        {
+            Destroy(_backdrop.gameObject);
+            _backdrop = null;
+        }
+        if (stage == 1) _backdrop = StageBackdrop.Create(_sun);
     }
 
     void ClearWorld(bool resetPath = false)
