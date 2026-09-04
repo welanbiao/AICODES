@@ -13,7 +13,8 @@ public partial class GameRoot
         int pack = Random.Range(1, PackSize() + 1);
         for (int i = 0; i < pack; i++)
         {
-            Vector3 pos = player.position + new Vector3(Random.Range(-3.4f, 3.4f), 0, Random.Range(16f, 28f) + i * 1.1f);
+            float[] lanes = { -2.8f, -1.4f, 0f, 1.4f, 2.8f };
+            Vector3 pos = player.position + new Vector3(lanes[Random.Range(0, lanes.Length)], 0, Random.Range(16f, 28f) + i * 1.1f);
             SpawnMob(PickKind(), pos);
         }
     }
