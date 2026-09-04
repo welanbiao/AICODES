@@ -33,7 +33,7 @@ public partial class GameRoot
         scaler.referenceResolution = new Vector2(1280, 720);
         scaler.matchWidthOrHeight = 0.5f;
         canvasGo.AddComponent<GraphicRaycaster>();
-        var es = FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+        var es = Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
         if (es == null)
         {
             var e = new GameObject("EventSystem");

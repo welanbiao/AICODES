@@ -7,7 +7,7 @@ public partial class GameRoot
         _spawnCd -= Time.deltaTime;
         if (_spawnCd > 0) return;
         _spawnCd = SpawnInterval();
-        int live = FindObjectsOfType<Mob>().Length;
+        int live = Object.FindObjectsByType<Mob>(FindObjectsSortMode.None).Length;
         if (live >= 28) return;
 
         int pack = Random.Range(1, PackSize() + 1);

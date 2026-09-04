@@ -265,9 +265,9 @@ public partial class GameRoot
         foreach (var c in _chunks) if (c) Destroy(c);
         _chunks.Clear();
         _nextChunk = Mathf.Max(0, Mathf.FloorToInt(player.position.z / ChunkLen) - 1);
-        var mobs = FindObjectsOfType<Mob>();
+        var mobs = Object.FindObjectsByType<Mob>(FindObjectsSortMode.None);
         for (int i = 0; i < mobs.Length; i++) Destroy(mobs[i].gameObject);
-        var extra = FindObjectsOfType<Bolt>();
+        var extra = Object.FindObjectsByType<Bolt>(FindObjectsSortMode.None);
         for (int i = 0; i < extra.Length; i++) Destroy(extra[i].gameObject);
     }
 }
