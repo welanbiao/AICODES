@@ -523,8 +523,6 @@ public static class Mats
         if (Cache.ContainsKey(key)) return Cache[key];
         var m = new Material(MythicShader);
         m.SetColor("_Color", Color.white);
-        Texture2D gtex = stage == 1 ? Tex.Res("Tex/tex_cloud_wuxing", Tex.Ground(1)) : Tex.Ground(stage);
-        if (stage == 1 && gtex == Tex.Ground(1)) gtex = Tex.Ground(stage);
         m.SetTexture("_MainTex", stage == 1 ? Tex.Res("Tex/tex_cloud_wuxing", Tex.Ground(stage)) : Tex.Ground(stage));
         m.SetColor("_RimColor", new Color(1, 0.9f, 0.6f, 1) * 0.25f);
         m.SetColor("_Emission", stage == 1 ? new Color(0.12f, 0.08f, 0.04f) : Color.black);
