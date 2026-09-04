@@ -20,6 +20,7 @@ public partial class GameRoot : MonoBehaviour
     Transform _boat;
     Light _sun;
     Light _heroLight;
+    StageBackdrop _backdrop;
 
     float _x;
     float _pathW = 4.2f;
