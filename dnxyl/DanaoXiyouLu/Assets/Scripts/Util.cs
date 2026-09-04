@@ -100,6 +100,32 @@ public static class Danao
         l.shadows = LightShadows.None;
         return l;
     }
+
+    public static TextMesh Label3D(Transform parent, string name, string text, Vector3 pos, float size, Color color)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = pos;
+        go.transform.localRotation = Quaternion.Euler(12f, 180f, 0f);
+        var tm = go.AddComponent<TextMesh>();
+        tm.text = text;
+        tm.font = Fonts.Cjk();
+        tm.fontSize = 64;
+        tm.characterSize = size;
+        tm.anchor = TextAnchor.MiddleCenter;
+        tm.alignment = TextAlignment.Center;
+        tm.color = color;
+        tm.fontStyle = FontStyle.Bold;
+        var r = go.GetComponent<MeshRenderer>();
+        if (r != null)
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (tm.font != null && tm.font.material != null)
+                r.sharedMaterial = tm.font.material;
+        }
+        go.AddComponent<FaceCam>();
+        return tm;
+    }
 }
 
 public static class Fonts
