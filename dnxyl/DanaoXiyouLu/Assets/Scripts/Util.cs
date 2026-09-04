@@ -474,11 +474,16 @@ public static class Mats
         m.SetColor("_Emission", emit);
         m.SetFloat("_Gloss", 0.55f);
         Texture2D tex = Tex.Noise;
-        if (key.StartsWith("skin") || key == "skin") tex = Tex.Skin;
-        else if (key.StartsWith("fur") || key == "fur" || key.StartsWith("hair") || key == "hair") tex = Tex.Fur;
-        else if (key.StartsWith("robe") || key == "robe") tex = Tex.Silk;
+        if (key.StartsWith("skin") || key == "skin") tex = Tex.Res("Tex/tex_skin", Tex.Skin);
+        else if (key.StartsWith("fur") || key == "fur" || key.StartsWith("hair") || key == "hair") tex = Tex.Res("Tex/tex_fur", Tex.Fur);
+        else if (key.StartsWith("robe") || key == "robe") tex = Tex.Res("Tex/tex_robe", Tex.Silk);
         else if (key.StartsWith("gold") || key == "gold" || key == "trim") tex = Tex.Gold;
+        else if (key.StartsWith("mtn") || key == "stele" || key == "mtnRock") tex = Tex.Res("Tex/tex_mountain", Tex.Noise);
+        else if (key.StartsWith("snow") || key == "mtnSnow") tex = Tex.Res("Tex/tex_snow", Tex.White);
+        else if (key.StartsWith("fetus") || key == "stoneHeart") tex = Tex.Res("Tex/tex_fetus_stone", Tex.Noise);
+        else if (key.StartsWith("pill")) tex = Tex.Res("Tex/tex_pill", Tex.Gold);
         m.SetTexture("_MainTex", tex);
+        if (key.StartsWith("mtn") || key.StartsWith("snow")) m.SetTextureScale("_MainTex", new Vector2(3.5f, 3.5f));
         Cache[key] = m;
         return m;
     }
