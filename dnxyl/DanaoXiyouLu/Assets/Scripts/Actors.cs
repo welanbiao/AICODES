@@ -90,10 +90,19 @@ public class Bolt : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         var mob = other.GetComponentInParent<Mob>();
-        if (mob == null) return;
-        mob.Hit(dmg, element);
-        Vfx.Burst(transform.position, element >= 0 ? Danao.WuXing[element] : Danao.Gold, 14);
-        Destroy(gameObject);
+        if (mob != null)
+        {
+            mob.Hit(dmg, element);
+            Vfx.Burst(transform.position, element >= 0 ? Danao.WuXing[element] : Danao.Gold, 14);
+            Destroy(gameObject);
+            return;
+        }
+        var barrel = other.GetComponentInParent<Barrel>();
+        if (barrel != null)
+        {
+            barrel.Hit(dmg);
+            Destroy(gameObject);
+        }
     }
 }
 
