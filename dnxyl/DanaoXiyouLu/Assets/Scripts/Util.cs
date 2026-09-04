@@ -156,6 +156,29 @@ public static class Tex
     static Texture2D _soft;
     static Texture2D _noise;
     static readonly Dictionary<int, Texture2D> Cache = new Dictionary<int, Texture2D>();
+    static readonly Dictionary<string, Texture2D> Files = new Dictionary<string, Texture2D>();
+
+    public static Texture2D Res(string name, Texture2D fallback)
+    {
+        Texture2D t;
+        if (Files.TryGetValue(name, out t) && t != null) return t;
+        t = Resources.Load<Texture2D>(name);
+        if (t == null)
+        {
+            string path = Application.dataPath + "/Resources/" + name + ".png";
+            if (System.IO.File.Exists(path))
+            {
+                t = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+                t.LoadImage(System.IO.File.ReadAllBytes(path));
+                t.wrapMode = TextureWrapMode.Repeat;
+                t.filterMode = FilterMode.Bilinear;
+                t.anisoLevel = 4;
+            }
+        }
+        if (t == null) return fallback;
+        Files[name] = t;
+        return t;
+    }
 
     public static Texture2D White
     {
