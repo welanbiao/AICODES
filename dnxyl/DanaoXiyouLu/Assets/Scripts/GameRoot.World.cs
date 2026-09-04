@@ -124,6 +124,7 @@ public partial class GameRoot
         var go = new GameObject("Gate");
         go.transform.SetParent(parent, false);
         go.transform.localPosition = pos;
+        go.transform.localScale = Vector3.one * 1.65f;
 
         Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
         var stone = Mats.Solid(new Color(0.28f, 0.22f, 0.18f), "stele");
