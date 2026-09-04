@@ -122,7 +122,7 @@ public partial class GameRoot
         Danao.Prim(go.transform, "rimB", PrimitiveType.Cube, new Vector3(0, 0.86f, 0), new Vector3(1.02f, 0.06f, 0.14f), Mats.Gold);
 
         var icon = Danao.Node(go.transform, "icon", new Vector3(0, 1.92f, 0));
-        BuildGateIcon(icon, elem, c, accent);
+        BuildGateIcon(icon, elem, accent);
         icon.gameObject.AddComponent<BobSpin>().amp = 0.06f;
 
         var col = go.AddComponent<BoxCollider>();
