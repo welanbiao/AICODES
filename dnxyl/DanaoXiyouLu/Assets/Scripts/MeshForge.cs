@@ -201,31 +201,32 @@ public static class MeshForge
 
     static Vector3 WarpHead(Vector3 p)
     {
-        Vector3 v = new Vector3(p.x * 0.90f, p.y * 1.10f, p.z * 0.92f);
+        float peach = 1f + 0.14f * Mathf.Exp(-p.y * p.y * 4.2f) - 0.22f * Mathf.Max(0f, -p.y - 0.12f);
+        Vector3 v = new Vector3(p.x * 0.82f * peach, p.y * 1.06f, p.z * 0.84f);
         float front = Mathf.Max(0f, v.z);
-        float nose = Mathf.Exp(-v.x * v.x * 90f - (v.y + 0.02f) * (v.y + 0.02f) * 55f) * front;
-        v += new Vector3(0f, -0.015f, 0.11f) * nose;
-        float cheek = Mathf.Exp(-Mathf.Pow(Mathf.Abs(v.x) - 0.32f, 2f) * 28f - (v.y + 0.04f) * (v.y + 0.04f) * 18f) * front;
-        v += new Vector3(Mathf.Sign(v.x + 0.0001f) * 0.05f, -0.01f, 0.025f) * cheek;
-        float brow = Mathf.Exp(-Mathf.Pow(Mathf.Abs(v.x) - 0.16f, 2f) * 50f - Mathf.Pow(v.y - 0.20f, 2f) * 70f) * front;
-        v += new Vector3(0f, 0.02f, 0.035f) * brow;
-        float chin = Mathf.Exp(-v.x * v.x * 22f - Mathf.Pow(v.y + 0.42f, 2f) * 28f) * front;
-        v += new Vector3(0f, -0.06f, 0.04f) * chin;
-        float jaw = Mathf.Exp(-Mathf.Pow(Mathf.Abs(v.x) - 0.28f, 2f) * 18f - Mathf.Pow(v.y + 0.28f, 2f) * 22f);
-        v.x *= 1f + jaw * 0.08f;
-        if (v.z < 0f) v.z *= 0.92f;
-        return v * 0.5f;
+        float nose = Mathf.Exp(-v.x * v.x * 140f - (v.y + 0.05f) * (v.y + 0.05f) * 85f) * front;
+        v += new Vector3(0f, -0.008f, 0.048f) * nose;
+        float cheek = Mathf.Exp(-Mathf.Pow(Mathf.Abs(v.x) - 0.26f, 2f) * 26f - (v.y + 0.02f) * (v.y + 0.02f) * 16f) * front;
+        v += new Vector3(Mathf.Sign(v.x + 0.0001f) * 0.038f, -0.006f, 0.016f) * cheek;
+        float brow = Mathf.Exp(-Mathf.Pow(Mathf.Abs(v.x) - 0.13f, 2f) * 60f - Mathf.Pow(v.y - 0.24f, 2f) * 90f) * front;
+        v += new Vector3(0f, 0.016f, 0.018f) * brow;
+        float socket = Mathf.Exp(-Mathf.Pow(Mathf.Abs(v.x) - 0.15f, 2f) * 80f - Mathf.Pow(v.y - 0.08f, 2f) * 110f) * front;
+        v.z -= socket * 0.028f;
+        float chin = Mathf.Exp(-v.x * v.x * 36f - Mathf.Pow(v.y + 0.50f, 2f) * 36f) * front;
+        v += new Vector3(0f, -0.04f, 0.02f) * chin;
+        if (v.z < 0f) v.z *= 0.86f;
+        return v * 0.48f;
     }
 
     static Vector3 WarpHairCap(Vector3 p)
     {
-        if (p.y < -0.05f && p.z > 0.15f) p *= 0.15f;
-        p.y = Mathf.Max(p.y, -0.02f);
-        p.x *= 1.05f;
-        p.z *= 1.02f;
-        p.y *= 0.72f;
-        p.y += 0.12f;
-        return p * 0.52f;
+        if (p.z > 0.02f && p.y < 0.22f) p *= 0.06f;
+        p.y = Mathf.Max(p.y, 0.02f);
+        p.x *= 1.08f;
+        p.z = p.z < 0f ? p.z * 1.18f : p.z * 0.88f;
+        p.y *= 0.78f;
+        p.y += 0.15f;
+        return p * 0.50f;
     }
 
     static Mesh BuildSphere(int lon, int lat, Func<Vector3, Vector3> warp)
