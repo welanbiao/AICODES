@@ -359,5 +359,6 @@ public partial class GameRoot : MonoBehaviour
     {
         _hurtCd -= Time.deltaTime;
         _gateLock -= Time.deltaTime;
+        if (_backdrop != null && player != null) _backdrop.Follow(player.position);
     }
 }
