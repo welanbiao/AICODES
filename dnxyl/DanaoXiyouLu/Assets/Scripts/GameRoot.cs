@@ -164,6 +164,9 @@ public partial class GameRoot : MonoBehaviour
             float target = Mathf.Lerp(-_pathW, _pathW, vx);
             _x = Mathf.Lerp(_x, target, 1f - Mathf.Exp(-12f * Time.deltaTime));
         }
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) _x -= 9f * Time.deltaTime;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) _x += 9f * Time.deltaTime;
+        _x = Mathf.Clamp(_x, -_pathW, _pathW);
         player.position = new Vector3(_x, 0, player.position.z + _speed * Time.deltaTime);
         if (_boat != null)
         {
