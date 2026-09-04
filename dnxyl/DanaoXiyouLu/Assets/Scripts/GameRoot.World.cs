@@ -247,9 +247,10 @@ public partial class GameRoot
         RenderSettings.ambientEquatorColor = ambE;
         RenderSettings.ambientGroundColor = ambG;
         if (_sun != null) { _sun.color = sun; _sun.intensity = 1.05f + stage * 0.05f; }
-        var sky = new Material(Shader.Find("Skybox/Procedural"));
-        if (sky.shader != null && sky.shader.name.Contains("Procedural"))
+        var skyShader = Shader.Find("Skybox/Procedural");
+        if (skyShader != null)
         {
+            var sky = new Material(skyShader);
             sky.SetFloat("_AtmosphereThickness", 0.9f + stage * 0.08f);
             sky.SetColor("_SkyTint", Color.Lerp(skyA, skyB, 0.4f));
             sky.SetColor("_GroundColor", fog);
