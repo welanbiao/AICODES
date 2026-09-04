@@ -10,6 +10,8 @@ public class Mob : MonoBehaviour
     public int xiuReward = 8;
     public bool dead;
     Transform _player;
+    int _dodge;
+    float _dodgeX;
 
     public void Init(MobKind k, Transform player, int stage)
     {
