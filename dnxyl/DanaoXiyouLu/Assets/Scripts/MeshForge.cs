@@ -501,6 +501,58 @@ public static class MeshForge
         return Finish(verts, null, uv, tris);
     }
 
+    static Mesh BuildPeak(int segs, int stacks)
+    {
+        var verts = new List<Vector3>();
+        var uv = new List<Vector2>();
+        var tris = new List<int>();
+        for (int y = 0; y <= stacks; y++)
+        {
+            float v = y / (float)stacks;
+            float baseR = Mathf.Lerp(0.52f, 0.016f, Mathf.Pow(v, 0.82f));
+            for (int x = 0; x <= segs; x++)
+            {
+                float u = x / (float)segs;
+                float a = u * Mathf.PI * 2f;
+                float n = Mathf.PerlinNoise(Mathf.Cos(a) * 2.4f + 3.1f, v * 5.2f);
+                float ridge = Mathf.Abs(Mathf.Sin(a * 3.5f + v * 2f)) * 0.09f * (1f - v);
+                float r = baseR * (1f + n * 0.24f + ridge);
+                verts.Add(new Vector3(Mathf.Cos(a) * r, v, Mathf.Sin(a) * r));
+                uv.Add(new Vector2(u * 3f, v * 2.2f));
+            }
+        }
+        int cols = segs + 1;
+        for (int y = 0; y < stacks; y++)
+        for (int x = 0; x < segs; x++)
+        {
+            int i = y * cols + x;
+            tris.Add(i);
+            tris.Add(i + cols);
+            tris.Add(i + 1);
+            tris.Add(i + 1);
+            tris.Add(i + cols);
+            tris.Add(i + cols + 1);
+        }
+        return Finish(verts, null, uv, tris);
+    }
+
+    static Mesh BuildQuad()
+    {
+        var verts = new List<Vector3>
+        {
+            new Vector3(-0.5f, 0f, -0.5f),
+            new Vector3(0.5f, 0f, -0.5f),
+            new Vector3(0.5f, 0f, 0.5f),
+            new Vector3(-0.5f, 0f, 0.5f)
+        };
+        var uv = new List<Vector2>
+        {
+            new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1)
+        };
+        var tris = new List<int> { 0, 2, 1, 0, 3, 2, 0, 1, 2, 0, 2, 3 };
+        return Finish(verts, null, uv, tris);
+    }
+
     static Mesh Finish(List<Vector3> verts, List<Vector3> nrm, List<Vector2> uv, List<int> tris)
     {
         var m = new Mesh();
