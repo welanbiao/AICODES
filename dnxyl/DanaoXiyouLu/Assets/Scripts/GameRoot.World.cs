@@ -292,13 +292,13 @@ public partial class GameRoot
         switch (stage)
         {
             case 1:
-                fog = new Color(0.45f, 0.18f, 0.55f);
-                skyA = new Color(0.18f, 0.05f, 0.28f);
-                skyB = new Color(0.95f, 0.45f, 0.75f);
-                sun = new Color(1f, 0.75f, 0.95f);
-                ambS = new Color(0.7f, 0.45f, 0.8f);
-                ambE = new Color(0.5f, 0.3f, 0.4f);
-                ambG = new Color(0.25f, 0.1f, 0.2f);
+                fog = new Color(0.95f, 0.72f, 0.48f);
+                skyA = new Color(1f, 0.62f, 0.32f);
+                skyB = new Color(1f, 0.85f, 0.45f);
+                sun = new Color(1f, 0.82f, 0.45f);
+                ambS = new Color(1f, 0.72f, 0.48f);
+                ambE = new Color(0.7f, 0.45f, 0.28f);
+                ambG = new Color(0.35f, 0.22f, 0.14f);
                 _speed = 4.6f;
                 break;
             case 2:

@@ -48,14 +48,13 @@ public class Mob : MonoBehaviour
             transform.position += dir.normalized * speed * Time.deltaTime;
         }
         float dist = Vector3.Distance(new Vector3(p.x, 0, p.z), new Vector3(t.x, 0, t.z));
-        if (dist < 1.15f)
+        if (dist < 1.12f && p.z > t.z - 0.25f)
         {
             GameRoot.I.HurtPlayer(6 + GameRoot.I.stage * 2);
-            transform.position += Vector3.forward * 1.8f;
+            transform.position += new Vector3(Mathf.Sign(p.x - t.x + 0.01f) * 1.2f, 0, 1.4f);
         }
-        if (p.z < _player.position.z - 1.6f)
+        if (p.z < t.z - 1.35f)
         {
-            GameRoot.I.HurtPlayer(8 + GameRoot.I.stage * 3);
             Die(false);
         }
     }
