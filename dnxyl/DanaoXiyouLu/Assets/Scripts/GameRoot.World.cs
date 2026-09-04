@@ -98,40 +98,114 @@ public partial class GameRoot
 
     void PlaceGates(Transform chunk, float z)
     {
-        MakeGate(chunk, new Vector3(-2.0f, 1.15f, z), Random.Range(0, 5), Random.Range(28, 55), 1f);
-        MakeGate(chunk, new Vector3(2.0f, 1.15f, z), Random.Range(0, 5), Random.Range(28, 55), 1f);
+        MakeGate(chunk, new Vector3(-2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
     }
 
-    void MakeGate(Transform parent, Vector3 pos, int elem, int add, float mul)
+    void MakeGate(Transform parent, Vector3 pos, int elem, int add)
     {
         var go = new GameObject("Gate");
         go.transform.SetParent(parent, false);
         go.transform.localPosition = pos;
+
         Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
-        c.a = 0.45f;
-        Danao.Prim(go.transform, "plane", PrimitiveType.Cube, Vector3.zero, new Vector3(3.2f, 2.2f, 0.08f), Mats.Glow(c, "gate" + elem + add));
-        Danao.Prim(go.transform, "frameL", PrimitiveType.Cube, new Vector3(-1.6f, 0, 0), new Vector3(0.1f, 2.3f, 0.12f), Mats.Gold);
-        Danao.Prim(go.transform, "frameR", PrimitiveType.Cube, new Vector3(1.6f, 0, 0), new Vector3(0.1f, 2.3f, 0.12f), Mats.Gold);
+        var stone = Mats.Solid(new Color(0.28f, 0.22f, 0.18f), "stele");
+        var dark = Mats.Solid(new Color(0.08f, 0.05f, 0.04f), "plaque");
+        var accent = Mats.Solid(c, Color.white, c * 0.18f, "gateA" + elem + stage);
+
+        Danao.Mesh(go.transform, "base", MeshForge.Cylinder(18), new Vector3(0, 0.12f, 0), new Vector3(0.85f, 0.24f, 0.85f), stone);
+        Danao.Mesh(go.transform, "post", MeshForge.Cylinder(16), new Vector3(0, 0.62f, 0), new Vector3(0.18f, 0.55f, 0.18f), stone);
+        Danao.Mesh(go.transform, "plaque", MeshForge.Cylinder(4), new Vector3(0, 1.18f, 0), new Vector3(1.05f, 0.62f, 0.12f), Quaternion.Euler(0, 45, 0), dark);
+        Danao.Prim(go.transform, "rimL", PrimitiveType.Cube, new Vector3(-0.48f, 1.18f, 0), new Vector3(0.06f, 0.68f, 0.14f), Mats.Gold);
+        Danao.Prim(go.transform, "rimR", PrimitiveType.Cube, new Vector3(0.48f, 1.18f, 0), new Vector3(0.06f, 0.68f, 0.14f), Mats.Gold);
+        Danao.Prim(go.transform, "rimT", PrimitiveType.Cube, new Vector3(0, 1.50f, 0), new Vector3(1.02f, 0.06f, 0.14f), Mats.Gold);
+        Danao.Prim(go.transform, "rimB", PrimitiveType.Cube, new Vector3(0, 0.86f, 0), new Vector3(1.02f, 0.06f, 0.14f), Mats.Gold);
+
+        var icon = Danao.Node(go.transform, "icon", new Vector3(0, 1.92f, 0));
+        BuildGateIcon(icon, elem, c, accent);
+        icon.gameObject.AddComponent<BobSpin>().amp = 0.06f;
+
         var col = go.AddComponent<BoxCollider>();
-        col.size = new Vector3(3.2f, 2.2f, 0.6f);
+        col.center = new Vector3(0, 1.05f, 0);
+        col.size = new Vector3(1.55f, 2.15f, 0.85f);
         col.isTrigger = true;
         var rb = go.AddComponent<Rigidbody>();
         rb.isKinematic = true;
+        rb.useGravity = false;
         var g = go.AddComponent<GateTrigger>();
-        if (stage == 1) { g.element = elem; g.add = add; }
-        else { g.xiuAdd = add * 4 + stage * 20; g.mul = Random.value > 0.78f ? 1.15f : 1f; }
+        string label;
+        if (stage == 1)
+        {
+            g.element = elem;
+            g.add = add;
+            label = Danao.WuXingNames[elem] + " +" + add;
+        }
+        else
+        {
+            g.xiuAdd = add * 4 + stage * 20;
+            g.mul = Random.value > 0.78f ? 1.15f : 1f;
+            label = g.mul > 1.01f ? "修为 x" + g.mul.ToString("0.00") : "修为 +" + g.xiuAdd;
+        }
+        Danao.Label3D(go.transform, "lab", label, new Vector3(0, 1.18f, -0.12f), 0.045f, Color.white);
+    }
 
-        var label = new GameObject("lab");
-        label.transform.SetParent(go.transform, false);
-        label.transform.localPosition = new Vector3(0, 0.15f, -0.1f);
-        var tm = label.AddComponent<TextMesh>();
-        tm.anchor = TextAnchor.MiddleCenter;
-        tm.characterSize = 0.12f;
-        tm.fontSize = 48;
-        tm.color = Color.white;
-        if (stage == 1) tm.text = Danao.WuXingNames[elem] + "+" + add;
-        else if (g.mul > 1.01f) tm.text = "修为x" + g.mul.ToString("0.00");
-        else tm.text = "修为+" + g.xiuAdd;
+    void BuildGateIcon(Transform t, int elem, Color c, Material accent)
+    {
+        if (stage == 1)
+        {
+            switch (elem)
+            {
+                case 0:
+                    Danao.Mesh(t, "c1", MeshForge.Crystal(), new Vector3(0, 0.02f, 0), new Vector3(0.55f, 0.7f, 0.55f), accent);
+                    Danao.Mesh(t, "c2", MeshForge.Crystal(), new Vector3(-0.16f, -0.08f, 0.04f), new Vector3(0.32f, 0.42f, 0.32f), Quaternion.Euler(0, 30, 18), accent);
+                    Danao.Mesh(t, "c3", MeshForge.Crystal(), new Vector3(0.16f, -0.1f, -0.02f), new Vector3(0.28f, 0.38f, 0.28f), Quaternion.Euler(8, -20, -12), accent);
+                    break;
+                case 1:
+                    Danao.Mesh(t, "trunk", MeshForge.Cylinder(12), new Vector3(0, -0.12f, 0), new Vector3(0.12f, 0.32f, 0.12f),
+                        Mats.Solid(new Color(0.38f, 0.22f, 0.1f), "bark"));
+                    Danao.Mesh(t, "leaf", MeshForge.Sphere(14, 10), new Vector3(0, 0.18f, 0), new Vector3(0.42f, 0.36f, 0.42f), accent);
+                    Danao.Mesh(t, "leaf2", MeshForge.Sphere(12, 8), new Vector3(0.16f, 0.08f, 0.08f), new Vector3(0.22f, 0.18f, 0.22f), accent);
+                    break;
+                case 2:
+                    Danao.Mesh(t, "drop", MeshForge.Drop(), Vector3.zero, new Vector3(0.55f, 0.7f, 0.55f), accent);
+                    break;
+                case 3:
+                    Danao.Mesh(t, "fl", MeshForge.Flame(), Vector3.zero, new Vector3(0.55f, 0.75f, 0.55f), accent);
+                    Danao.Mesh(t, "fl2", MeshForge.Flame(), new Vector3(0.08f, -0.05f, 0), new Vector3(0.32f, 0.5f, 0.32f), Quaternion.Euler(0, 40, 8), accent);
+                    break;
+                default:
+                    Danao.Mesh(t, "rock", MeshForge.Golem(), Vector3.zero, new Vector3(0.7f, 0.55f, 0.7f), accent);
+                    Danao.Mesh(t, "rock2", MeshForge.Golem(), new Vector3(0.18f, -0.12f, 0.06f), new Vector3(0.38f, 0.32f, 0.38f), accent);
+                    break;
+            }
+            return;
+        }
+        switch (elem % 5)
+        {
+            case 0:
+                Danao.Mesh(t, "ingot", MeshForge.Cylinder(6), Vector3.zero, new Vector3(0.55f, 0.18f, 0.32f), Mats.Gold);
+                Danao.Mesh(t, "ingot2", MeshForge.Cylinder(6), new Vector3(0, 0.14f, 0), new Vector3(0.42f, 0.12f, 0.24f), Mats.Gold);
+                break;
+            case 1:
+                Danao.Mesh(t, "peach", MeshForge.Peach(), Vector3.zero, Vector3.one * 0.55f,
+                    Mats.Solid(new Color(1f, 0.42f, 0.38f), Color.white, new Color(0.25f, 0.04f, 0.02f), "peachI"));
+                Danao.Mesh(t, "leaf", MeshForge.Sphere(10, 8), new Vector3(0.08f, 0.22f, 0), new Vector3(0.16f, 0.06f, 0.1f),
+                    Mats.Solid(new Color(0.25f, 0.62f, 0.22f), "peachL"));
+                break;
+            case 2:
+                Danao.Mesh(t, "jade", MeshForge.Cylinder(4), Vector3.zero, new Vector3(0.42f, 0.55f, 0.1f), Quaternion.Euler(0, 45, 0),
+                    Mats.Solid(new Color(0.35f, 0.85f, 0.55f), Color.white, new Color(0.08f, 0.25f, 0.12f), "jadeI"));
+                break;
+            case 3:
+                Danao.Mesh(t, "gourd", MeshForge.Gourd(), Vector3.zero, new Vector3(0.45f, 0.65f, 0.45f),
+                    Mats.Solid(new Color(0.18f, 0.55f, 0.28f), Color.white, new Color(0.04f, 0.12f, 0.04f), "gourd"));
+                Danao.Mesh(t, "cork", MeshForge.Cylinder(10), new Vector3(0, 0.32f, 0), new Vector3(0.08f, 0.08f, 0.08f), Mats.Cloth);
+                break;
+            default:
+                Danao.Mesh(t, "pill", MeshForge.Sphere(16, 12), Vector3.zero, Vector3.one * 0.42f, Mats.Gold);
+                Danao.Mesh(t, "band", MeshForge.Cylinder(12), Vector3.zero, new Vector3(0.44f, 0.05f, 0.44f), Mats.Trim);
+                break;
+        }
     }
 
     void PlaceBarrels(Transform chunk, float z)
