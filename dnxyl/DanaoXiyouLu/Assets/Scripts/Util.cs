@@ -548,6 +548,7 @@ public class FloatText : MonoBehaviour
         go.transform.position = pos + Vector3.up * 1.2f;
         var tm = go.AddComponent<TextMesh>();
         tm.text = s;
+        tm.font = Fonts.Cjk();
         tm.fontSize = 42;
         tm.characterSize = 0.055f;
         tm.anchor = TextAnchor.MiddleCenter;
