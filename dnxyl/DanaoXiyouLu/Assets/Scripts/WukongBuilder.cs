@@ -33,10 +33,7 @@ public static class WukongBuilder
         }
         Danao.Mesh(core, "heart", MeshForge.Sphere(28, 18), Vector3.zero, Vector3.one * 0.55f,
             Mats.Solid(Color.white, Danao.Gold, new Color(0.9f, 0.7f, 0.2f), "stoneHeart"));
-        Danao.Glow(root.transform, Danao.Gold, 1.8f, 7f);
-        var halo = Danao.Mesh(root.transform, "halo", MeshForge.Sphere(20, 14), Vector3.zero, Vector3.one * 1.7f,
-            Mats.Glow(new Color(1f, 0.85f, 0.4f, 0.35f), "stoneHalo"));
-        halo.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        Danao.Glow(root.transform, Danao.Gold, 0.55f, 3.2f);
         var bob = root.AddComponent<BobSpin>();
         bob.spin = new Vector3(8, 35, 5);
         bob.amp = 0.16f;
