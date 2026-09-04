@@ -109,9 +109,9 @@ public partial class GameRoot : MonoBehaviour
         player.position = new Vector3(0, 0, 0);
         modelSlot = Danao.Node(player, "Model", Vector3.zero);
         var col = p.AddComponent<CapsuleCollider>();
-        col.height = 1.7f;
-        col.radius = 0.35f;
-        col.center = new Vector3(0, 0.85f, 0);
+        col.height = 2.2f;
+        col.radius = 0.62f;
+        col.center = new Vector3(0, 1.1f, 0);
         col.isTrigger = true;
         var rb = p.AddComponent<Rigidbody>();
         rb.isKinematic = true;
