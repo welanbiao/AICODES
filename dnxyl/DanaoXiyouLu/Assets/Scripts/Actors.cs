@@ -43,24 +43,49 @@ public class Mob : MonoBehaviour
         if (dead || _player == null || GameRoot.I == null || GameRoot.I.Paused) return;
         Vector3 p = transform.position;
         Vector3 t = _player.position;
-        t.y = p.y;
-        Vector3 dir = (t - p);
+        float ahead = p.z - t.z;
+        if (ahead < -1.4f)
+        {
+            Die(false);
+            return;
+        }
+
+        float side = t.x + _dodge * _dodgeX;
+        float aimZ = t.z - 2.4f;
+        if (ahead > 7f) aimZ = t.z + 0.5f;
+        Vector3 want = new Vector3(side, p.y, aimZ);
+        Vector3 dir = want - p;
         dir.y = 0;
         if (dir.sqrMagnitude > 0.01f)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 6f);
-            transform.position += dir.normalized * speed * Time.deltaTime;
+            transform.position += dir.normalized * speed * 1.15f * Time.deltaTime;
         }
-        float dist = Vector3.Distance(new Vector3(p.x, 0, p.z), new Vector3(t.x, 0, t.z));
-        if (dist < 1.15f)
+
+        DodgeBolts();
+
+        float dx = p.x - t.x;
+        float dz = p.z - t.z;
+        if (Mathf.Abs(dx) < 0.85f && Mathf.Abs(dz) < 0.85f)
         {
             GameRoot.I.HurtPlayer(6 + GameRoot.I.stage * 2);
-            transform.position += Vector3.forward * 1.8f;
+            transform.position += new Vector3(_dodge * 2.2f, 0, 1.2f);
         }
-        if (p.z < _player.position.z - 1.6f)
+    }
+
+    void DodgeBolts()
+    {
+        var bolts = Object.FindObjectsByType<Bolt>(FindObjectsSortMode.None);
+        Vector3 p = transform.position;
+        for (int i = 0; i < bolts.Length; i++)
         {
-            GameRoot.I.HurtPlayer(8 + GameRoot.I.stage * 3);
-            Die(false);
+            Vector3 b = bolts[i].transform.position;
+            Vector3 d = p - b;
+            if (d.z < -0.4f || d.z > 6f) continue;
+            if (Mathf.Abs(d.x) > 1.4f) continue;
+            if (d.sqrMagnitude > 36f) continue;
+            transform.position += new Vector3(_dodge * 6f * Time.deltaTime, 0, 0);
+            break;
         }
     }
 
