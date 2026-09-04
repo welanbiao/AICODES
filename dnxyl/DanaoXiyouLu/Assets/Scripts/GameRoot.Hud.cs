@@ -47,25 +47,12 @@ public partial class GameRoot
         _xiuText = Ui.Label(root, "xiu", "EXP  0", 26, TextAnchor.UpperRight,
             Color.white, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-420, -80), new Vector2(-24, -18));
 
-        var portrait = Ui.Panel(root, "portBg", new Color(0.08f, 0.04f, 0.1f, 0.72f),
-            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-70, 18), new Vector2(70, 158));
-        var rawGo = new GameObject("portrait");
-        rawGo.transform.SetParent(portrait.transform, false);
-        var rt = rawGo.AddComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.1f, 0.28f);
-        rt.anchorMax = new Vector2(0.9f, 0.95f);
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
-        _hudPortrait = rawGo.AddComponent<RawImage>();
-        _hudPortrait.texture = Tex.FacePortrait(1);
-        _hudPortrait.raycastTarget = false;
-
-        var hpBg = Ui.Panel(portrait.transform, "hpBg", new Color(0.15f, 0.15f, 0.15f, 0.9f),
-            new Vector2(0.08f, 0.06f), new Vector2(0.92f, 0.22f), Vector2.zero, Vector2.zero);
+        var hpBg = Ui.Panel(root, "hpBg", new Color(0.12f, 0.08f, 0.06f, 0.82f),
+            new Vector2(0.35f, 0.04f), new Vector2(0.65f, 0.075f), Vector2.zero, Vector2.zero);
         _hpFill = Ui.Panel(hpBg.transform, "hp", new Color(0.35f, 0.9f, 0.4f, 1f),
             new Vector2(0, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero);
-        _hpText = Ui.Label(portrait.transform, "hpT", "100", 16, TextAnchor.MiddleCenter,
-            Color.white, new Vector2(0, 0), new Vector2(1, 0.28f), Vector2.zero, Vector2.zero);
+        _hpText = Ui.Label(hpBg.transform, "hpT", "100", 18, TextAnchor.MiddleCenter,
+            Color.white, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
         _wxText = new Text[5];
         _wxFill = new Image[5];
