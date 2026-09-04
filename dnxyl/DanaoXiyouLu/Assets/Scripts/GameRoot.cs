@@ -245,7 +245,7 @@ public partial class GameRoot : MonoBehaviour
     Transform NearestMob()
     {
         Mob best = null;
-        float bestD = 18f * 18f;
+        float bestD = 26f * 26f;
         var mobs = Object.FindObjectsByType<Mob>(FindObjectsSortMode.None);
         for (int i = 0; i < mobs.Length; i++)
         {
