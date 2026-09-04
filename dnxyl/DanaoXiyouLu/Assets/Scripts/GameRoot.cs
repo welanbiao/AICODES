@@ -226,7 +226,7 @@ public partial class GameRoot : MonoBehaviour
     {
         Mob best = null;
         float bestD = 18f * 18f;
-        var mobs = FindObjectsOfType<Mob>();
+        var mobs = Object.FindObjectsByType<Mob>(FindObjectsSortMode.None);
         for (int i = 0; i < mobs.Length; i++)
         {
             if (mobs[i].dead) continue;
