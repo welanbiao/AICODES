@@ -135,6 +135,8 @@ public partial class GameRoot : MonoBehaviour
     void Update()
     {
         if (_loading) { TickLoading(); return; }
+        if (_breakPrompted && !_breaking && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+            OnClickBreak();
         if (Paused) return;
         if (_breaking) return;
 
@@ -153,8 +155,6 @@ public partial class GameRoot : MonoBehaviour
             ShowBreakPrompt(true);
             Paused = true;
         }
-        if (_breakPrompted && !_breaking && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
-            OnClickBreak();
     }
 
     void HandleMove()

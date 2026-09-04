@@ -142,7 +142,12 @@ public partial class GameRoot
     void TickHud()
     {
         if (_stageText != null)
-            _stageText.text = "第" + stage + "关  " + Danao.StageNames[Mathf.Clamp(stage - 1, 0, 4)];
+        {
+            string s = "第" + stage + "关  " + Danao.StageNames[Mathf.Clamp(stage - 1, 0, 4)];
+            if (stage == 1 && _playTime < 300f)
+                s += "  炼形 " + Mathf.CeilToInt(300f - _playTime) + "秒";
+            _stageText.text = s;
+        }
         if (stage == 1)
         {
             if (_xiuText != null) _xiuText.text = "五灵  " + SumQi() + " / 4995";
