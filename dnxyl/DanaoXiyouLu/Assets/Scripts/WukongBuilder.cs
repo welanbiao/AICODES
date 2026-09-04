@@ -28,15 +28,15 @@ public static class WukongBuilder
         Danao.Mesh(sit, "core", MeshForge.FetusBody(), new Vector3(0.02f, -0.02f, 0.04f), Vector3.one * 1.05f,
             Mats.Solid(new Color(1f, 0.82f, 0.35f), Color.white, new Color(0.7f, 0.4f, 0.05f), "fetusGold"));
         Danao.Mesh(sit, "head", MeshForge.Sphere(18, 14), new Vector3(0.02f, 0.16f, 0.10f), new Vector3(0.22f, 0.20f, 0.22f),
-            Mats.Solid(new Color(1f, 0.84f, 0.42f), "fetusHead"));
+            Mats.Solid(new Color(1f, 0.84f, 0.42f), "skinFetusHead"));
         Danao.Mesh(sit, "armL", MeshForge.Capsule(10, 6), new Vector3(-0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, 35),
-            Mats.Solid(Danao.Gold, "fetusLimb"));
+            Mats.Gold);
         Danao.Mesh(sit, "armR", MeshForge.Capsule(10, 6), new Vector3(0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, -35),
-            Mats.Solid(Danao.Gold, "fetusLimb"));
+            Mats.Gold);
         Danao.Mesh(sit, "legL", MeshForge.Capsule(10, 6), new Vector3(-0.07f, -0.16f, 0.06f), new Vector3(0.08f, 0.13f, 0.08f), Quaternion.Euler(55, 10, 8),
-            Mats.Solid(Danao.Gold, "fetusLimb"));
+            Mats.Gold);
         Danao.Mesh(sit, "legR", MeshForge.Capsule(10, 6), new Vector3(0.07f, -0.16f, 0.06f), new Vector3(0.08f, 0.13f, 0.08f), Quaternion.Euler(55, -10, -8),
-            Mats.Solid(Danao.Gold, "fetusLimb"));
+            Mats.Gold);
 
         Color[] cols = Danao.WuXing;
         for (int i = 0; i < 5; i++)
