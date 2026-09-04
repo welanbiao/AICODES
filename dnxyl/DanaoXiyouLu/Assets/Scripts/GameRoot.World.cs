@@ -49,7 +49,7 @@ public partial class GameRoot
         {
             float z = 2 + i * 3.4f;
             float side = i % 2 == 0 ? -1f : 1f;
-            Decor(go.transform, new Vector3(side * Random.Range(6.2f, 10.5f), 0, z), side);
+            Decor(go.transform, new Vector3(side * Random.Range(7.2f, 12f), 0, z), side);
         }
 
         if (index > 0 && index % 2 == 0) PlaceLaneContent(go.transform, index);
