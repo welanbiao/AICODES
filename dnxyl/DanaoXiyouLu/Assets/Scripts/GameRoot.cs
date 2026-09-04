@@ -298,9 +298,12 @@ public partial class GameRoot : MonoBehaviour
 
     void TickCamera()
     {
-        Vector3 want = player.position + new Vector3(0, 10.5f, -11.5f);
+        Vector3 offset = stage == 1 ? new Vector3(0, 18f, -20f) : new Vector3(0, 13f, -15f);
+        Vector3 look = stage == 1 ? new Vector3(0, 2.4f, 12f) : new Vector3(0, 1.4f, 8f);
+        Vector3 want = player.position + offset;
         _cam.transform.position = Vector3.Lerp(_cam.transform.position, want, 1f - Mathf.Exp(-8f * Time.deltaTime));
-        _cam.transform.LookAt(player.position + new Vector3(0, 1.1f, 7.5f));
+        _cam.transform.LookAt(player.position + look);
+        _cam.farClipPlane = stage == 1 ? 520f : 260f;
     }
 
     public bool IsPlayerCollider(Collider c)
