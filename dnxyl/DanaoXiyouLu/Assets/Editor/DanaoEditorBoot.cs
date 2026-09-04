@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -15,6 +16,13 @@ public static class DanaoEditorBoot
     {
         PlayerSettings.companyName = "AICODES";
         PlayerSettings.productName = "大闹西游路";
+        PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
+        PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone, 1);
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneWindows64)
+        {
+            EditorUserBuildSettings.SwitchActiveBuildTarget(NamedBuildTarget.Standalone, BuildTarget.StandaloneWindows64);
+        }
+
         const string path = "Assets/Scenes/Main.unity";
         if (System.IO.File.Exists(path))
         {
@@ -33,6 +41,14 @@ public static class DanaoEditorBoot
             EditorSceneManager.OpenScene("Assets/Scenes/Main.unity");
             EditorApplication.isPlaying = true;
         }
+    }
+
+    [MenuItem("大闹西游路/切到 Windows x64")]
+    static void ForceWin64()
+    {
+        EditorUserBuildSettings.SwitchActiveBuildTarget(NamedBuildTarget.Standalone, BuildTarget.StandaloneWindows64);
+        PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone, 1);
+        Debug.Log("已切换到 Standalone Windows x64 / 2022.3.62f3c1");
     }
 }
 #endif
