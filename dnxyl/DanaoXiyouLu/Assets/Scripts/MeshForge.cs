@@ -101,6 +101,16 @@ public static class MeshForge
         }, 20));
     }
 
+    public static Mesh Fetus()
+    {
+        return Get("fetus2", () => BuildSphere(40, 28, WarpFetus));
+    }
+
+    public static Mesh Peak()
+    {
+        return Get("peak2", BuildPeak);
+    }
+
     public static Mesh Ear()
     {
         return Get("ear", () => BuildSphere(16, 12, p =>
