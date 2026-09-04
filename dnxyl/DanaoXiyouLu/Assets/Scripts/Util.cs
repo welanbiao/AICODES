@@ -467,20 +467,6 @@ public static class Mats
         return m;
     }
 
-    public static Material Cloud(Color c, string key)
-    {
-        key = "cloud_" + key;
-        if (Cache.ContainsKey(key)) return Cache[key];
-        var m = new Material(MythicShader);
-        m.SetColor("_Color", Color.Lerp(c, Color.white, 0.35f));
-        m.SetColor("_RimColor", Color.white);
-        m.SetColor("_Emission", c * 0.28f);
-        m.SetFloat("_Gloss", 0.12f);
-        m.SetTexture("_MainTex", Tex.Soft);
-        Cache[key] = m;
-        return m;
-    }
-
     public static Material Ground(int stage)
     {
         string key = "ground" + stage;

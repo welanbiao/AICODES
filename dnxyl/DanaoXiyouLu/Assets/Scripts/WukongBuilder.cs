@@ -12,61 +12,32 @@ public static class WukongBuilder
     public static GameObject Build(int form, Transform parent)
     {
         if (form <= 1) return BuildStone(parent);
-        float h = form == 2 ? 1.05f : form == 3 ? 1.35f : form == 4 ? 1.70f : 2.05f;
+        float h = form == 2 ? 0.90f : form == 3 ? 1.16f : form == 4 ? 1.46f : 1.74f;
         WukongOutfit o = form <= 3 ? WukongOutfit.Bare : form == 4 ? WukongOutfit.Cloth : WukongOutfit.Robe;
         return BuildMonkey(parent, h, o, form);
     }
 
     static GameObject BuildStone(Transform parent)
     {
-        var root = Danao.Node(parent, "FiveColorFetus", new Vector3(0, 0.85f, 0)).gameObject;
-        root.transform.localRotation = Quaternion.Euler(-18f, 18f, 8f);
-
-        Danao.Mesh(root.transform, "nest", MeshForge.Golem(), new Vector3(0, -0.55f, 0.05f), new Vector3(1.35f, 0.38f, 1.15f),
-            Mats.Solid(new Color(0.38f, 0.3f, 0.28f), "nest"));
+        var root = Danao.Node(parent, "FiveColorStone", new Vector3(0, 0.95f, 0)).gameObject;
+        var core = Danao.Node(root.transform, "core", Vector3.zero);
+        Color[] cols = Danao.WuXing;
         for (int i = 0; i < 5; i++)
         {
             float a = i * 72f;
-            Color c = Danao.WuXing[i];
-            Danao.Mesh(root.transform, "nestGem" + i, MeshForge.Crystal(),
-                Quaternion.Euler(0, a, 0) * new Vector3(0, -0.42f, 0.42f),
-                new Vector3(0.28f, 0.38f, 0.22f),
-                Quaternion.Euler(70, a, 0),
-                Mats.Solid(c, Color.white, c * 0.4f, "nestG" + i));
+            var mat = Mats.Solid(cols[i], Color.white, cols[i] * 0.55f, "crystal" + i);
+            Danao.Mesh(core, "facet" + i, MeshForge.Crystal(),
+                Quaternion.Euler(12, a, 8) * Vector3.up * 0.08f + Quaternion.Euler(0, a, 0) * Vector3.forward * 0.12f,
+                new Vector3(0.85f, 1.15f, 0.75f),
+                Quaternion.Euler(18 + i * 7, a, 10), mat);
         }
-
-        var body = Danao.Node(root.transform, "body", new Vector3(0, 0.08f, 0.06f));
-        Danao.Mesh(body, "core", MeshForge.Fetus(), Vector3.zero, new Vector3(1.55f, 1.7f, 1.5f),
-            Mats.Solid(new Color(0.96f, 0.78f, 0.68f), new Color(1f, 0.7f, 0.55f), new Color(0.2f, 0.08f, 0.04f), "fetusSkin"));
-        Danao.Mesh(body, "head", MeshForge.Sphere(22, 16), new Vector3(0.02f, 0.42f, 0.16f), new Vector3(0.62f, 0.58f, 0.56f), Mats.Skin);
-        Danao.Mesh(body, "lidL", MeshForge.Sphere(8, 6), new Vector3(-0.12f, 0.44f, 0.40f), new Vector3(0.12f, 0.04f, 0.06f), Mats.Skin);
-        Danao.Mesh(body, "lidR", MeshForge.Sphere(8, 6), new Vector3(0.14f, 0.44f, 0.40f), new Vector3(0.12f, 0.04f, 0.06f), Mats.Skin);
-        Danao.Mesh(body, "nose", MeshForge.Sphere(8, 6), new Vector3(0.02f, 0.38f, 0.44f), new Vector3(0.08f, 0.07f, 0.06f), Mats.Skin);
-        Danao.Mesh(body, "armL", MeshForge.Capsule(12, 6), new Vector3(-0.32f, 0.08f, 0.22f), new Vector3(0.16f, 0.28f, 0.16f), Quaternion.Euler(55, 20, 40), Mats.Skin);
-        Danao.Mesh(body, "armR", MeshForge.Capsule(12, 6), new Vector3(0.34f, 0.06f, 0.20f), new Vector3(0.16f, 0.28f, 0.16f), Quaternion.Euler(50, -18, -38), Mats.Skin);
-        Danao.Mesh(body, "handL", MeshForge.Sphere(10, 8), new Vector3(-0.38f, -0.08f, 0.32f), Vector3.one * 0.16f, Mats.Skin);
-        Danao.Mesh(body, "handR", MeshForge.Sphere(10, 8), new Vector3(0.40f, -0.10f, 0.30f), Vector3.one * 0.16f, Mats.Skin);
-        Danao.Mesh(body, "legL", MeshForge.Capsule(12, 6), new Vector3(-0.18f, -0.28f, 0.18f), new Vector3(0.18f, 0.26f, 0.18f), Quaternion.Euler(75, 10, 12), Mats.Skin);
-        Danao.Mesh(body, "legR", MeshForge.Capsule(12, 6), new Vector3(0.20f, -0.30f, 0.16f), new Vector3(0.18f, 0.26f, 0.18f), Quaternion.Euler(78, -8, -10), Mats.Skin);
-        Danao.Mesh(body, "footL", MeshForge.Sphere(10, 8), new Vector3(-0.22f, -0.42f, 0.38f), new Vector3(0.16f, 0.1f, 0.2f), Mats.Skin);
-        Danao.Mesh(body, "footR", MeshForge.Sphere(10, 8), new Vector3(0.24f, -0.44f, 0.36f), new Vector3(0.16f, 0.1f, 0.2f), Mats.Skin);
-
-        for (int i = 0; i < 5; i++)
-        {
-            float a = -40f + i * 20f;
-            Color c = Danao.WuXing[i];
-            Danao.Mesh(body, "shell" + i, MeshForge.Crystal(),
-                new Vector3(Mathf.Sin(a * Mathf.Deg2Rad) * 0.28f, 0.08f + i * 0.06f, -0.28f),
-                new Vector3(0.42f, 0.55f, 0.22f),
-                Quaternion.Euler(-25, a, 8),
-                Mats.Solid(c, Color.white, c * 0.45f, "fsh" + i));
-        }
-
-        Danao.Glow(root.transform, Danao.Gold, 0.4f, 4.2f);
+        Danao.Mesh(core, "heart", MeshForge.Sphere(28, 18), Vector3.zero, Vector3.one * 0.55f,
+            Mats.Solid(Color.white, Danao.Gold, new Color(0.9f, 0.7f, 0.2f), "stoneHeart"));
+        Danao.Glow(root.transform, Danao.Gold, 0.55f, 3.2f);
         var bob = root.AddComponent<BobSpin>();
-        bob.spin = new Vector3(0, 8, 0);
-        bob.amp = 0.05f;
-        bob.freq = 1.1f;
+        bob.spin = new Vector3(8, 35, 5);
+        bob.amp = 0.16f;
+        bob.freq = 1.8f;
         return root;
     }
 

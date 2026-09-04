@@ -26,30 +26,20 @@ public partial class GameRoot
     {
         var go = new GameObject("Chunk_" + index);
         go.transform.position = new Vector3(0, 0, index * ChunkLen);
-        Danao.Prim(go.transform, "ground", PrimitiveType.Cube, new Vector3(0, -0.12f, ChunkLen * 0.5f),
-            new Vector3(stage == 1 ? 14f : 12f, 0.28f, ChunkLen), Mats.Ground(stage));
+        Danao.Prim(go.transform, "ground", PrimitiveType.Cube, new Vector3(0, -0.08f, ChunkLen * 0.5f),
+            new Vector3(11f, 0.16f, ChunkLen), Mats.Ground(stage));
 
-        if (stage == 1)
-        {
-            Danao.Prim(go.transform, "cliffL", PrimitiveType.Cube, new Vector3(-7.6f, -4.5f, ChunkLen * 0.5f),
-                new Vector3(2.2f, 9f, ChunkLen), Mats.Solid(new Color(0.36f, 0.30f, 0.32f), "cliff"));
-            Danao.Prim(go.transform, "cliffR", PrimitiveType.Cube, new Vector3(7.6f, -4.5f, ChunkLen * 0.5f),
-                new Vector3(2.2f, 9f, ChunkLen), Mats.Solid(new Color(0.36f, 0.30f, 0.32f), "cliff"));
-        }
-        else
-        {
-            Color rail = stage == 5 ? Danao.Trim : (stage == 3 ? new Color(0.2f, 0.45f, 0.7f) : new Color(0.35f, 0.22f, 0.12f));
-            Danao.Prim(go.transform, "railL", PrimitiveType.Cube, new Vector3(-5.6f, 0.35f, ChunkLen * 0.5f),
-                new Vector3(0.28f, 0.9f, ChunkLen), Mats.Solid(rail, "rail" + stage));
-            Danao.Prim(go.transform, "railR", PrimitiveType.Cube, new Vector3(5.6f, 0.35f, ChunkLen * 0.5f),
-                new Vector3(0.28f, 0.9f, ChunkLen), Mats.Solid(rail, "rail" + stage));
-        }
+        Color rail = stage == 5 ? Danao.Trim : (stage == 3 ? new Color(0.2f, 0.45f, 0.7f) : new Color(0.35f, 0.22f, 0.12f));
+        Danao.Prim(go.transform, "railL", PrimitiveType.Cube, new Vector3(-5.2f, 0.25f, ChunkLen * 0.5f),
+            new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
+        Danao.Prim(go.transform, "railR", PrimitiveType.Cube, new Vector3(5.2f, 0.25f, ChunkLen * 0.5f),
+            new Vector3(0.22f, 0.7f, ChunkLen), Mats.Solid(rail, "rail" + stage));
 
         for (int i = 0; i < 6; i++)
         {
             float z = 2 + i * 3.4f;
             float side = i % 2 == 0 ? -1f : 1f;
-            Decor(go.transform, new Vector3(side * Random.Range(7.2f, 12f), 0, z), side);
+            Decor(go.transform, new Vector3(side * Random.Range(6.2f, 10.5f), 0, z), side);
         }
 
         if (index > 0 && index % 2 == 0) PlaceLaneContent(go.transform, index);
@@ -61,42 +51,38 @@ public partial class GameRoot
         switch (stage)
         {
             case 1:
-                Danao.Mesh(parent, "rock", MeshForge.Golem(), pos + Vector3.up * 0.4f,
-                    new Vector3(1.6f, 1.1f, 1.4f), Quaternion.Euler(0, pos.z * 30f, 8),
-                    Mats.Solid(new Color(0.4f, 0.34f, 0.36f), "peakRock"));
-                if (Random.value > 0.55f)
-                    Danao.Mesh(parent, "gem", MeshForge.Crystal(), pos + Vector3.up * 1.3f,
-                        new Vector3(0.7f, 1.4f, 0.7f), Quaternion.Euler(12, pos.z * 20, 10),
-                        Mats.Solid(Danao.WuXing[Random.Range(0, 5)], Color.white, Color.white * 0.2f, "cr" + Random.Range(0, 99)));
+                Danao.Prim(parent, "crystal", PrimitiveType.Cube, pos + Vector3.up * 1.2f,
+                    new Vector3(0.5f, 2.4f, 0.5f), Quaternion.Euler(12, pos.z * 20, 18),
+                    Mats.Solid(Danao.WuXing[Random.Range(0, 5)], Color.white, Color.white * 0.2f, "cr" + Random.Range(0, 99)));
                 break;
             case 2:
-                Danao.Prim(parent, "tree", PrimitiveType.Cylinder, pos + Vector3.up * 1.3f, new Vector3(0.28f, 1.3f, 0.28f),
+                Danao.Prim(parent, "tree", PrimitiveType.Cylinder, pos + Vector3.up * 0.8f, new Vector3(0.18f, 0.8f, 0.18f),
                     Mats.Solid(new Color(0.35f, 0.2f, 0.1f), "bark"));
-                Danao.Prim(parent, "leaf", PrimitiveType.Sphere, pos + Vector3.up * 3.0f, new Vector3(1.8f, 1.5f, 1.8f),
+                Danao.Prim(parent, "leaf", PrimitiveType.Sphere, pos + Vector3.up * 1.9f, new Vector3(1.1f, 0.9f, 1.1f),
                     Mats.Solid(new Color(0.2f, 0.55f, 0.18f), "leaf"));
                 if (Random.value > 0.6f)
-                    Danao.Prim(parent, "peach", PrimitiveType.Sphere, pos + new Vector3(0.45f, 2.6f, 0.3f), Vector3.one * 0.32f,
+                    Danao.Prim(parent, "peach", PrimitiveType.Sphere, pos + new Vector3(0.3f, 1.7f, 0.2f), Vector3.one * 0.18f,
                         Mats.Solid(new Color(1f, 0.45f, 0.4f), "peach"));
                 break;
             case 3:
-                Danao.Prim(parent, "rock", PrimitiveType.Sphere, pos + Vector3.up * 0.5f, new Vector3(2.2f, 1.1f, 1.8f),
+                Danao.Prim(parent, "rock", PrimitiveType.Sphere, pos + Vector3.up * 0.3f, new Vector3(1.4f, 0.7f, 1.1f),
                     Mats.Solid(new Color(0.3f, 0.35f, 0.4f), "seaRock"));
-                Danao.Prim(parent, "foam", PrimitiveType.Sphere, pos + new Vector3(0, 0.22f, 0.5f), new Vector3(1.3f, 0.2f, 1.3f),
+                Danao.Prim(parent, "foam", PrimitiveType.Sphere, pos + new Vector3(0, 0.15f, 0.4f), new Vector3(0.8f, 0.12f, 0.8f),
                     Mats.White);
                 break;
             case 4:
-                Danao.Prim(parent, "pine", PrimitiveType.Cylinder, pos + Vector3.up * 1.8f, new Vector3(0.26f, 1.8f, 0.26f),
+                Danao.Prim(parent, "pine", PrimitiveType.Cylinder, pos + Vector3.up * 1.1f, new Vector3(0.16f, 1.1f, 0.16f),
                     Mats.Solid(new Color(0.28f, 0.18f, 0.1f), "pine"));
-                Danao.Prim(parent, "pneed", PrimitiveType.Sphere, pos + Vector3.up * 3.7f, new Vector3(1.5f, 2.1f, 1.5f),
+                Danao.Prim(parent, "pneed", PrimitiveType.Sphere, pos + Vector3.up * 2.3f, new Vector3(0.9f, 1.3f, 0.9f),
                     Mats.Solid(new Color(0.12f, 0.38f, 0.22f), "pneed"));
                 if (Random.value > 0.7f)
-                    Danao.Prim(parent, "lantern", PrimitiveType.Sphere, pos + new Vector3(side * 0.5f, 2.2f, 0), Vector3.one * 0.36f,
+                    Danao.Prim(parent, "lantern", PrimitiveType.Sphere, pos + new Vector3(side * 0.4f, 1.4f, 0), Vector3.one * 0.22f,
                         Mats.Solid(new Color(1f, 0.5f, 0.15f), Color.yellow, new Color(0.5f, 0.2f, 0), "lan"));
                 break;
             default:
-                Danao.Prim(parent, "pillar", PrimitiveType.Cylinder, pos + Vector3.up * 2.2f, new Vector3(0.42f, 2.2f, 0.42f), Mats.White);
-                Danao.Prim(parent, "cap", PrimitiveType.Cylinder, pos + Vector3.up * 4.5f, new Vector3(0.7f, 0.12f, 0.7f), Mats.Gold);
-                Danao.Prim(parent, "cloud", PrimitiveType.Sphere, pos + new Vector3(0, 5.4f, 0), new Vector3(2.5f, 0.8f, 1.8f), Mats.White);
+                Danao.Prim(parent, "pillar", PrimitiveType.Cylinder, pos + Vector3.up * 1.4f, new Vector3(0.28f, 1.4f, 0.28f), Mats.White);
+                Danao.Prim(parent, "cap", PrimitiveType.Cylinder, pos + Vector3.up * 2.85f, new Vector3(0.45f, 0.08f, 0.45f), Mats.Gold);
+                Danao.Prim(parent, "cloud", PrimitiveType.Sphere, pos + new Vector3(0, 3.4f, 0), new Vector3(1.6f, 0.5f, 1.1f), Mats.White);
                 break;
         }
     }
@@ -110,13 +96,10 @@ public partial class GameRoot
         else PlaceTreasure(chunk, z0);
     }
 
-    const float LaneX = 2.7f;
-    const float LaneY = 0f;
-
     void PlaceGates(Transform chunk, float z)
     {
-        MakeGate(chunk, new Vector3(-LaneX, LaneY, z), Random.Range(0, 5), Random.Range(28, 55));
-        MakeGate(chunk, new Vector3(LaneX, LaneY, z), Random.Range(0, 5), Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(-2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
     }
 
     void MakeGate(Transform parent, Vector3 pos, int elem, int add)
@@ -124,7 +107,6 @@ public partial class GameRoot
         var go = new GameObject("Gate");
         go.transform.SetParent(parent, false);
         go.transform.localPosition = pos;
-        go.transform.localScale = Vector3.one * 1.65f;
 
         Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
         var stone = Mats.Solid(new Color(0.28f, 0.22f, 0.18f), "stele");
@@ -228,69 +210,53 @@ public partial class GameRoot
 
     void PlaceBarrels(Transform chunk, float z)
     {
-        MakeBarrel(chunk, new Vector3(-LaneX, LaneY, z));
-        MakeBarrel(chunk, new Vector3(LaneX, LaneY, z));
-    }
-
-    void MakeBarrel(Transform chunk, Vector3 pos)
-    {
-        var go = new GameObject("Barrel");
-        go.transform.SetParent(chunk, false);
-        go.transform.localPosition = pos;
-        go.transform.localScale = Vector3.one * 1.7f;
-        Danao.Prim(go.transform, "b", PrimitiveType.Cylinder, new Vector3(0, 0.55f, 0), new Vector3(0.55f, 0.55f, 0.55f),
-            Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "bar"));
-        Danao.Prim(go.transform, "ring", PrimitiveType.Cylinder, new Vector3(0, 0.75f, 0), new Vector3(0.58f, 0.05f, 0.58f), Mats.Gold);
-        var col = go.AddComponent<CapsuleCollider>();
-        col.isTrigger = true;
-        col.radius = 0.55f;
-        col.height = 1.3f;
-        col.center = new Vector3(0, 0.55f, 0);
-        var rb = go.AddComponent<Rigidbody>();
-        rb.isKinematic = true;
-        var b = go.AddComponent<Barrel>();
-        b.hp = 24 + stage * 12;
-        var lab = new GameObject("hp");
-        lab.transform.SetParent(go.transform, false);
-        lab.transform.localPosition = Vector3.up * 1.25f;
-        var tm = lab.AddComponent<TextMesh>();
-        tm.text = Mathf.CeilToInt(b.hp).ToString();
-        tm.anchor = TextAnchor.MiddleCenter;
-        tm.characterSize = 0.08f;
-        tm.fontSize = 36;
-        tm.color = Color.white;
+        int n = Random.Range(1, 3);
+        for (int i = 0; i < n; i++)
+        {
+            var go = new GameObject("Barrel");
+            go.transform.SetParent(chunk, false);
+            go.transform.localPosition = new Vector3(Random.Range(-3.2f, 3.2f), 0.45f, z + i * 1.4f);
+            Danao.Prim(go.transform, "b", PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.45f, 0.45f, 0.45f),
+                Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "bar"));
+            Danao.Prim(go.transform, "ring", PrimitiveType.Cylinder, new Vector3(0, 0.2f, 0), new Vector3(0.48f, 0.04f, 0.48f), Mats.Gold);
+            var col = go.AddComponent<CapsuleCollider>();
+            col.isTrigger = true;
+            col.radius = 0.5f;
+            col.height = 1.1f;
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            var b = go.AddComponent<Barrel>();
+            b.hp = 24 + stage * 12;
+            var lab = new GameObject("hp");
+            lab.transform.SetParent(go.transform, false);
+            lab.transform.localPosition = Vector3.up * 0.9f;
+            var tm = lab.AddComponent<TextMesh>();
+            tm.text = Mathf.CeilToInt(b.hp).ToString();
+            tm.anchor = TextAnchor.MiddleCenter;
+            tm.characterSize = 0.08f;
+            tm.fontSize = 36;
+            tm.color = Color.white;
+        }
     }
 
     void PlaceTreasure(Transform chunk, float z)
     {
-        MakePickup(chunk, new Vector3(-LaneX, LaneY, z));
-        MakePickup(chunk, new Vector3(LaneX, LaneY, z));
-    }
-
-    void MakePickup(Transform chunk, Vector3 pos)
-    {
         var go = new GameObject("Treasure");
         go.transform.SetParent(chunk, false);
-        go.transform.localPosition = pos;
-        go.transform.localScale = Vector3.one * 1.7f;
+        go.transform.localPosition = new Vector3(Random.Range(-3f, 3f), 0.7f, z);
         Color c = stage == 1 ? Danao.WuXing[Random.Range(0, 5)] : Danao.Gold;
-        Danao.Mesh(go.transform, "stand", MeshForge.Cylinder(14), new Vector3(0, 0.18f, 0), new Vector3(0.7f, 0.22f, 0.7f),
-            Mats.Solid(new Color(0.28f, 0.22f, 0.18f), "stele"));
-        Danao.Prim(go.transform, "gem", PrimitiveType.Sphere, new Vector3(0, 0.85f, 0), Vector3.one * 0.62f,
-            Mats.Solid(c, Color.white, c * 0.45f, "gem" + pos.x + pos.z));
+        Danao.Prim(go.transform, "gem", PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.45f, Mats.Solid(c, Color.white, c * 0.5f, "gem" + z));
+        Danao.Glow(go.transform, c, 1.2f, 3.5f);
         var col = go.AddComponent<SphereCollider>();
         col.isTrigger = true;
-        col.radius = 0.7f;
-        col.center = new Vector3(0, 0.85f, 0);
+        col.radius = 0.5f;
         var rb = go.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         var p = go.AddComponent<PickupOrb>();
         if (stage == 1) { p.element = Random.Range(0, 5); p.qi = Random.Range(22, 48); }
         else { p.xiu = 40 + stage * 30; }
         p.heal = Random.value > 0.7f ? 12 : 0;
-        var bob = go.AddComponent<BobSpin>();
-        bob.amp = 0.08f;
-        bob.spin = new Vector3(0, 50, 0);
+        go.AddComponent<BobSpin>().amp = 0.12f;
     }
 
     void ApplyStageVisuals()
@@ -299,13 +265,13 @@ public partial class GameRoot
         switch (stage)
         {
             case 1:
-                fog = new Color(0.78f, 0.62f, 0.82f);
-                skyA = new Color(0.42f, 0.18f, 0.48f);
-                skyB = new Color(1f, 0.62f, 0.72f);
-                sun = new Color(1f, 0.78f, 0.55f);
-                ambS = new Color(0.75f, 0.55f, 0.72f);
-                ambE = new Color(0.55f, 0.38f, 0.42f);
-                ambG = new Color(0.22f, 0.14f, 0.18f);
+                fog = new Color(0.45f, 0.18f, 0.55f);
+                skyA = new Color(0.18f, 0.05f, 0.28f);
+                skyB = new Color(0.95f, 0.45f, 0.75f);
+                sun = new Color(1f, 0.75f, 0.95f);
+                ambS = new Color(0.7f, 0.45f, 0.8f);
+                ambE = new Color(0.5f, 0.3f, 0.4f);
+                ambG = new Color(0.25f, 0.1f, 0.2f);
                 _speed = 4.6f;
                 break;
             case 2:
@@ -350,22 +316,12 @@ public partial class GameRoot
                 break;
         }
         RenderSettings.fogColor = fog;
-        RenderSettings.fogDensity = stage == 1 ? 0.0048f : 0.016f + stage * 0.001f;
-        RenderSettings.fogMode = FogMode.ExponentialSquared;
+        RenderSettings.fogDensity = 0.016f + stage * 0.001f;
         RenderSettings.ambientSkyColor = ambS;
         RenderSettings.ambientEquatorColor = ambE;
         RenderSettings.ambientGroundColor = ambG;
-        if (_sun != null)
-        {
-            _sun.color = sun;
-            _sun.intensity = 1.05f + stage * 0.05f;
-            if (stage != 1) _sun.transform.rotation = Quaternion.Euler(42, -30, 0);
-        }
-        if (_cam != null)
-        {
-            _cam.backgroundColor = skyA;
-            _cam.farClipPlane = stage == 1 ? 520f : 260f;
-        }
+        if (_sun != null) { _sun.color = sun; _sun.intensity = 1.05f + stage * 0.05f; }
+        if (_cam != null) _cam.backgroundColor = skyA;
         var skyShader = Shader.Find("Skybox/Procedural");
         if (skyShader != null)
         {
@@ -377,17 +333,6 @@ public partial class GameRoot
         }
         DynamicGI.UpdateEnvironment();
         if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.7f, 1f) : Danao.Gold;
-        RebuildBackdrop();
-    }
-
-    void RebuildBackdrop()
-    {
-        if (_backdrop != null)
-        {
-            Destroy(_backdrop.gameObject);
-            _backdrop = null;
-        }
-        if (stage == 1) _backdrop = StageBackdrop.Create(_sun);
     }
 
     void ClearWorld(bool resetPath = false)

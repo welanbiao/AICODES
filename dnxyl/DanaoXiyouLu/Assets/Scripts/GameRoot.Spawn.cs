@@ -13,7 +13,7 @@ public partial class GameRoot
         int pack = Random.Range(1, PackSize() + 1);
         for (int i = 0; i < pack; i++)
         {
-            Vector3 pos = player.position + new Vector3(Random.Range(-4.2f, 4.2f), 0, Random.Range(18f, 32f) + i * 1.4f);
+            Vector3 pos = player.position + new Vector3(Random.Range(-3.4f, 3.4f), 0, Random.Range(16f, 28f) + i * 1.1f);
             SpawnMob(PickKind(), pos);
         }
     }
@@ -55,7 +55,6 @@ public partial class GameRoot
         root.transform.position = pos;
         var vis = EnemyBuilder.Build(k, root.transform);
         vis.transform.localPosition = Vector3.zero;
-        vis.transform.localScale = Vector3.one * 1.75f;
         var mob = root.AddComponent<Mob>();
         mob.Init(k, player, stage);
         root.transform.LookAt(new Vector3(player.position.x, pos.y, player.position.z));

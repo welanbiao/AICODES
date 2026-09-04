@@ -20,10 +20,9 @@ public partial class GameRoot : MonoBehaviour
     Transform _boat;
     Light _sun;
     Light _heroLight;
-    StageBackdrop _backdrop;
 
     float _x;
-    float _pathW = 5.4f;
+    float _pathW = 4.2f;
     float _speed = 5.2f;
     float _atkCd;
     float _hurtCd;
@@ -72,8 +71,8 @@ public partial class GameRoot : MonoBehaviour
             cgo.tag = "MainCamera";
         }
         _cam.clearFlags = CameraClearFlags.Skybox;
-        _cam.fieldOfView = 48f;
-        _cam.farClipPlane = 520f;
+        _cam.fieldOfView = 42f;
+        _cam.farClipPlane = 220f;
         _cam.allowHDR = true;
     }
 
@@ -109,9 +108,9 @@ public partial class GameRoot : MonoBehaviour
         player.position = new Vector3(0, 0, 0);
         modelSlot = Danao.Node(player, "Model", Vector3.zero);
         var col = p.AddComponent<CapsuleCollider>();
-        col.height = 2.2f;
-        col.radius = 0.62f;
-        col.center = new Vector3(0, 1.1f, 0);
+        col.height = 1.7f;
+        col.radius = 0.35f;
+        col.center = new Vector3(0, 0.85f, 0);
         col.isTrigger = true;
         var rb = p.AddComponent<Rigidbody>();
         rb.isKinematic = true;
@@ -124,25 +123,17 @@ public partial class GameRoot : MonoBehaviour
     {
         if (_model != null) Destroy(_model);
         _model = WukongBuilder.Build(stage, modelSlot);
-        modelSlot.localScale = Vector3.one * (stage == 1 ? 2.15f : 1.7f);
-        var col = player.GetComponent<CapsuleCollider>();
-        if (col != null)
-        {
-            col.height = stage == 1 ? 2.0f : 2.6f;
-            col.radius = stage == 1 ? 0.7f : 0.58f;
-            col.center = new Vector3(0, col.height * 0.5f, 0);
-        }
         _run = _model.GetComponent<RunCycle>();
         if (_boat != null) Destroy(_boat.gameObject);
         _boat = null;
         if (stage == 3)
         {
             _boat = Danao.Node(player, "Boat", new Vector3(0, 0.05f, 0.1f));
-            Danao.Prim(_boat, "hull", PrimitiveType.Cube, new Vector3(0, 0.12f, 0), new Vector3(2.1f, 0.28f, 3.6f),
+            Danao.Prim(_boat, "hull", PrimitiveType.Cube, new Vector3(0, 0.08f, 0), new Vector3(1.4f, 0.18f, 2.4f),
                 Mats.Solid(new Color(0.45f, 0.28f, 0.12f), "wood"));
-            Danao.Prim(_boat, "head", PrimitiveType.Cube, new Vector3(0, 0.24f, 1.65f), new Vector3(1.35f, 0.18f, 0.55f),
+            Danao.Prim(_boat, "head", PrimitiveType.Cube, new Vector3(0, 0.16f, 1.1f), new Vector3(0.9f, 0.12f, 0.4f),
                 Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "wood2"));
-            Danao.Prim(_boat, "pole", PrimitiveType.Cylinder, new Vector3(0.7f, 1.05f, -0.5f), new Vector3(0.06f, 1.05f, 0.06f), Mats.Cloth);
+            Danao.Prim(_boat, "pole", PrimitiveType.Cylinder, new Vector3(0.5f, 0.7f, -0.4f), new Vector3(0.04f, 0.7f, 0.04f), Mats.Cloth);
         }
     }
 
@@ -202,7 +193,7 @@ public partial class GameRoot : MonoBehaviour
         if (_run != null) _run.attack = 1f;
 
         Transform target = NearestMob();
-        Vector3 muzzle = player.position + Vector3.up * (stage == 1 ? 1.6f : 1.7f) + player.forward * 0.55f;
+        Vector3 muzzle = player.position + Vector3.up * (stage == 1 ? 1.1f : 1.15f) + player.forward * 0.4f;
         Vector3 dir = Vector3.forward;
         if (target != null)
         {
@@ -225,7 +216,7 @@ public partial class GameRoot : MonoBehaviour
         var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         Destroy(go.GetComponent<Collider>());
         go.transform.position = pos;
-        go.transform.localScale = Vector3.one * (stage == 1 ? 0.42f : 0.28f);
+        go.transform.localScale = Vector3.one * (stage == 1 ? 0.28f : 0.18f);
         int elem = stage == 1 ? StrongestElement() : -1;
         Color c = elem >= 0 ? Danao.WuXing[elem] : Danao.Gold;
         go.GetComponent<MeshRenderer>().sharedMaterial = Mats.Solid(c, Color.white, c, "bolt" + elem + stage);
@@ -245,7 +236,7 @@ public partial class GameRoot : MonoBehaviour
     Transform NearestMob()
     {
         Mob best = null;
-        float bestD = 26f * 26f;
+        float bestD = 18f * 18f;
         var mobs = Object.FindObjectsByType<Mob>(FindObjectsSortMode.None);
         for (int i = 0; i < mobs.Length; i++)
         {
@@ -298,12 +289,9 @@ public partial class GameRoot : MonoBehaviour
 
     void TickCamera()
     {
-        Vector3 offset = stage == 1 ? new Vector3(0, 18f, -20f) : new Vector3(0, 13f, -15f);
-        Vector3 look = stage == 1 ? new Vector3(0, 2.4f, 12f) : new Vector3(0, 1.4f, 8f);
-        Vector3 want = player.position + offset;
+        Vector3 want = player.position + new Vector3(0, 10.5f, -11.5f);
         _cam.transform.position = Vector3.Lerp(_cam.transform.position, want, 1f - Mathf.Exp(-8f * Time.deltaTime));
-        _cam.transform.LookAt(player.position + look);
-        _cam.farClipPlane = stage == 1 ? 520f : 260f;
+        _cam.transform.LookAt(player.position + new Vector3(0, 1.1f, 7.5f));
     }
 
     public bool IsPlayerCollider(Collider c)
@@ -359,6 +347,5 @@ public partial class GameRoot : MonoBehaviour
     {
         _hurtCd -= Time.deltaTime;
         _gateLock -= Time.deltaTime;
-        if (_backdrop != null && player != null) _backdrop.Follow(player.position);
     }
 }
