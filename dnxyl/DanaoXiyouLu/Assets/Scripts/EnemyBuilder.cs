@@ -146,7 +146,7 @@ public static class EnemyBuilder
     static GameObject Fish(Transform parent, Color c, float scale)
     {
         var root = Danao.Node(parent, "Fish", Vector3.up * 0.4f).gameObject;
-        var mat = Mats.Solid(c, Color.cyan, c * 0.2f, "fish" + c.GetHashCode());
+        var mat = Mats.Painted(c, Color.cyan, c * 0.2f, "fish" + c.GetHashCode(), "Tex/tex_spirit_water");
         Danao.Mesh(root.transform, "body", MeshForge.Drop(), Vector3.zero, new Vector3(0.38f, 0.28f, 0.85f) * scale, Quaternion.Euler(90, 0, 0), mat);
         Danao.Mesh(root.transform, "tail", MeshForge.Sphere(12, 8), new Vector3(0, 0, -0.42f) * scale, new Vector3(0.06f, 0.32f, 0.22f) * scale, mat);
         Danao.Mesh(root.transform, "fin", MeshForge.Sphere(10, 8), new Vector3(0, 0.2f, 0) * scale, new Vector3(0.04f, 0.22f, 0.16f) * scale, mat);
