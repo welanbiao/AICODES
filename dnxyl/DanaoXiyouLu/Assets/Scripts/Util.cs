@@ -277,6 +277,92 @@ public static class Tex
         Cache[id] = t;
         return t;
     }
+
+    public static Texture2D Skin
+    {
+        get
+        {
+            if (Cache.ContainsKey(501)) return Cache[501];
+            var t = new Texture2D(256, 256, TextureFormat.RGBA32, true);
+            for (int y = 0; y < 256; y++)
+            for (int x = 0; x < 256; x++)
+            {
+                float n = Mathf.PerlinNoise(x * 0.04f, y * 0.04f);
+                Color c = Color.Lerp(new Color(1f, 0.82f, 0.70f), new Color(0.96f, 0.72f, 0.58f), n * 0.45f);
+                float blush = Mathf.Exp(-Mathf.Pow((x - 70) / 40f, 2) - Mathf.Pow((y - 110) / 36f, 2));
+                blush += Mathf.Exp(-Mathf.Pow((x - 186) / 40f, 2) - Mathf.Pow((y - 110) / 36f, 2));
+                c = Color.Lerp(c, new Color(1f, 0.55f, 0.48f), blush * 0.28f);
+                t.SetPixel(x, y, c);
+            }
+            t.Apply();
+            Cache[501] = t;
+            return t;
+        }
+    }
+
+    public static Texture2D Fur
+    {
+        get
+        {
+            if (Cache.ContainsKey(502)) return Cache[502];
+            var t = new Texture2D(256, 256, TextureFormat.RGBA32, true);
+            for (int y = 0; y < 256; y++)
+            for (int x = 0; x < 256; x++)
+            {
+                float s = Mathf.PerlinNoise(x * 0.35f, y * 0.02f);
+                float s2 = Mathf.PerlinNoise(x * 0.12f + 4, y * 0.08f);
+                Color a = new Color(0.72f, 0.42f, 0.10f);
+                Color b = new Color(1f, 0.84f, 0.32f);
+                t.SetPixel(x, y, Color.Lerp(a, b, 0.35f + s * 0.5f + s2 * 0.15f));
+            }
+            t.wrapMode = TextureWrapMode.Repeat;
+            t.Apply();
+            Cache[502] = t;
+            return t;
+        }
+    }
+
+    public static Texture2D Silk
+    {
+        get
+        {
+            if (Cache.ContainsKey(503)) return Cache[503];
+            var t = new Texture2D(256, 256, TextureFormat.RGBA32, true);
+            for (int y = 0; y < 256; y++)
+            for (int x = 0; x < 256; x++)
+            {
+                float wave = 0.5f + 0.5f * Mathf.Sin(x * 0.08f + Mathf.Sin(y * 0.05f));
+                float cloud = Mathf.PerlinNoise(x * 0.03f, y * 0.03f);
+                Color baseC = Color.Lerp(new Color(0.08f, 0.32f, 0.30f), new Color(0.18f, 0.52f, 0.48f), wave);
+                if (cloud > 0.62f) baseC = Color.Lerp(baseC, new Color(0.95f, 0.82f, 0.35f), (cloud - 0.62f) * 1.6f);
+                t.SetPixel(x, y, baseC);
+            }
+            t.wrapMode = TextureWrapMode.Repeat;
+            t.Apply();
+            Cache[503] = t;
+            return t;
+        }
+    }
+
+    public static Texture2D Gold
+    {
+        get
+        {
+            if (Cache.ContainsKey(504)) return Cache[504];
+            var t = new Texture2D(256, 256, TextureFormat.RGBA32, true);
+            for (int y = 0; y < 256; y++)
+            for (int x = 0; x < 256; x++)
+            {
+                float n = Mathf.PerlinNoise(x * 0.09f, y * 0.09f);
+                float n2 = Mathf.PerlinNoise(x * 0.4f, y * 0.4f);
+                t.SetPixel(x, y, Color.Lerp(new Color(0.72f, 0.48f, 0.12f), new Color(1f, 0.92f, 0.45f), n * 0.7f + n2 * 0.3f));
+            }
+            t.wrapMode = TextureWrapMode.Repeat;
+            t.Apply();
+            Cache[504] = t;
+            return t;
+        }
+    }
 }
 
 public static class Mats
