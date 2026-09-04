@@ -363,7 +363,7 @@ public partial class GameRoot
         if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.78f, 0.45f) : Danao.Gold;
         if (_backdrop != null)
         {
-            Destroy(_backdrop.gameObject);
+            DestroyImmediate(_backdrop.gameObject);
             _backdrop = null;
         }
         if (stage == 1 && _sun != null)
