@@ -219,6 +219,25 @@ public static class MeshForge
         return Get("quad", BuildQuad);
     }
 
+    static Vector3 WarpEgg(Vector3 p)
+    {
+        Vector3 v = new Vector3(p.x * 0.70f, p.y * 1.20f, p.z * 0.78f);
+        float t = Mathf.Saturate((v.y + 0.6f) / 1.2f);
+        float r = Mathf.Lerp(1.14f, 0.68f, t * t);
+        v.x *= r;
+        v.z *= r;
+        if (v.z > 0f && v.y < 0.12f) v.z += 0.07f * (0.35f - Mathf.Abs(v.y));
+        return v * 0.5f;
+    }
+
+    static Vector3 WarpFetus(Vector3 p)
+    {
+        float curl = 0.16f * Mathf.Sin((p.y + 1f) * 1.7f);
+        Vector3 v = new Vector3(p.x * 0.40f, p.y * 0.58f + curl * 0.35f, p.z * 0.36f + curl + 0.08f);
+        v.y -= 0.04f;
+        return v * 0.5f;
+    }
+
     static Vector3 WarpHead(Vector3 p)
     {
         float peach = 1f + 0.14f * Mathf.Exp(-p.y * p.y * 4.2f) - 0.22f * Mathf.Max(0f, -p.y - 0.12f);
