@@ -355,7 +355,12 @@ public partial class GameRoot
         RenderSettings.ambientSkyColor = ambS;
         RenderSettings.ambientEquatorColor = ambE;
         RenderSettings.ambientGroundColor = ambG;
-        if (_sun != null) { _sun.color = sun; _sun.intensity = 1.05f + stage * 0.05f; }
+        if (_sun != null)
+        {
+            _sun.color = sun;
+            _sun.intensity = 1.05f + stage * 0.05f;
+            if (stage != 1) _sun.transform.rotation = Quaternion.Euler(42, -30, 0);
+        }
         if (_cam != null)
         {
             _cam.backgroundColor = skyA;
