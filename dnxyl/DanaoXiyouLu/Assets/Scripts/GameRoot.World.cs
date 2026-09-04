@@ -228,53 +228,69 @@ public partial class GameRoot
 
     void PlaceBarrels(Transform chunk, float z)
     {
-        int n = Random.Range(1, 3);
-        for (int i = 0; i < n; i++)
-        {
-            var go = new GameObject("Barrel");
-            go.transform.SetParent(chunk, false);
-            go.transform.localPosition = new Vector3(Random.Range(-3.2f, 3.2f), 0.45f, z + i * 1.4f);
-            Danao.Prim(go.transform, "b", PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.45f, 0.45f, 0.45f),
-                Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "bar"));
-            Danao.Prim(go.transform, "ring", PrimitiveType.Cylinder, new Vector3(0, 0.2f, 0), new Vector3(0.48f, 0.04f, 0.48f), Mats.Gold);
-            var col = go.AddComponent<CapsuleCollider>();
-            col.isTrigger = true;
-            col.radius = 0.5f;
-            col.height = 1.1f;
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            var b = go.AddComponent<Barrel>();
-            b.hp = 24 + stage * 12;
-            var lab = new GameObject("hp");
-            lab.transform.SetParent(go.transform, false);
-            lab.transform.localPosition = Vector3.up * 0.9f;
-            var tm = lab.AddComponent<TextMesh>();
-            tm.text = Mathf.CeilToInt(b.hp).ToString();
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.characterSize = 0.08f;
-            tm.fontSize = 36;
-            tm.color = Color.white;
-        }
+        MakeBarrel(chunk, new Vector3(-LaneX, LaneY, z));
+        MakeBarrel(chunk, new Vector3(LaneX, LaneY, z));
+    }
+
+    void MakeBarrel(Transform chunk, Vector3 pos)
+    {
+        var go = new GameObject("Barrel");
+        go.transform.SetParent(chunk, false);
+        go.transform.localPosition = pos;
+        go.transform.localScale = Vector3.one * 1.7f;
+        Danao.Prim(go.transform, "b", PrimitiveType.Cylinder, new Vector3(0, 0.55f, 0), new Vector3(0.55f, 0.55f, 0.55f),
+            Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "bar"));
+        Danao.Prim(go.transform, "ring", PrimitiveType.Cylinder, new Vector3(0, 0.75f, 0), new Vector3(0.58f, 0.05f, 0.58f), Mats.Gold);
+        var col = go.AddComponent<CapsuleCollider>();
+        col.isTrigger = true;
+        col.radius = 0.55f;
+        col.height = 1.3f;
+        col.center = new Vector3(0, 0.55f, 0);
+        var rb = go.AddComponent<Rigidbody>();
+        rb.isKinematic = true;
+        var b = go.AddComponent<Barrel>();
+        b.hp = 24 + stage * 12;
+        var lab = new GameObject("hp");
+        lab.transform.SetParent(go.transform, false);
+        lab.transform.localPosition = Vector3.up * 1.25f;
+        var tm = lab.AddComponent<TextMesh>();
+        tm.text = Mathf.CeilToInt(b.hp).ToString();
+        tm.anchor = TextAnchor.MiddleCenter;
+        tm.characterSize = 0.08f;
+        tm.fontSize = 36;
+        tm.color = Color.white;
     }
 
     void PlaceTreasure(Transform chunk, float z)
     {
+        MakePickup(chunk, new Vector3(-LaneX, LaneY, z));
+        MakePickup(chunk, new Vector3(LaneX, LaneY, z));
+    }
+
+    void MakePickup(Transform chunk, Vector3 pos)
+    {
         var go = new GameObject("Treasure");
         go.transform.SetParent(chunk, false);
-        go.transform.localPosition = new Vector3(Random.Range(-3f, 3f), 0.7f, z);
+        go.transform.localPosition = pos;
+        go.transform.localScale = Vector3.one * 1.7f;
         Color c = stage == 1 ? Danao.WuXing[Random.Range(0, 5)] : Danao.Gold;
-        Danao.Prim(go.transform, "gem", PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.45f, Mats.Solid(c, Color.white, c * 0.5f, "gem" + z));
-        Danao.Glow(go.transform, c, 1.2f, 3.5f);
+        Danao.Mesh(go.transform, "stand", MeshForge.Cylinder(14), new Vector3(0, 0.18f, 0), new Vector3(0.7f, 0.22f, 0.7f),
+            Mats.Solid(new Color(0.28f, 0.22f, 0.18f), "stele"));
+        Danao.Prim(go.transform, "gem", PrimitiveType.Sphere, new Vector3(0, 0.85f, 0), Vector3.one * 0.62f,
+            Mats.Solid(c, Color.white, c * 0.45f, "gem" + pos.x + pos.z));
         var col = go.AddComponent<SphereCollider>();
         col.isTrigger = true;
-        col.radius = 0.5f;
+        col.radius = 0.7f;
+        col.center = new Vector3(0, 0.85f, 0);
         var rb = go.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         var p = go.AddComponent<PickupOrb>();
         if (stage == 1) { p.element = Random.Range(0, 5); p.qi = Random.Range(22, 48); }
         else { p.xiu = 40 + stage * 30; }
         p.heal = Random.value > 0.7f ? 12 : 0;
-        go.AddComponent<BobSpin>().amp = 0.12f;
+        var bob = go.AddComponent<BobSpin>();
+        bob.amp = 0.08f;
+        bob.spin = new Vector3(0, 50, 0);
     }
 
     void ApplyStageVisuals()
