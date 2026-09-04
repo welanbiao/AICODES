@@ -70,6 +70,25 @@ public static class Danao
         return Prim(parent, name, type, pos, scale, Quaternion.identity, mat);
     }
 
+    public static MeshRenderer Mesh(Transform parent, string name, UnityEngine.Mesh mesh, Vector3 pos, Vector3 scale, Quaternion rot, Material mat)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = pos;
+        go.transform.localRotation = rot;
+        go.transform.localScale = scale;
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        var r = go.AddComponent<MeshRenderer>();
+        r.sharedMaterial = mat;
+        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        return r;
+    }
+
+    public static MeshRenderer Mesh(Transform parent, string name, UnityEngine.Mesh mesh, Vector3 pos, Vector3 scale, Material mat)
+    {
+        return Mesh(parent, name, mesh, pos, scale, Quaternion.identity, mat);
+    }
+
     public static Light Glow(Transform parent, Color c, float intensity, float range)
     {
         var t = Node(parent, "glow", Vector3.up * 0.4f);

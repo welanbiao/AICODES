@@ -15,12 +15,13 @@ Shader "Danao/Mythic"
         Tags { "RenderType"="Opaque" "Queue"="Geometry" }
         LOD 200
         CGPROGRAM
-        #pragma surface surf Lambert
+        #pragma surface surf BlinnPhong
         sampler2D _MainTex;
         fixed4 _Color;
         fixed4 _RimColor;
         half _RimPower;
         fixed4 _Emission;
+        half _Gloss;
         struct Input
         {
             float2 uv_MainTex;
@@ -33,7 +34,9 @@ Shader "Danao/Mythic"
             fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color * IN.color;
             half rim = 1.0 - saturate(dot(normalize(IN.viewDir), IN.worldNormal));
             o.Albedo = c.rgb;
-            o.Emission = _Emission.rgb + _RimColor.rgb * pow(rim, _RimPower);
+            o.Emission = _Emission.rgb + _RimColor.rgb * pow(rim, _RimPower) * 0.85;
+            o.Specular = 0.55;
+            o.Gloss = _Gloss;
             o.Alpha = c.a;
         }
         ENDCG
