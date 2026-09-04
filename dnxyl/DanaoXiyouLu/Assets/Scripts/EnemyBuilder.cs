@@ -177,7 +177,6 @@ public static class EnemyBuilder
             Danao.Prim(root.transform, "sword", PrimitiveType.Cube, new Vector3(0.38f, 0.95f, 0.05f), new Vector3(0.04f, 0.55f, 0.02f), Mats.Gold);
         else
             Danao.Prim(root.transform, "staff", PrimitiveType.Cylinder, new Vector3(0.34f, 1.0f, 0.05f), new Vector3(0.035f, 0.5f, 0.035f), Mats.Trim);
-        Danao.Glow(root.transform, robe, 0.6f, 3.5f);
         return root;
     }
 }
