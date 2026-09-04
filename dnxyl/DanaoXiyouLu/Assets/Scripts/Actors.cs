@@ -62,30 +62,13 @@ public class Mob : MonoBehaviour
             transform.position += dir.normalized * speed * 1.15f * Time.deltaTime;
         }
 
-        DodgeBolts();
-
+        p = transform.position;
         float dx = p.x - t.x;
         float dz = p.z - t.z;
         if (Mathf.Abs(dx) < 0.85f && Mathf.Abs(dz) < 0.85f)
         {
             GameRoot.I.HurtPlayer(6 + GameRoot.I.stage * 2);
             transform.position += new Vector3(_dodge * 2.2f, 0, 1.2f);
-        }
-    }
-
-    void DodgeBolts()
-    {
-        var bolts = Object.FindObjectsByType<Bolt>(FindObjectsSortMode.None);
-        Vector3 p = transform.position;
-        for (int i = 0; i < bolts.Length; i++)
-        {
-            Vector3 b = bolts[i].transform.position;
-            Vector3 d = p - b;
-            if (d.z < -0.4f || d.z > 6f) continue;
-            if (Mathf.Abs(d.x) > 1.4f) continue;
-            if (d.sqrMagnitude > 36f) continue;
-            transform.position += new Vector3(_dodge * 6f * Time.deltaTime, 0, 0);
-            break;
         }
     }
 
