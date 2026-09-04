@@ -22,7 +22,7 @@ public partial class GameRoot : MonoBehaviour
     Light _heroLight;
 
     float _x;
-    float _pathW = 4.2f;
+        float _pathW = 5.4f;
     float _speed = 5.2f;
     float _atkCd;
     float _hurtCd;
