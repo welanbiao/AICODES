@@ -45,7 +45,7 @@ public partial class GameRoot : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
     {
-        if (FindObjectOfType<GameRoot>() != null) return;
+        if (Object.FindFirstObjectByType<GameRoot>() != null) return;
         var go = new GameObject("GameRoot");
         go.AddComponent<GameRoot>();
     }
