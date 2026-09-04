@@ -119,6 +119,8 @@ public partial class GameRoot
         else PlaceTreasure(chunk, z0);
     }
 
+    const float ItemY = 0.58f;
+
     void PlaceGates(Transform chunk, float z)
     {
         MakeGate(chunk, new Vector3(-2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
@@ -132,25 +134,19 @@ public partial class GameRoot
         go.transform.localPosition = pos;
 
         Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
-        var stone = Mats.Solid(new Color(0.28f, 0.22f, 0.18f), "stele");
-        var dark = Mats.Solid(new Color(0.08f, 0.05f, 0.04f), "plaque");
-        var accent = Mats.Solid(c, Color.white, c * 0.18f, "gateA" + elem + stage);
+        Color mist = Color.Lerp(Color.white, c, 0.4f);
+        mist.a = 0.85f;
+        var cushion = Danao.Mesh(go.transform, "cushion", MeshForge.Sphere(14, 10), new Vector3(0, 0.16f, 0),
+            new Vector3(0.95f, 0.22f, 0.95f), Mats.Cloud(mist, "pad" + elem));
+        cushion.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-        Danao.Mesh(go.transform, "base", MeshForge.Cylinder(18), new Vector3(0, 0.12f, 0), new Vector3(0.85f, 0.24f, 0.85f), stone);
-        Danao.Mesh(go.transform, "post", MeshForge.Cylinder(16), new Vector3(0, 0.62f, 0), new Vector3(0.18f, 0.55f, 0.18f), stone);
-        Danao.Prim(go.transform, "plaque", PrimitiveType.Cube, new Vector3(0, 1.18f, 0), new Vector3(0.95f, 0.58f, 0.08f), dark);
-        Danao.Prim(go.transform, "rimL", PrimitiveType.Cube, new Vector3(-0.48f, 1.18f, 0), new Vector3(0.06f, 0.68f, 0.14f), Mats.Gold);
-        Danao.Prim(go.transform, "rimR", PrimitiveType.Cube, new Vector3(0.48f, 1.18f, 0), new Vector3(0.06f, 0.68f, 0.14f), Mats.Gold);
-        Danao.Prim(go.transform, "rimT", PrimitiveType.Cube, new Vector3(0, 1.50f, 0), new Vector3(1.02f, 0.06f, 0.14f), Mats.Gold);
-        Danao.Prim(go.transform, "rimB", PrimitiveType.Cube, new Vector3(0, 0.86f, 0), new Vector3(1.02f, 0.06f, 0.14f), Mats.Gold);
-
-        var icon = Danao.Node(go.transform, "icon", new Vector3(0, 1.92f, 0));
-        BuildGateIcon(icon, elem, accent);
-        icon.gameObject.AddComponent<BobSpin>().amp = 0.06f;
+        var icon = Danao.Node(go.transform, "icon", new Vector3(0, ItemY, 0));
+        BuildGateIcon(icon, elem, stage == 1 ? Mats.Spirit(elem) : Mats.Gold);
+        icon.gameObject.AddComponent<BobSpin>().amp = 0.05f;
 
         var col = go.AddComponent<BoxCollider>();
-        col.center = new Vector3(0, 1.05f, 0);
-        col.size = new Vector3(1.55f, 2.15f, 0.85f);
+        col.center = new Vector3(0, ItemY, 0);
+        col.size = new Vector3(1.4f, 1.15f, 0.9f);
         col.isTrigger = true;
         var rb = go.AddComponent<Rigidbody>();
         rb.isKinematic = true;
@@ -169,7 +165,7 @@ public partial class GameRoot
             g.mul = Random.value > 0.78f ? 1.15f : 1f;
             label = g.mul > 1.01f ? "修为 x" + g.mul.ToString("0.00") : "修为 +" + g.xiuAdd;
         }
-        Danao.Label3D(go.transform, "lab", label, new Vector3(0, 1.18f, -0.12f), 0.045f, Color.white);
+        Danao.Label3D(go.transform, "lab", label, new Vector3(0, ItemY + 0.55f, -0.12f), 0.042f, Color.white);
     }
 
     void BuildGateIcon(Transform t, int elem, Material accent)
