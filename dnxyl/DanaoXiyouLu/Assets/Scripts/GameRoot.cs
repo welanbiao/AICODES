@@ -80,7 +80,7 @@ public partial class GameRoot : MonoBehaviour
 
     void BuildSun()
     {
-        var existing = FindObjectOfType<Light>();
+        var existing = Object.FindFirstObjectByType<Light>();
         if (existing != null && existing.type == LightType.Directional) _sun = existing;
         else
         {
