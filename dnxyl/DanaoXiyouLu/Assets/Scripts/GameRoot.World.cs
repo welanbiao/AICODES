@@ -234,7 +234,7 @@ public partial class GameRoot
         {
             var go = new GameObject("Barrel");
             go.transform.SetParent(chunk, false);
-            go.transform.localPosition = new Vector3(Random.Range(-3.2f, 3.2f), 0.45f, z + i * 1.4f);
+            go.transform.localPosition = new Vector3(Random.Range(-3.2f, 3.2f), ItemY, z + i * 1.4f);
             Danao.Prim(go.transform, "b", PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.45f, 0.45f, 0.45f),
                 Mats.Solid(new Color(0.55f, 0.32f, 0.14f), "bar"));
             Danao.Prim(go.transform, "ring", PrimitiveType.Cylinder, new Vector3(0, 0.2f, 0), new Vector3(0.48f, 0.04f, 0.48f), Mats.Gold);
