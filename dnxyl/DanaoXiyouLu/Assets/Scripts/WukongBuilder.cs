@@ -84,7 +84,7 @@ public static class WukongBuilder
         run.torso = torso;
         run.staff = staff;
 
-        Danao.Glow(head, Danao.Gold, 0.55f + form * 0.12f, 4.5f + form);
+        Danao.Glow(head, Danao.Gold, 0.18f + form * 0.04f, 2.4f);
         return root;
     }
 
