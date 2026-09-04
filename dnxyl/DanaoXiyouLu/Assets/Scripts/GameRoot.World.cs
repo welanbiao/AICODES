@@ -260,23 +260,30 @@ public partial class GameRoot
 
     void PlaceTreasure(Transform chunk, float z)
     {
+        PlaceOneTreasure(chunk, new Vector3(-2.15f, ItemY, z));
+        PlaceOneTreasure(chunk, new Vector3(2.15f, ItemY, z));
+    }
+
+    void PlaceOneTreasure(Transform chunk, Vector3 pos)
+    {
         var go = new GameObject("Treasure");
         go.transform.SetParent(chunk, false);
-        go.transform.localPosition = new Vector3(laneX, ItemY, z);
-        Color c = stage == 1 ? Danao.WuXing[Random.Range(0, 5)] : Danao.Gold;
+        go.transform.localPosition = pos;
+        int elem = Random.Range(0, 5);
+        Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
         Danao.Mesh(go.transform, "gem", MeshForge.Sphere(16, 12), Vector3.zero, Vector3.one * 0.42f,
-            stage == 1 ? Mats.Spirit(Random.Range(0, 5)) : Mats.Painted(Color.white, Danao.Gold, Danao.Gold * 0.3f, "pillItem", "Tex/tex_pill"));
-        Danao.Glow(go.transform, c, 1.2f, 3.5f);
+            stage == 1 ? Mats.Spirit(elem) : Mats.Painted(Color.white, Danao.Gold, Danao.Gold * 0.3f, "pillItem", "Tex/tex_pill"));
+        Danao.Glow(go.transform, c, 0.45f, 2.4f);
         var col = go.AddComponent<SphereCollider>();
         col.isTrigger = true;
         col.radius = 0.5f;
         var rb = go.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         var p = go.AddComponent<PickupOrb>();
-        if (stage == 1) { p.element = Random.Range(0, 5); p.qi = Random.Range(22, 48); }
+        if (stage == 1) { p.element = elem; p.qi = Random.Range(22, 48); }
         else { p.xiu = 40 + stage * 30; }
         p.heal = Random.value > 0.7f ? 12 : 0;
-        go.AddComponent<BobSpin>().amp = 0.12f;
+        go.AddComponent<BobSpin>().amp = 0.08f;
     }
 
     void ApplyStageVisuals()
