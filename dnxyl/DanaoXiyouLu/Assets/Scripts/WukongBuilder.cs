@@ -91,40 +91,48 @@ public static class WukongBuilder
     static Transform BuildHead(Transform neck, float s, int form)
     {
         var head = Danao.Node(neck, "head", Vector3.zero);
-        Danao.Mesh(head, "skull", MeshForge.WukongHead(), Vector3.zero, Vector3.one * s * 1.05f, Mats.Skin);
-        Danao.Mesh(head, "hairCap", MeshForge.WukongHairCap(), new Vector3(0, 0.02f * s, -0.01f * s), Vector3.one * s * 1.12f, Mats.Hair);
+        Danao.Mesh(head, "skull", MeshForge.WukongHead(), Vector3.zero, Vector3.one * s * 1.08f, Mats.Skin);
+        Danao.Mesh(head, "hairCap", MeshForge.WukongHairCap(), new Vector3(0, 0.04f * s, -0.04f * s), Vector3.one * s * 1.08f, Mats.Hair);
 
-        int n = 28;
+        int n = 32;
         for (int i = 0; i < n; i++)
         {
             float u = i / (n - 1f);
-            float yaw = Mathf.Lerp(-78f, 78f, u);
-            float lift = 28f + Mathf.Sin(u * Mathf.PI) * 22f + (i % 3) * 4f;
-            float back = 8f + Mathf.Abs(yaw) * 0.12f;
-            Quaternion rot = Quaternion.Euler(-lift, yaw, 0) * Quaternion.Euler(back, 0, 0);
-            Vector3 pos = rot * Vector3.up * (0.13f * s);
-            float thick = 0.055f * s * (0.85f + 0.25f * Mathf.Sin(u * Mathf.PI));
+            float yaw = Mathf.Lerp(-125f, 125f, u);
+            if (Mathf.Abs(yaw) < 32f) continue;
+            float lift = 12f + Mathf.Abs(yaw) * 0.12f + (i % 3) * 5f;
+            Quaternion rot = Quaternion.Euler(-lift, yaw, yaw * 0.08f);
+            Vector3 pos = rot * Vector3.up * (0.12f * s) + new Vector3(0, 0.04f * s, -0.02f * s);
+            float len = 0.14f + Mathf.Abs(yaw) * 0.0012f;
+            float thick = 0.042f * s * (0.8f + 0.3f * Mathf.Sin(u * Mathf.PI));
             Danao.Mesh(head, "strand" + i, MeshForge.Strand(), pos,
-                new Vector3(thick, 0.16f * s, thick), rot, Mats.Hair);
+                new Vector3(thick, len * s, thick), rot, Mats.Hair);
         }
-        Danao.Mesh(head, "bangL", MeshForge.Sphere(14, 10), new Vector3(-0.07f * s, 0.07f * s, 0.09f * s), Vector3.one * 0.07f * s, Mats.Hair);
-        Danao.Mesh(head, "bangR", MeshForge.Sphere(14, 10), new Vector3(0.07f * s, 0.07f * s, 0.09f * s), Vector3.one * 0.07f * s, Mats.Hair);
-        Danao.Mesh(head, "sideL", MeshForge.Sphere(12, 10), new Vector3(-0.10f * s, -0.01f * s, 0.02f * s), new Vector3(0.05f, 0.09f, 0.05f) * s, Mats.Hair);
-        Danao.Mesh(head, "sideR", MeshForge.Sphere(12, 10), new Vector3(0.10f * s, -0.01f * s, 0.02f * s), new Vector3(0.05f, 0.09f, 0.05f) * s, Mats.Hair);
+        for (int i = 0; i < 8; i++)
+        {
+            float a = (i / 8f) * 360f;
+            Quaternion rot = Quaternion.Euler(78f, a, 0);
+            Danao.Mesh(neck, "ruff" + i, MeshForge.Strand(),
+                rot * Vector3.forward * (0.07f * s) + new Vector3(0, -0.02f * s, 0),
+                new Vector3(0.035f, 0.07f, 0.035f) * s, rot, Mats.Hair);
+        }
+        Danao.Mesh(head, "sideL", MeshForge.Sphere(12, 10), new Vector3(-0.11f * s, 0.00f * s, -0.01f * s), new Vector3(0.045f, 0.08f, 0.045f) * s, Mats.Hair);
+        Danao.Mesh(head, "sideR", MeshForge.Sphere(12, 10), new Vector3(0.11f * s, 0.00f * s, -0.01f * s), new Vector3(0.045f, 0.08f, 0.045f) * s, Mats.Hair);
+        Danao.Mesh(head, "hoop", MeshForge.Cylinder(24), new Vector3(0, 0.09f * s, 0.01f * s), new Vector3(0.16f * s, 0.016f * s, 0.15f * s), Mats.Gold);
 
-        BuildEye(head, new Vector3(-0.05f * s, 0.03f * s, 0.10f * s), s);
-        BuildEye(head, new Vector3(0.05f * s, 0.03f * s, 0.10f * s), s);
-        Danao.Mesh(head, "browL", MeshForge.Sphere(10, 8), new Vector3(-0.05f * s, 0.07f * s, 0.105f * s), new Vector3(0.055f, 0.012f, 0.018f) * s, Quaternion.Euler(0, 0, 14), Mats.Dark);
-        Danao.Mesh(head, "browR", MeshForge.Sphere(10, 8), new Vector3(0.05f * s, 0.07f * s, 0.105f * s), new Vector3(0.055f, 0.012f, 0.018f) * s, Quaternion.Euler(0, 0, -14), Mats.Dark);
-        Danao.Mesh(head, "nose", MeshForge.Sphere(12, 10), new Vector3(0, -0.005f * s, 0.125f * s), new Vector3(0.028f, 0.038f, 0.032f) * s, Mats.Skin);
-        Danao.Mesh(head, "mouth", MeshForge.Sphere(12, 8), new Vector3(0, -0.055f * s, 0.108f * s), new Vector3(0.055f, 0.016f, 0.02f) * s, Mats.Solid(new Color(0.78f, 0.32f, 0.32f), "lip"));
-        Danao.Mesh(head, "earL", MeshForge.Ear(), new Vector3(-0.12f * s, 0.01f * s, 0), new Vector3(s, s, s), Quaternion.Euler(0, -18, 8), Mats.Skin);
-        Danao.Mesh(head, "earR", MeshForge.Ear(), new Vector3(0.12f * s, 0.01f * s, 0), new Vector3(-s, s, s), Quaternion.Euler(0, 18, -8), Mats.Skin);
+        BuildEye(head, new Vector3(-0.048f * s, 0.035f * s, 0.092f * s), s);
+        BuildEye(head, new Vector3(0.048f * s, 0.035f * s, 0.092f * s), s);
+        Danao.Mesh(head, "browL", MeshForge.Sphere(10, 8), new Vector3(-0.048f * s, 0.072f * s, 0.095f * s), new Vector3(0.05f, 0.01f, 0.016f) * s, Quaternion.Euler(0, 0, 16), Mats.Dark);
+        Danao.Mesh(head, "browR", MeshForge.Sphere(10, 8), new Vector3(0.048f * s, 0.072f * s, 0.095f * s), new Vector3(0.05f, 0.01f, 0.016f) * s, Quaternion.Euler(0, 0, -16), Mats.Dark);
+        Danao.Mesh(head, "nose", MeshForge.Sphere(12, 10), new Vector3(0, 0.002f * s, 0.108f * s), new Vector3(0.022f, 0.032f, 0.026f) * s, Mats.Skin);
+        Danao.Mesh(head, "mouth", MeshForge.Sphere(12, 8), new Vector3(0, -0.052f * s, 0.096f * s), new Vector3(0.048f, 0.014f, 0.016f) * s, Mats.Solid(new Color(0.78f, 0.32f, 0.32f), "lip"));
+        Danao.Mesh(head, "earL", MeshForge.Ear(), new Vector3(-0.125f * s, 0.012f * s, -0.01f * s), new Vector3(s, s, s), Quaternion.Euler(0, -22, 8), Mats.Skin);
+        Danao.Mesh(head, "earR", MeshForge.Ear(), new Vector3(0.125f * s, 0.012f * s, -0.01f * s), new Vector3(-s, s, s), Quaternion.Euler(0, 22, -8), Mats.Skin);
 
         if (form >= 5)
         {
-            Danao.Mesh(head, "crown", MeshForge.Cylinder(20), new Vector3(0, 0.16f * s, 0), new Vector3(0.14f * s, 0.035f * s, 0.14f * s), Mats.Gold);
-            Danao.Mesh(head, "jewel", MeshForge.Crystal(), new Vector3(0, 0.21f * s, 0.03f * s), Vector3.one * 0.12f * s, Mats.Solid(new Color(0.9f, 0.12f, 0.16f), Color.white, new Color(0.45f, 0.04f, 0.04f), "jade"));
+            Danao.Mesh(head, "jewel", MeshForge.Crystal(), new Vector3(0, 0.18f * s, 0.04f * s), Vector3.one * 0.1f * s,
+                Mats.Solid(new Color(0.9f, 0.12f, 0.16f), Color.white, new Color(0.45f, 0.04f, 0.04f), "jade"));
         }
         return head;
     }
