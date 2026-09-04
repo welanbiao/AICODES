@@ -31,8 +31,8 @@ public class StageBackdrop : MonoBehaviour
         Danao.Mesh(_mountain, "ridgeR", MeshForge.Peak(), new Vector3(40f, -54f, 34f), new Vector3(38f, 52f, 72f), mtn);
         Danao.Mesh(_mountain, "far", MeshForge.Peak(), new Vector3(-22f, -70f, 150f), new Vector3(110f, 78f, 110f), rock);
         Danao.Mesh(_mountain, "far2", MeshForge.Peak(), new Vector3(64f, -76f, 175f), new Vector3(88f, 70f, 88f), mtn);
-        Danao.Mesh(_mountain, "cliffL", MeshForge.Peak(), new Vector3(-14f, -42f, 8f), new Vector3(18f, 40f, 36f), rock);
-        Danao.Mesh(_mountain, "cliffR", MeshForge.Peak(), new Vector3(15f, -43f, 12f), new Vector3(17f, 40f, 34f), rock);
+        Danao.Mesh(_mountain, "cliffL", MeshForge.Peak(), new Vector3(-22f, -42f, 8f), new Vector3(16f, 40f, 36f), rock);
+        Danao.Mesh(_mountain, "cliffR", MeshForge.Peak(), new Vector3(23f, -43f, 12f), new Vector3(16f, 40f, 34f), rock);
 
         for (int i = 0; i < 8; i++)
         {
