@@ -335,14 +335,20 @@ public partial class GameRoot
         if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.7f, 1f) : Danao.Gold;
     }
 
-    void ClearWorld()
+    void ClearWorld(bool resetPath = false)
     {
         foreach (var c in _chunks) if (c) Destroy(c);
         _chunks.Clear();
-        _nextChunk = Mathf.Max(0, Mathf.FloorToInt(player.position.z / ChunkLen) - 1);
+        _nextChunk = resetPath ? 0 : Mathf.Max(0, Mathf.FloorToInt(player.position.z / ChunkLen) - 1);
         var mobs = Object.FindObjectsByType<Mob>(FindObjectsSortMode.None);
         for (int i = 0; i < mobs.Length; i++) Destroy(mobs[i].gameObject);
         var extra = Object.FindObjectsByType<Bolt>(FindObjectsSortMode.None);
         for (int i = 0; i < extra.Length; i++) Destroy(extra[i].gameObject);
+        var pickups = Object.FindObjectsByType<PickupOrb>(FindObjectsSortMode.None);
+        for (int i = 0; i < pickups.Length; i++) Destroy(pickups[i].gameObject);
+        var barrels = Object.FindObjectsByType<Barrel>(FindObjectsSortMode.None);
+        for (int i = 0; i < barrels.Length; i++) Destroy(barrels[i].gameObject);
+        var gates = Object.FindObjectsByType<GateTrigger>(FindObjectsSortMode.None);
+        for (int i = 0; i < gates.Length; i++) Destroy(gates[i].gameObject);
     }
 }
