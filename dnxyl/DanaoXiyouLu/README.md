@@ -6,12 +6,13 @@ Unity 3D 闯关小游戏。主角孙悟空，参考《西游记》开篇：仙�
 
 ## 打开方法
 
-1. 安装 [Unity Hub](https://unity.com/download) 与 **Unity 2022.3 LTS**（Built-in 渲染管线即可，不要选 URP/HDRP 模板去新建工程）。
-2. Hub 里选 **Add** → 选中本目录 `DanaoXiyouLu`。
-3. 打开工程后进入 `Assets/Scenes/Main.unity`，点 Play。
-4. 也可菜单：**大闹西游路 → 打开主场景并播放**。
+用本机已装的 **Unity 2022.3.62f3c1**（中国区 LTS，路径 `D:\Unity\Editor\2022.3.62f3c1`）。
 
-第一次导入会编译脚本、生成 `Library`，大约一两分钟。
+1. Unity Hub 打开本目录 `DanaoXiyouLu`（版本选 2022.3.62f3c1）。
+2. 若提示版本/平台不一致：菜单 **大闹西游路 → 切到 Windows x64**，或 `File → Build Settings` 选 **PC, Mac & Linux Standalone**，Architecture **x86_64**。
+3. 打开 `Assets/Scenes/Main.unity`，点 Play。
+
+第一次导入会编译脚本，大约一两分钟。改过建模后重新进 Play 即可看到新模型。
 
 ## 操作
 
