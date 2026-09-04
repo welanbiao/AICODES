@@ -222,7 +222,7 @@ public static class MeshForge
     static Vector3 WarpEgg(Vector3 p)
     {
         Vector3 v = new Vector3(p.x * 0.70f, p.y * 1.20f, p.z * 0.78f);
-        float t = Mathf.Saturate((v.y + 0.6f) / 1.2f);
+        float t = Mathf.Clamp01((v.y + 0.6f) / 1.2f);
         float r = Mathf.Lerp(1.14f, 0.68f, t * t);
         v.x *= r;
         v.z *= r;
