@@ -149,7 +149,7 @@ public partial class GameRoot
         Danao.Label3D(go.transform, "lab", label, new Vector3(0, 1.18f, -0.12f), 0.045f, Color.white);
     }
 
-    void BuildGateIcon(Transform t, int elem, Color c, Material accent)
+    void BuildGateIcon(Transform t, int elem, Material accent)
     {
         if (stage == 1)
         {
