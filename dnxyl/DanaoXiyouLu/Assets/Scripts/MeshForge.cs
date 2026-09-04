@@ -150,15 +150,15 @@ public static class MeshForge
 
     public static Mesh Torso()
     {
-        return Get("torso", () => Lathe(new[]
+        return Get("torso2", () => Lathe(new[]
         {
-            new Vector2(0.10f, 0.42f),
-            new Vector2(0.18f, 0.34f),
-            new Vector2(0.22f, 0.18f),
-            new Vector2(0.20f, 0.02f),
-            new Vector2(0.16f, -0.14f),
+            new Vector2(0.11f, 0.44f),
+            new Vector2(0.22f, 0.36f),
+            new Vector2(0.24f, 0.20f),
+            new Vector2(0.20f, 0.04f),
+            new Vector2(0.17f, -0.12f),
             new Vector2(0.14f, -0.22f)
-        }, 24));
+        }, 26));
     }
 
     public static Mesh StaffPole()
