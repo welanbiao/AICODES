@@ -64,7 +64,6 @@ public static class EnemyBuilder
         {
             Danao.Prim(root.transform, "blade", PrimitiveType.Cube, new Vector3(0.45f, 0.2f, 0), new Vector3(0.08f, 0.55f, 0.02f), Mats.Gold);
         }
-        Danao.Glow(root.transform, c, 1.1f, 4.2f);
         var bob = root.AddComponent<BobSpin>();
         bob.spin = new Vector3(0, 50 + elem * 10, 0);
         bob.amp = 0.14f;

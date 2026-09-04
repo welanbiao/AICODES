@@ -219,7 +219,6 @@ public partial class GameRoot : MonoBehaviour
         b.vel = dir.normalized * 22f;
         b.dmg = AttackDamage();
         b.element = elem;
-        Danao.Glow(go.transform, c, 1.4f, 2.8f);
         Destroy(go, 2.3f);
     }
 

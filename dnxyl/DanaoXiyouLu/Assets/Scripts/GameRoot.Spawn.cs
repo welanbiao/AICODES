@@ -71,9 +71,10 @@ public partial class GameRoot
         }
         else
         {
-            int gain = m.xiuReward + Random.Range(0, 8);
-            if (stage >= 4) gain *= 3;
-            if (stage >= 5) gain *= 2;
+            int gain = 12 + stage * 6 + Random.Range(0, 10);
+            if (stage == 3) gain = Random.Range(55, 85);
+            if (stage == 4) gain = Random.Range(220, 330);
+            if (stage >= 5) gain = Random.Range(900, 1350);
             xiuwei += gain;
             FloatText.Show(m.transform.position + Vector3.up * 0.4f, "修为+" + gain, Danao.Gold);
         }
