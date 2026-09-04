@@ -209,6 +209,72 @@ public static class MeshForge
         }));
     }
 
+    static Vector3 WarpFetus(Vector3 p)
+    {
+        Vector3 v = new Vector3(p.x * 0.70f, p.y * 1.08f, p.z * 0.86f);
+        float head = Mathf.Clamp01((v.y - 0.12f) * 2.4f);
+        v *= 1f + head * 0.32f;
+        v.y += head * 0.05f;
+        float tuck = Mathf.Clamp01(-v.y + 0.18f);
+        float a = tuck * 0.95f;
+        float ny = v.y * Mathf.Cos(a) + v.z * Mathf.Sin(a) * 0.28f;
+        float nz = -v.y * Mathf.Sin(a) * 0.62f + v.z * Mathf.Cos(a);
+        v.y = ny;
+        v.z = nz + tuck * 0.14f;
+        if (v.z > 0f && Mathf.Abs(v.y) < 0.38f) v.z += 0.07f;
+        v.x *= 1f - tuck * 0.12f;
+        return v * 0.52f;
+    }
+
+    static Mesh BuildPeak()
+    {
+        Vector2[] profile =
+        {
+            new Vector2(0.00f, 1.00f),
+            new Vector2(0.05f, 0.96f),
+            new Vector2(0.10f, 0.88f),
+            new Vector2(0.16f, 0.74f),
+            new Vector2(0.24f, 0.58f),
+            new Vector2(0.36f, 0.38f),
+            new Vector2(0.52f, 0.16f),
+            new Vector2(0.72f, -0.06f),
+            new Vector2(0.95f, -0.28f),
+            new Vector2(1.18f, -0.48f)
+        };
+        var verts = new List<Vector3>();
+        var uv = new List<Vector2>();
+        var tris = new List<int>();
+        int segs = 40;
+        int rows = profile.Length;
+        for (int y = 0; y < rows; y++)
+        {
+            float v = y / (float)(rows - 1);
+            for (int x = 0; x <= segs; x++)
+            {
+                float u = x / (float)segs;
+                float ang = u * Mathf.PI * 2f;
+                float n = Mathf.PerlinNoise(u * 8.2f, v * 5.1f) * 0.14f;
+                float ridge = Mathf.Abs(Mathf.Sin(ang * 4f + v * 2f)) * 0.08f;
+                float r = profile[y].x * (1f + n + ridge);
+                verts.Add(new Vector3(Mathf.Cos(ang) * r, profile[y].y, Mathf.Sin(ang) * r));
+                uv.Add(new Vector2(u * 3f, v));
+            }
+        }
+        int cols = segs + 1;
+        for (int y = 0; y < rows - 1; y++)
+        for (int x = 0; x < segs; x++)
+        {
+            int i = y * cols + x;
+            tris.Add(i);
+            tris.Add(i + cols);
+            tris.Add(i + 1);
+            tris.Add(i + 1);
+            tris.Add(i + cols);
+            tris.Add(i + cols + 1);
+        }
+        return Finish(verts, null, uv, tris);
+    }
+
     static Vector3 WarpHead(Vector3 p)
     {
         float peach = 1f + 0.14f * Mathf.Exp(-p.y * p.y * 4.2f) - 0.22f * Mathf.Max(0f, -p.y - 0.12f);
