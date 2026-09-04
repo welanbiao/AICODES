@@ -119,7 +119,7 @@ public static class EnemyBuilder
     static GameObject Snake(Transform parent)
     {
         var root = Danao.Node(parent, "Snake", Vector3.up * 0.2f).gameObject;
-        var mat = Mats.Solid(new Color(0.25f, 0.7f, 0.35f), "snake");
+        var mat = Mats.Painted(new Color(0.55f, 0.9f, 0.45f), Color.white, new Color(0.04f, 0.12f, 0.04f), "snake", "Tex/tex_spirit_wood");
         for (int i = 0; i < 7; i++)
             Danao.Mesh(root.transform, "s" + i, MeshForge.Sphere(14, 10), new Vector3(Mathf.Sin(i * 0.7f) * 0.08f, 0.10f * i, -0.14f * i), Vector3.one * (0.26f - i * 0.018f), mat);
         Danao.Mesh(root.transform, "head", MeshForge.Drop(), new Vector3(0, 0.82f, 0.18f), new Vector3(0.32f, 0.22f, 0.42f), Quaternion.Euler(90, 0, 0), mat);
