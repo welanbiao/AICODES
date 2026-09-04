@@ -151,7 +151,10 @@ public partial class GameRoot : MonoBehaviour
         {
             _breakPrompted = true;
             ShowBreakPrompt(true);
+            Paused = true;
         }
+        if (_breakPrompted && !_breaking && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+            OnClickBreak();
     }
 
     void HandleMove()
