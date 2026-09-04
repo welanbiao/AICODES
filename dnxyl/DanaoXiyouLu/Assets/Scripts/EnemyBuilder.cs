@@ -184,7 +184,7 @@ public static class EnemyBuilder
     static GameObject Disciple(Transform parent, Color robe, bool sword)
     {
         var root = Danao.Node(parent, "Disciple", Vector3.zero).gameObject;
-        var rm = Mats.Solid(robe, Color.Lerp(robe, Color.white, 0.4f), robe * 0.1f, "disc" + robe.GetHashCode());
+        var rm = Mats.Painted(robe, Color.Lerp(robe, Color.white, 0.4f), robe * 0.1f, "disc" + robe.GetHashCode(), "Tex/tex_robe");
         Danao.Mesh(root.transform, "body", MeshForge.Robe(true), new Vector3(0, 0.55f, 0), Vector3.one * 0.95f, rm);
         Danao.Mesh(root.transform, "head", MeshForge.Sphere(20, 14), new Vector3(0, 1.18f, 0), new Vector3(0.24f, 0.28f, 0.24f), Mats.Skin);
         Danao.Mesh(root.transform, "hair", MeshForge.WukongHairCap(), new Vector3(0, 1.22f, -0.01f), new Vector3(0.55f, 0.45f, 0.55f), Mats.Dark);
