@@ -225,7 +225,7 @@ public partial class GameRoot : MonoBehaviour
         var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         Destroy(go.GetComponent<Collider>());
         go.transform.position = pos;
-        go.transform.localScale = Vector3.one * (stage == 1 ? 0.28f : 0.18f);
+        go.transform.localScale = Vector3.one * (stage == 1 ? 0.42f : 0.28f);
         int elem = stage == 1 ? StrongestElement() : -1;
         Color c = elem >= 0 ? Danao.WuXing[elem] : Danao.Gold;
         go.GetComponent<MeshRenderer>().sharedMaterial = Mats.Solid(c, Color.white, c, "bolt" + elem + stage);
