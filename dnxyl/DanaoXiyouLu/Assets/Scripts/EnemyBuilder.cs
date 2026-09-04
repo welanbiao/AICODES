@@ -161,7 +161,7 @@ public static class EnemyBuilder
     static GameObject Crab(Transform parent)
     {
         var root = Danao.Node(parent, "Crab", Vector3.up * 0.25f).gameObject;
-        var mat = Mats.Solid(new Color(0.85f, 0.25f, 0.18f), "crab");
+        var mat = Mats.Painted(new Color(0.9f, 0.4f, 0.22f), Color.white, new Color(0.15f, 0.04f, 0.02f), "crab", "Tex/tex_spirit_earth");
         Danao.Mesh(root.transform, "shell", MeshForge.Sphere(18, 12), Vector3.zero, new Vector3(0.75f, 0.28f, 0.55f), mat);
         Danao.Mesh(root.transform, "clawL", MeshForge.Drop(), new Vector3(-0.48f, 0.06f, 0.22f), new Vector3(0.32f, 0.14f, 0.22f), Quaternion.Euler(0, 40, 0), mat);
         Danao.Mesh(root.transform, "clawR", MeshForge.Drop(), new Vector3(0.48f, 0.06f, 0.22f), new Vector3(0.32f, 0.14f, 0.22f), Quaternion.Euler(0, -40, 0), mat);
