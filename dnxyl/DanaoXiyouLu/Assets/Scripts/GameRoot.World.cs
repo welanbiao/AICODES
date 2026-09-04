@@ -262,9 +262,10 @@ public partial class GameRoot
     {
         var go = new GameObject("Treasure");
         go.transform.SetParent(chunk, false);
-        go.transform.localPosition = new Vector3(Random.Range(-3f, 3f), 0.7f, z);
+        go.transform.localPosition = new Vector3(laneX, ItemY, z);
         Color c = stage == 1 ? Danao.WuXing[Random.Range(0, 5)] : Danao.Gold;
-        Danao.Prim(go.transform, "gem", PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.45f, Mats.Solid(c, Color.white, c * 0.5f, "gem" + z));
+        Danao.Mesh(go.transform, "gem", MeshForge.Sphere(16, 12), Vector3.zero, Vector3.one * 0.42f,
+            stage == 1 ? Mats.Spirit(Random.Range(0, 5)) : Mats.Painted(Color.white, Danao.Gold, Danao.Gold * 0.3f, "pillItem", "Tex/tex_pill"));
         Danao.Glow(go.transform, c, 1.2f, 3.5f);
         var col = go.AddComponent<SphereCollider>();
         col.isTrigger = true;
