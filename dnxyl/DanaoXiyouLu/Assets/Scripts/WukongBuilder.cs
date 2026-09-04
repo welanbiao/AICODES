@@ -19,25 +19,52 @@ public static class WukongBuilder
 
     static GameObject BuildStone(Transform parent)
     {
-        var root = Danao.Node(parent, "FiveColorStone", new Vector3(0, 0.95f, 0)).gameObject;
-        var core = Danao.Node(root.transform, "core", Vector3.zero);
+        var root = Danao.Node(parent, "FiveColorStone", new Vector3(0, 0.72f, 0)).gameObject;
+        var sit = Danao.Node(root.transform, "sit", Vector3.zero);
+        sit.localRotation = Quaternion.Euler(-18f, 12f, 8f);
+
+        var shell = Mats.Painted(Color.white, Danao.Gold, new Color(0.28f, 0.16f, 0.04f), "fetusShell", "Tex/tex_fetus_stone");
+        Danao.Mesh(sit, "egg", MeshForge.FetusEgg(), Vector3.zero, Vector3.one * 1.35f, shell);
+        Danao.Mesh(sit, "core", MeshForge.FetusBody(), new Vector3(0.02f, -0.02f, 0.04f), Vector3.one * 1.05f,
+            Mats.Solid(new Color(1f, 0.82f, 0.35f), Color.white, new Color(0.7f, 0.4f, 0.05f), "fetusGold"));
+        Danao.Mesh(sit, "head", MeshForge.Sphere(18, 14), new Vector3(0.02f, 0.16f, 0.10f), new Vector3(0.22f, 0.20f, 0.22f),
+            Mats.Solid(new Color(1f, 0.84f, 0.42f), "fetusHead"));
+        Danao.Mesh(sit, "armL", MeshForge.Capsule(10, 6), new Vector3(-0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, 35),
+            Mats.Solid(Danao.Gold, "fetusLimb"));
+        Danao.Mesh(sit, "armR", MeshForge.Capsule(10, 6), new Vector3(0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, -35),
+            Mats.Solid(Danao.Gold, "fetusLimb"));
+        Danao.Mesh(sit, "legL", MeshForge.Capsule(10, 6), new Vector3(-0.07f, -0.16f, 0.06f), new Vector3(0.08f, 0.13f, 0.08f), Quaternion.Euler(55, 10, 8),
+            Mats.Solid(Danao.Gold, "fetusLimb"));
+        Danao.Mesh(sit, "legR", MeshForge.Capsule(10, 6), new Vector3(0.07f, -0.16f, 0.06f), new Vector3(0.08f, 0.13f, 0.08f), Quaternion.Euler(55, -10, -8),
+            Mats.Solid(Danao.Gold, "fetusLimb"));
+
         Color[] cols = Danao.WuXing;
         for (int i = 0; i < 5; i++)
         {
             float a = i * 72f;
-            var mat = Mats.Solid(cols[i], Color.white, cols[i] * 0.55f, "crystal" + i);
-            Danao.Mesh(core, "facet" + i, MeshForge.Crystal(),
-                Quaternion.Euler(12, a, 8) * Vector3.up * 0.08f + Quaternion.Euler(0, a, 0) * Vector3.forward * 0.12f,
-                new Vector3(0.85f, 1.15f, 0.75f),
-                Quaternion.Euler(18 + i * 7, a, 10), mat);
+            var mat = Mats.Solid(cols[i], Color.white, cols[i] * 0.4f, "crystal" + i);
+            Danao.Mesh(sit, "vein" + i, MeshForge.Crystal(),
+                Quaternion.Euler(0, a, 0) * new Vector3(0f, 0.02f, 0.28f),
+                new Vector3(0.22f, 0.42f, 0.18f),
+                Quaternion.Euler(18 + i * 6, a, 12), mat);
         }
-        Danao.Mesh(core, "heart", MeshForge.Sphere(28, 18), Vector3.zero, Vector3.one * 0.55f,
-            Mats.Solid(Color.white, Danao.Gold, new Color(0.9f, 0.7f, 0.2f), "stoneHeart"));
-        Danao.Glow(root.transform, Danao.Gold, 0.55f, 3.2f);
+
+        var nest = Danao.Node(root.transform, "nest", new Vector3(0, -0.42f, 0));
+        for (int i = 0; i < 5; i++)
+        {
+            Color c = Color.Lerp(Color.white, cols[i], 0.45f);
+            c.a = 0.85f;
+            var puff = Danao.Mesh(nest, "n" + i, MeshForge.Sphere(12, 8),
+                Quaternion.Euler(0, i * 72f, 0) * new Vector3(0.28f, 0, 0),
+                new Vector3(0.42f, 0.16f, 0.36f), Mats.Cloud(c, "nest" + i));
+            puff.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
+        Danao.Glow(root.transform, Danao.Gold, 0.4f, 3.4f);
         var bob = root.AddComponent<BobSpin>();
-        bob.spin = new Vector3(8, 35, 5);
-        bob.amp = 0.16f;
-        bob.freq = 1.8f;
+        bob.spin = new Vector3(0, 12, 0);
+        bob.amp = 0.06f;
+        bob.freq = 1.3f;
         return root;
     }
 
