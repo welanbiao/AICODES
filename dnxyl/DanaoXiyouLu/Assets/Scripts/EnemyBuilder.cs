@@ -95,7 +95,7 @@ public static class EnemyBuilder
     static GameObject Beast(Transform parent, Color fur, float scale, bool stripes)
     {
         var root = Danao.Node(parent, "Beast", Vector3.zero).gameObject;
-        var mat = Mats.Solid(fur, Color.Lerp(fur, Color.white, 0.3f), fur * 0.08f, "beast" + fur.GetHashCode());
+        var mat = Mats.Solid(fur, Color.Lerp(fur, Color.white, 0.3f), fur * 0.08f, "furBeast" + fur.GetHashCode());
         Danao.Mesh(root.transform, "body", MeshForge.BeastBody(), new Vector3(0, 0.42f * scale, 0), new Vector3(0.9f, 0.7f, 1.35f) * scale, Quaternion.Euler(90, 0, 0), mat);
         Danao.Mesh(root.transform, "head", MeshForge.Sphere(20, 14), new Vector3(0, 0.58f * scale, 0.42f * scale), new Vector3(0.38f, 0.34f, 0.40f) * scale, mat);
         Danao.Mesh(root.transform, "snout", MeshForge.Drop(), new Vector3(0, 0.48f * scale, 0.62f * scale), new Vector3(0.22f, 0.16f, 0.28f) * scale, Quaternion.Euler(90, 0, 0), mat);

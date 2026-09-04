@@ -58,6 +58,7 @@ public partial class GameRoot : MonoBehaviour
         ApplyStageVisuals();
         RebuildModel();
         EnsureChunks();
+        if (_backdrop != null) _backdrop.Follow(player.position);
         ShowLoading();
     }
 

@@ -221,7 +221,8 @@ public partial class GameRoot
                 Danao.Mesh(t, "cork", MeshForge.Cylinder(10), new Vector3(0, 0.32f, 0), new Vector3(0.08f, 0.08f, 0.08f), Mats.Cloth);
                 break;
             default:
-                Danao.Mesh(t, "pill", MeshForge.Sphere(16, 12), Vector3.zero, Vector3.one * 0.42f, Mats.Gold);
+                Danao.Mesh(t, "pill", MeshForge.Sphere(16, 12), Vector3.zero, Vector3.one * 0.42f,
+                    Mats.Painted(Color.white, Danao.Gold, new Color(0.35f, 0.12f, 0.04f), "pillIcon", "Tex/tex_pill"));
                 Danao.Mesh(t, "band", MeshForge.Cylinder(12), Vector3.zero, new Vector3(0.44f, 0.05f, 0.44f), Mats.Trim);
                 break;
         }
