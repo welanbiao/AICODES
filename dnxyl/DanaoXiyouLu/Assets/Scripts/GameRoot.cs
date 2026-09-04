@@ -53,8 +53,8 @@ public partial class GameRoot : MonoBehaviour
     void Start()
     {
         BuildCamera();
-        BuildPlayer();
         BuildSun();
+        BuildPlayer();
         BuildHud();
         ApplyStageVisuals();
         RebuildModel();
