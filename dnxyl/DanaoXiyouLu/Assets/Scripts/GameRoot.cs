@@ -202,7 +202,7 @@ public partial class GameRoot : MonoBehaviour
         if (_run != null) _run.attack = 1f;
 
         Transform target = NearestMob();
-        Vector3 muzzle = player.position + Vector3.up * (stage == 1 ? 1.1f : 1.15f) + player.forward * 0.4f;
+        Vector3 muzzle = player.position + Vector3.up * (stage == 1 ? 1.6f : 1.7f) + player.forward * 0.55f;
         Vector3 dir = Vector3.forward;
         if (target != null)
         {
