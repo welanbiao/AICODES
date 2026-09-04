@@ -62,7 +62,7 @@ public class StageBackdrop : MonoBehaviour
             Color c = Color.Lerp(Color.white, Danao.WuXing[e], 0.42f);
             c = Color.Lerp(c, new Color(1f, 0.82f, 0.9f), 0.2f);
             float x = Random.Range(-95f, 95f);
-            float y = Random.Range(-36f, -22f);
+            float y = Random.Range(-30f, -16f);
             float z = Random.Range(-40f, 140f);
             var r = Danao.Mesh(_clouds, "sea" + i, MeshForge.Sphere(14, 10),
                 new Vector3(x, y, z),
