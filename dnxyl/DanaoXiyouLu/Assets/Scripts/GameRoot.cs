@@ -314,6 +314,35 @@ public partial class GameRoot : MonoBehaviour
         }
     }
 
+    void RestartRun()
+    {
+        StopAllCoroutines();
+        _breaking = false;
+        _breakPrompted = false;
+        Paused = false;
+        ShowBreakPrompt(false);
+        if (_endRoot != null) _endRoot.gameObject.SetActive(false);
+
+        stage = 1;
+        for (int i = 0; i < 5; i++) wuXing[i] = 0;
+        xiuwei = 0;
+        maxHp = 100;
+        hp = maxHp;
+        _playTime = 0f;
+        _x = 0f;
+        _atkCd = 0f;
+        _hurtCd = 0.8f;
+        _spawnCd = 1.2f;
+        _gateLock = 0f;
+        player.position = Vector3.zero;
+
+        ClearWorld(true);
+        ApplyStageVisuals();
+        RebuildModel();
+        EnsureChunks();
+        FloatText.Show(player.position + Vector3.up * 2f, "元神溃散 · 从头再炼", new Color(1f, 0.45f, 0.35f));
+    }
+
     void LateUpdate()
     {
         _hurtCd -= Time.deltaTime;
