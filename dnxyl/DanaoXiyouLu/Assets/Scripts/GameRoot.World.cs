@@ -110,10 +110,13 @@ public partial class GameRoot
         else PlaceTreasure(chunk, z0);
     }
 
+    const float LaneX = 2.7f;
+    const float LaneY = 0f;
+
     void PlaceGates(Transform chunk, float z)
     {
-        MakeGate(chunk, new Vector3(-2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
-        MakeGate(chunk, new Vector3(2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(-LaneX, LaneY, z), Random.Range(0, 5), Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(LaneX, LaneY, z), Random.Range(0, 5), Random.Range(28, 55));
     }
 
     void MakeGate(Transform parent, Vector3 pos, int elem, int add)
