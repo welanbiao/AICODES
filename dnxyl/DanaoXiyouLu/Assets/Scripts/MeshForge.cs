@@ -558,6 +558,23 @@ public static class MeshForge
         return Finish(verts, null, uv, tris);
     }
 
+    static Mesh BuildBillboard()
+    {
+        var verts = new List<Vector3>
+        {
+            new Vector3(-0.5f, -0.5f, 0f),
+            new Vector3(0.5f, -0.5f, 0f),
+            new Vector3(0.5f, 0.5f, 0f),
+            new Vector3(-0.5f, 0.5f, 0f)
+        };
+        var uv = new List<Vector2>
+        {
+            new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1)
+        };
+        var tris = new List<int> { 0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2 };
+        return Finish(verts, null, uv, tris);
+    }
+
     static Mesh Finish(List<Vector3> verts, List<Vector3> nrm, List<Vector2> uv, List<int> tris)
     {
         var m = new Mesh();

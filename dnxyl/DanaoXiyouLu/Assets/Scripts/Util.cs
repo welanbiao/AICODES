@@ -180,6 +180,60 @@ public static class Tex
         return t;
     }
 
+    public static Texture2D SunArt()
+    {
+        Texture2D t;
+        if (Files.TryGetValue("sunArt", out t) && t != null) return t;
+        byte[] bytes = null;
+        string[] paths =
+        {
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "3.png")),
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "3.PNG")),
+            Application.dataPath + "/Resources/Tex/tex_sun.png"
+        };
+        for (int i = 0; i < paths.Length; i++)
+        {
+            if (System.IO.File.Exists(paths[i]))
+            {
+                bytes = System.IO.File.ReadAllBytes(paths[i]);
+                break;
+            }
+        }
+        if (bytes != null)
+        {
+            t = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+            t.LoadImage(bytes);
+            PunchPaper(t);
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.filterMode = FilterMode.Bilinear;
+            t.anisoLevel = 4;
+            Files["sunArt"] = t;
+            return t;
+        }
+        return Res("Tex/tex_sun", Soft);
+    }
+
+    static void PunchPaper(Texture2D tex)
+    {
+        Color[] px = tex.GetPixels();
+        for (int i = 0; i < px.Length; i++)
+        {
+            Color c = px[i];
+            float lum = c.r * 0.30f + c.g * 0.50f + c.b * 0.20f;
+            float chroma = Mathf.Max(c.r, Mathf.Max(c.g, c.b)) - Mathf.Min(c.r, Mathf.Min(c.g, c.b));
+            if (lum > 0.86f && chroma < 0.12f)
+            {
+                c.r = 0f;
+                c.g = 0f;
+                c.b = 0f;
+                c.a = 0f;
+                px[i] = c;
+            }
+        }
+        tex.SetPixels(px);
+        tex.Apply(true, false);
+    }
+
     public static Texture2D White
     {
         get
