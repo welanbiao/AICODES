@@ -11,6 +11,7 @@ public partial class GameRoot : MonoBehaviour
     public int hp = 100;
     public int maxHp = 100;
     public bool Paused;
+    public const int QiNeed = 99;
 
     public Transform player;
     public Transform modelSlot;
