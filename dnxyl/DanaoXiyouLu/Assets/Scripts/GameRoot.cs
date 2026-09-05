@@ -226,7 +226,6 @@ public partial class GameRoot : MonoBehaviour
         mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         float life = 2.3f;
         float speed = 22f;
-        Vector3 colSize = Vector3.one * 0.22f;
         bool faceVel = false;
 
         switch (stage)
