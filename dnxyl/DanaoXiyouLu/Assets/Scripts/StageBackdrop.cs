@@ -66,26 +66,33 @@ public class StageBackdrop : MonoBehaviour
     void TickSun()
     {
         float t = Mathf.Repeat(Time.time / _period, 1f);
-        const float span = 70f;
         const float peakH = 52f;
         const float z = 98f;
+        Camera cam = Camera.main;
+        float leftX = -120f;
+        float rightX = 120f;
+        if (cam != null)
+        {
+            float depth = Mathf.Abs(z - (cam.transform.position.z - transform.position.z));
+            if (depth < 8f) depth = 98f;
+            Vector3 lp = cam.ViewportToWorldPoint(new Vector3(0f, 0.32f, depth));
+            Vector3 rp = cam.ViewportToWorldPoint(new Vector3(1f, 0.32f, depth));
+            leftX = lp.x - transform.position.x;
+            rightX = rp.x - transform.position.x;
+        }
         Vector3 local = new Vector3(
-            Mathf.Lerp(-span, span, t),
+            Mathf.Lerp(leftX, rightX, t),
             SeaY + peakH * Mathf.Sin(t * Mathf.PI),
             z);
         if (_sunRig != null)
         {
             _sunRig.localPosition = local;
-            Camera cam = Camera.main;
             if (cam != null)
             {
                 Vector3 toCam = cam.transform.position - _sunRig.position;
                 if (toCam.sqrMagnitude > 0.01f)
                     _sunRig.rotation = Quaternion.LookRotation(toCam.normalized, Vector3.up);
             }
-            float above = Mathf.Clamp01((local.y - SeaY) / peakH);
-            float size = Mathf.Lerp(1.18f, 0.92f, above);
-            _sunRig.localScale = Vector3.one * size;
             if (_sunDisc != null)
                 _sunDisc.Rotate(0f, 0f, 8f * Time.deltaTime, Space.Self);
         }
