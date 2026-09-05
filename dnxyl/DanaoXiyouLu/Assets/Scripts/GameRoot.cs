@@ -243,7 +243,6 @@ public partial class GameRoot : MonoBehaviour
                 mr.sharedMaterial = Mats.Spirit(2);
                 faceVel = true;
                 speed = 24f;
-                colSize = new Vector3(0.18f, 0.55f, 0.18f);
                 break;
             case 4:
                 mf.sharedMesh = MeshForge.StaffPole();
@@ -252,7 +251,6 @@ public partial class GameRoot : MonoBehaviour
                 mr.sharedMaterial = Mats.Solid(new Color(0.45f, 0.28f, 0.12f), "bark");
                 faceVel = true;
                 speed = 20f;
-                colSize = new Vector3(0.12f, 0.4f, 0.12f);
                 break;
             default:
                 mf.sharedMesh = MeshForge.Sphere(16, 12);
