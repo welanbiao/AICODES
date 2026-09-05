@@ -371,6 +371,11 @@ public partial class GameRoot
             sky.SetFloat("_AtmosphereThickness", 0.9f + stage * 0.08f);
             sky.SetColor("_SkyTint", Color.Lerp(skyA, skyB, 0.4f));
             sky.SetColor("_GroundColor", fog);
+            if (stage == 1)
+            {
+                if (sky.HasProperty("_SunDisk")) sky.SetFloat("_SunDisk", 0f);
+                if (sky.HasProperty("_SunSize")) sky.SetFloat("_SunSize", 0f);
+            }
             RenderSettings.skybox = sky;
         }
         DynamicGI.UpdateEnvironment();
