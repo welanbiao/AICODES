@@ -119,6 +119,8 @@ public class StageBackdrop : MonoBehaviour
             _sky.SetFloat("_AtmosphereThickness", 0.85f + (1f - Mathf.Sin(t * Mathf.PI)) * 0.35f);
             if (_sky.HasProperty("_SunDisk")) _sky.SetFloat("_SunDisk", 0f);
             if (_sky.HasProperty("_SunSize")) _sky.SetFloat("_SunSize", 0f);
+            if (_sky.HasProperty("_SunDisk")) _sky.SetFloat("_SunDisk", 0f);
+            if (_sky.HasProperty("_SunSize")) _sky.SetFloat("_SunSize", 0f);
         }
         RenderSettings.ambientSkyColor = Color.Lerp(new Color(0.45f, 0.55f, 0.85f), new Color(0.55f, 0.72f, 1f), Mathf.Sin(t * Mathf.PI));
     }
