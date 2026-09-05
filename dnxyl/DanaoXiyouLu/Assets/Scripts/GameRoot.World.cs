@@ -29,8 +29,37 @@ public partial class GameRoot
 
         if (stage == 1)
         {
-            Danao.Mesh(go.transform, "ridge", MeshForge.Cylinder(16), new Vector3(0, -0.22f, ChunkLen * 0.5f),
-                new Vector3(9.2f, 0.28f, ChunkLen), Mats.Solid(new Color(0.82f, 0.74f, 0.66f), "mtnRock"));
+            Color bed = new Color(1f, 0.92f, 0.78f, 0.55f);
+            var carpet = Danao.Mesh(go.transform, "cloudBed", MeshForge.Quad(),
+                new Vector3(0f, -0.12f, ChunkLen * 0.5f),
+                new Vector3(9.6f, 1f, ChunkLen),
+                Mats.Cloud(bed, "bed", new Vector4(0f, 0.04f, 0f, 0f)));
+            carpet.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            for (int i = 0; i < 5; i++)
+            {
+                float x = Mathf.Lerp(-4.0f, 4.0f, (i + 0.5f) / 5f);
+                var strip = Danao.Mesh(go.transform, "lane" + i, MeshForge.Quad(),
+                    new Vector3(x, -0.04f, ChunkLen * 0.5f),
+                    new Vector3(1.85f, 1f, ChunkLen),
+                    Mats.CloudLane(i));
+                strip.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                for (int k = 0; k < 4; k++)
+                {
+                    float z = 2.2f + k * (ChunkLen / 4f);
+                    float bump = (k % 2 == 0 ? -0.28f : 0.28f);
+                    var puff = Danao.Mesh(go.transform, "puff" + i + "_" + k, MeshForge.Sphere(12, 8),
+                        new Vector3(x + bump, 0.02f, z),
+                        new Vector3(1.25f, 0.28f, 1.7f),
+                        Mats.CloudLane(i));
+                    puff.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+            Color bank = Color.Lerp(Color.white, new Color(1f, 0.82f, 0.55f), 0.35f);
+            bank.a = 0.8f;
+            Danao.Mesh(go.transform, "bankL", MeshForge.Sphere(14, 10), new Vector3(-5.4f, 0.15f, ChunkLen * 0.5f),
+                new Vector3(1.6f, 0.7f, ChunkLen * 0.92f), Mats.Cloud(bank, "bank", new Vector4(0f, 0.03f, 0f, 0f)));
+            Danao.Mesh(go.transform, "bankR", MeshForge.Sphere(14, 10), new Vector3(5.4f, 0.15f, ChunkLen * 0.5f),
+                new Vector3(1.6f, 0.7f, ChunkLen * 0.92f), Mats.Cloud(bank, "bank", new Vector4(0f, 0.03f, 0f, 0f)));
         }
         else
         {
