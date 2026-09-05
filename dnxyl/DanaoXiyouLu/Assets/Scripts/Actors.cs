@@ -105,7 +105,7 @@ public class Bolt : MonoBehaviour
     {
         transform.position += vel * Time.deltaTime;
         if (faceVel && vel.sqrMagnitude > 0.01f)
-            transform.rotation = Quaternion.LookRotation(vel.normalized) * Quaternion.Euler(90f, 0f, 0f);
+            transform.rotation = Quaternion.FromToRotation(Vector3.up, vel.normalized);
         else
             transform.Rotate(0, 400f * Time.deltaTime, 0);
         _life -= Time.deltaTime;
