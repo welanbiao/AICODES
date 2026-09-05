@@ -119,11 +119,8 @@ public partial class GameRoot
         go.transform.localPosition = pos;
 
         Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
-        Color mist = Color.Lerp(Color.white, c, 0.4f);
-        mist.a = 0.85f;
-        var cushion = Danao.Mesh(go.transform, "cushion", MeshForge.Sphere(14, 10), new Vector3(0, 0.16f, 0),
-            new Vector3(0.95f, 0.22f, 0.95f), Mats.Cloud(mist, "pad" + elem));
-        cushion.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        Danao.Mesh(go.transform, "cushion", MeshForge.Cylinder(16), new Vector3(0, 0.12f, 0),
+            new Vector3(0.9f, 0.18f, 0.9f), Mats.Solid(new Color(0.55f, 0.42f, 0.32f), "stele"));
 
         var icon = Danao.Node(go.transform, "icon", new Vector3(0, ItemY, 0));
         BuildGateIcon(icon, elem, stage == 1 ? Mats.Spirit(elem) : Mats.Gold);

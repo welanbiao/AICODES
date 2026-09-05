@@ -238,7 +238,7 @@ public partial class GameRoot : MonoBehaviour
                 break;
             case 3:
                 mf.sharedMesh = MeshForge.Cylinder(12);
-                go.transform.localScale = new Vector3(0.22f, 0.22f, 1.35f);
+                go.transform.localScale = new Vector3(0.22f, 1.35f, 0.22f);
                 go.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
                 mr.sharedMaterial = Mats.Spirit(2);
                 faceVel = true;
