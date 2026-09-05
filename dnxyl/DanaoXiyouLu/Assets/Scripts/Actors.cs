@@ -59,8 +59,13 @@ public class Mob : MonoBehaviour
             transform.position += step * speed * Time.deltaTime;
         }
         float dist = Vector3.Distance(new Vector3(p.x, 0, p.z), new Vector3(t.x, 0, t.z));
-        if (dist < 1.12f && p.z > t.z - 0.25f)
+        if (dist < 1.15f && p.z > t.z - 0.25f)
         {
+            if (GameRoot.I.stage == 1)
+            {
+                GameRoot.I.CaptureSpirit(this);
+                return;
+            }
             GameRoot.I.HurtPlayer(6 + GameRoot.I.stage * 2);
             transform.position += new Vector3(Mathf.Sign(p.x - t.x + 0.01f) * 1.2f, 0, 1.4f);
         }
