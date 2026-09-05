@@ -118,7 +118,6 @@ public partial class GameRoot
         go.transform.SetParent(parent, false);
         go.transform.localPosition = pos;
 
-        Color c = stage == 1 ? Danao.WuXing[elem] : Danao.Gold;
         Danao.Mesh(go.transform, "cushion", MeshForge.Cylinder(16), new Vector3(0, 0.12f, 0),
             new Vector3(0.9f, 0.18f, 0.9f), Mats.Solid(new Color(0.55f, 0.42f, 0.32f), "stele"));
 
