@@ -335,9 +335,9 @@ public partial class GameRoot : MonoBehaviour
 
     void TickCamera()
     {
-        Vector3 want = player.position + (stage == 1 ? new Vector3(0, 8.8f, -13.2f) : new Vector3(0, 10.5f, -11.5f));
+        Vector3 want = player.position + (stage == 1 ? new Vector3(0, 7.6f, -12.5f) : new Vector3(0, 10.5f, -11.5f));
         _cam.transform.position = Vector3.Lerp(_cam.transform.position, want, 1f - Mathf.Exp(-8f * Time.deltaTime));
-        _cam.transform.LookAt(player.position + (stage == 1 ? new Vector3(0, 1.4f, 11f) : new Vector3(0, 1.1f, 7.5f)));
+        _cam.transform.LookAt(player.position + (stage == 1 ? new Vector3(0, 0.9f, 14f) : new Vector3(0, 1.1f, 7.5f)));
         if (_backdrop != null) _backdrop.Follow(player.position);
     }
 

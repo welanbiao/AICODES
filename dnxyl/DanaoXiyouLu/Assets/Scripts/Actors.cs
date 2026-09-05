@@ -98,12 +98,16 @@ public class Bolt : MonoBehaviour
     public float dmg = 12;
     public int element = -1;
     public Vector3 vel;
+    public bool faceVel;
     float _life = 2.2f;
 
     void Update()
     {
         transform.position += vel * Time.deltaTime;
-        transform.Rotate(0, 400f * Time.deltaTime, 0);
+        if (faceVel && vel.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.LookRotation(vel.normalized) * Quaternion.Euler(90f, 0f, 0f);
+        else
+            transform.Rotate(0, 400f * Time.deltaTime, 0);
         _life -= Time.deltaTime;
         if (_life <= 0) Destroy(gameObject);
     }
