@@ -266,7 +266,7 @@ public partial class GameRoot
         var rb = go.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         var p = go.AddComponent<PickupOrb>();
-        if (stage == 1) { p.element = elem; p.qi = Random.Range(22, 48); }
+        if (stage == 1) { p.element = elem; p.qi = Random.Range(2, 5); }
         else { p.xiu = 40 + stage * 30; }
         p.heal = Random.value > 0.7f ? 12 : 0;
         go.AddComponent<BobSpin>().amp = 0.08f;
