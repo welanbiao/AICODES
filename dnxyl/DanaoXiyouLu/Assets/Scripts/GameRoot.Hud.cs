@@ -127,6 +127,8 @@ public partial class GameRoot
 
     void TickHud()
     {
+        if (_stageText != null)
+            _stageText.text = "第" + stage + "关  " + Danao.StageNames[Mathf.Clamp(stage - 1, 0, 4)];
         if (stage == 1)
         {
             if (_xiuText != null) _xiuText.text = "五灵  " + SumQi() + " / " + (QiNeed * 5);
