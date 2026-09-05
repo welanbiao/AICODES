@@ -50,25 +50,9 @@ public class StageBackdrop : MonoBehaviour
         }
 
         _sunRig = Danao.Node(transform, "sunRig", Vector3.zero);
-        var core = Danao.Mesh(_sunRig, "core", MeshForge.Sphere(20, 14), Vector3.zero, Vector3.one * 11f,
-            Mats.Glow(new Color(1f, 0.62f, 0.18f, 0.55f), "sunCore"));
-        core.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        var disc = Danao.Mesh(_sunRig, "disc", MeshForge.Billboard(), Vector3.zero, new Vector3(38f, 38f, 1f), Mats.SunBall());
+        var disc = Danao.Mesh(_sunRig, "disc", MeshForge.Billboard(), Vector3.zero, new Vector3(46f, 46f, 1f), Mats.SunBall());
         disc.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         _sunDisc = disc.transform;
-        var halo = Danao.Mesh(_sunRig, "halo", MeshForge.Billboard(), Vector3.zero, new Vector3(52f, 52f, 1f),
-            Mats.Glow(new Color(1f, 0.55f, 0.18f, 0.32f), "sunHalo"));
-        halo.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        for (int i = 0; i < 6; i++)
-        {
-            float a = i / 6f * Mathf.PI * 2f;
-            var flare = Danao.Mesh(_sunRig, "flare" + i, MeshForge.Flame(),
-                new Vector3(Mathf.Cos(a) * 9.5f, Mathf.Sin(a) * 9.5f, -0.4f),
-                new Vector3(3.2f, 5.4f, 3.2f),
-                Quaternion.Euler(0f, 0f, a * Mathf.Rad2Deg - 90f),
-                Mats.Glow(new Color(1f, 0.45f, 0.12f, 0.4f), "sunFlare"));
-            flare.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        }
     }
 
     public void Follow(Vector3 playerPos)
