@@ -190,13 +190,14 @@ public partial class GameRoot : MonoBehaviour
 
     void HandleAttack()
     {
+        if (stage <= 1) return;
         _atkCd -= Time.deltaTime;
         if (_atkCd > 0) return;
         _atkCd = FireInterval();
         if (_run != null) _run.attack = 1f;
 
         Transform target = NearestMob();
-        Vector3 muzzle = player.position + Vector3.up * (stage == 1 ? 1.1f : 1.15f) + player.forward * 0.4f;
+        Vector3 muzzle = player.position + Vector3.up * 1.15f + player.forward * 0.4f;
         Vector3 dir = Vector3.forward;
         if (target != null)
         {
@@ -216,13 +217,54 @@ public partial class GameRoot : MonoBehaviour
 
     void SpawnBolt(Vector3 pos, Vector3 dir)
     {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        Destroy(go.GetComponent<Collider>());
+        dir = dir.normalized;
+        var go = new GameObject("Bolt");
         go.transform.position = pos;
-        go.transform.localScale = Vector3.one * (stage == 1 ? 0.28f : 0.18f);
-        int elem = stage == 1 ? StrongestElement() : -1;
-        Color c = elem >= 0 ? Danao.WuXing[elem] : Danao.Gold;
-        go.GetComponent<MeshRenderer>().sharedMaterial = Mats.Solid(c, Color.white, c, "bolt" + elem + stage);
+        go.transform.rotation = Quaternion.LookRotation(dir);
+        var mf = go.AddComponent<MeshFilter>();
+        var mr = go.AddComponent<MeshRenderer>();
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        float life = 2.3f;
+        float speed = 22f;
+        Vector3 colSize = Vector3.one * 0.22f;
+        bool faceVel = false;
+
+        switch (stage)
+        {
+            case 2:
+                mf.sharedMesh = MeshForge.Golem();
+                go.transform.localScale = Vector3.one * 0.32f;
+                mr.sharedMaterial = Mats.Solid(new Color(0.55f, 0.5f, 0.45f), "mtnRock");
+                speed = 18f;
+                break;
+            case 3:
+                mf.sharedMesh = MeshForge.Cylinder(12);
+                go.transform.localScale = new Vector3(0.22f, 0.22f, 1.35f);
+                go.transform.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(90f, 0f, 0f);
+                mr.sharedMaterial = Mats.Spirit(2);
+                faceVel = true;
+                speed = 24f;
+                colSize = new Vector3(0.18f, 0.55f, 0.18f);
+                break;
+            case 4:
+                mf.sharedMesh = MeshForge.StaffPole();
+                go.transform.localScale = new Vector3(0.07f, 0.85f, 0.07f);
+                go.transform.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(90f, 0f, 0f);
+                mr.sharedMaterial = Mats.Solid(new Color(0.45f, 0.28f, 0.12f), "bark");
+                faceVel = true;
+                speed = 20f;
+                colSize = new Vector3(0.12f, 0.4f, 0.12f);
+                break;
+            default:
+                mf.sharedMesh = MeshForge.Sphere(16, 12);
+                go.transform.localScale = Vector3.one * 0.28f;
+                mr.sharedMaterial = Mats.Spirit(3);
+                Danao.Mesh(go.transform, "fl", MeshForge.Flame(), new Vector3(0f, 0f, -0.12f), new Vector3(0.55f, 0.7f, 0.55f),
+                    Quaternion.Euler(90f, 0f, 0f), Mats.Spirit(3));
+                speed = 23f;
+                break;
+        }
+
         var sc = go.AddComponent<SphereCollider>();
         sc.isTrigger = true;
         sc.radius = 0.55f;
@@ -230,10 +272,11 @@ public partial class GameRoot : MonoBehaviour
         rb.isKinematic = true;
         rb.useGravity = false;
         var b = go.AddComponent<Bolt>();
-        b.vel = dir.normalized * 22f;
+        b.vel = dir * speed;
         b.dmg = AttackDamage();
-        b.element = elem;
-        Destroy(go, 2.3f);
+        b.element = -1;
+        b.faceVel = faceVel;
+        Destroy(go, life);
     }
 
     Transform NearestMob()
