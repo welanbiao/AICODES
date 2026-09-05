@@ -581,6 +581,22 @@ public static class Mats
         return Painted(Color.white, Color.white, c * 0.22f, "spiritPaint" + elem, files[Mathf.Clamp(elem, 0, 4)]);
     }
 
+    public static Material Ocean()
+    {
+        if (Cache.ContainsKey("ocean")) return Cache["ocean"];
+        var m = Painted(new Color(0.18f, 0.48f, 0.82f), new Color(0.55f, 0.85f, 1f), new Color(0.02f, 0.1f, 0.18f), "ocean", "Tex/tex_spirit_water");
+        m.SetTextureScale("_MainTex", new Vector2(18f, 12f));
+        return m;
+    }
+
+    public static Material OceanFar()
+    {
+        if (Cache.ContainsKey("oceanFar")) return Cache["oceanFar"];
+        var m = Painted(new Color(0.12f, 0.38f, 0.72f), new Color(0.4f, 0.7f, 1f), new Color(0.03f, 0.08f, 0.16f), "oceanFar", "Tex/tex_spirit_water");
+        m.SetTextureScale("_MainTex", new Vector2(10f, 6f));
+        return m;
+    }
+
     public static Material Skin { get { return Solid(Danao.Skin, new Color(1, 0.7f, 0.5f), new Color(0.12f, 0.04f, 0.02f), "skin"); } }
     public static Material Fur { get { return Solid(Danao.Fur, Danao.Gold, new Color(0.18f, 0.08f, 0.01f), "fur"); } }
     public static Material Hair { get { return Solid(Danao.Hair, new Color(1, 0.95f, 0.55f), new Color(0.28f, 0.14f, 0.02f), "hair"); } }
