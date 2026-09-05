@@ -44,8 +44,13 @@ Shader "Danao/Sun"
             {
                 fixed4 t = tex2D(_MainTex, i.uv);
                 float lum = dot(t.rgb, fixed3(0.30, 0.50, 0.20));
-                clip(lum - 0.05);
-                return t * _Tint * _Boost * lum;
+                float mn = min(t.r, min(t.g, t.b));
+                float mx = max(t.r, max(t.g, t.b));
+                float chroma = mx - mn;
+                float paper = saturate((lum - 0.82) / 0.14) * saturate(1.15 - chroma * 9.0);
+                clip(lum - 0.04 - paper);
+                float a = saturate((lum - 0.04) * 1.55) * (1.0 - paper) * max(t.a, 0.35);
+                return t * _Tint * _Boost * a;
             }
             ENDCG
         }

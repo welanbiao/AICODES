@@ -219,6 +219,11 @@ public static class MeshForge
         return Get("quad", BuildQuad);
     }
 
+    public static Mesh Billboard()
+    {
+        return Get("billboard", BuildBillboard);
+    }
+
     static Vector3 WarpEgg(Vector3 p)
     {
         Vector3 v = new Vector3(p.x * 0.70f, p.y * 1.20f, p.z * 0.78f);
