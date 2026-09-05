@@ -359,7 +359,11 @@ public partial class GameRoot
         RenderSettings.ambientEquatorColor = ambE;
         RenderSettings.ambientGroundColor = ambG;
         if (_sun != null) { _sun.color = sun; _sun.intensity = 1.05f + stage * 0.05f; }
-        if (_cam != null) _cam.backgroundColor = skyA;
+        if (_cam != null)
+        {
+            _cam.backgroundColor = skyA;
+            _cam.fieldOfView = stage == 1 ? 66f : 60f;
+        }
         var skyShader = Shader.Find("Skybox/Procedural");
         if (skyShader != null)
         {

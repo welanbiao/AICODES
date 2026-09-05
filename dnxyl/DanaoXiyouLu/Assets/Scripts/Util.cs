@@ -533,13 +533,35 @@ public static class Mats
 
     public static Material Cloud(Color c, string key)
     {
-        key = "cloud_" + key;
+        return Cloud(c, key, new Vector4(0.028f + key.Length * 0.001f, 0.01f, 0f, 0f));
+    }
+
+    public static Material Cloud(Color c, string key, Vector4 scroll)
+    {
+        key = "cloud_" + key + "_" + scroll.x.ToString("0.###") + "_" + scroll.y.ToString("0.###");
         if (Cache.ContainsKey(key)) return Cache[key];
         var m = new Material(CloudShader);
         c.a = Mathf.Clamp01(c.a < 0.15f ? 0.72f : c.a);
         m.SetColor("_Tint", c);
         m.SetTexture("_MainTex", Tex.Res("Tex/tex_cloud_wuxing", Tex.Soft));
-        m.SetVector("_Scroll", new Vector4(0.028f + key.Length * 0.001f, 0.01f, 0, 0));
+        m.SetVector("_Scroll", scroll);
+        Cache[key] = m;
+        return m;
+    }
+
+    public static Material CloudLane(int i)
+    {
+        i = Mathf.Clamp(i, 0, 4);
+        string key = "cloudLane" + i;
+        if (Cache.ContainsKey(key)) return Cache[key];
+        Color c = Color.Lerp(Color.white, Danao.WuXing[i], 0.42f);
+        c.a = 0.94f;
+        var m = new Material(CloudShader);
+        m.SetColor("_Tint", c);
+        m.SetTexture("_MainTex", Tex.Res("Tex/tex_cloud_wuxing", Tex.Soft));
+        m.SetTextureScale("_MainTex", new Vector2(0.22f, 2.4f));
+        m.SetTextureOffset("_MainTex", new Vector2(i * 0.2f, 0f));
+        m.SetVector("_Scroll", new Vector4(0f, 0.055f, 0f, 0f));
         Cache[key] = m;
         return m;
     }
@@ -548,9 +570,11 @@ public static class Mats
     {
         if (Cache.ContainsKey("sunBallTex")) return Cache["sunBallTex"];
         var m = new Material(SunShader);
-        m.SetColor("_Tint", new Color(1f, 0.92f, 0.55f, 1f));
-        m.SetTexture("_MainTex", Tex.Res("Tex/tex_sun", Tex.Soft));
-        m.SetFloat("_Boost", 2.1f);
+        m.SetColor("_Tint", new Color(1f, 0.95f, 0.72f, 1f));
+        Texture2D tex = Tex.SunArt();
+        tex.wrapMode = TextureWrapMode.Clamp;
+        m.SetTexture("_MainTex", tex);
+        m.SetFloat("_Boost", 1.85f);
         Cache["sunBallTex"] = m;
         return m;
     }
