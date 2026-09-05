@@ -7,7 +7,7 @@ public class StageBackdrop : MonoBehaviour
     Transform _sunDisc;
     Material _sky;
     Material _oceanMat;
-    float _period = 48f;
+    float _period = 24f;
     const float SeaY = -17.2f;
 
     public static StageBackdrop Create(Light sun)
