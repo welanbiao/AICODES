@@ -187,8 +187,9 @@ public static class Tex
         byte[] bytes = null;
         string[] paths =
         {
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "3.png")),
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "3.PNG")),
             System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "3.png")),
-            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "3.PNG")),
             Application.dataPath + "/Resources/Tex/tex_sun.png"
         };
         for (int i = 0; i < paths.Length; i++)
