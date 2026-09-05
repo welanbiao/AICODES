@@ -61,14 +61,29 @@ public partial class GameRoot
         root.transform.LookAt(new Vector3(player.position.x, pos.y, player.position.z));
     }
 
+    public void CaptureSpirit(Mob m)
+    {
+        if (m == null || m.dead) return;
+        int e = m.element;
+        if (e >= 0)
+        {
+            wuXing[e] = Mathf.Min(QiNeed, wuXing[e] + 1);
+            FloatText.Show(m.transform.position + Vector3.up * 0.4f, "捕获 " + Danao.WuXingNames[e] + "  " + wuXing[e] + "/" + QiNeed, Danao.WuXing[e]);
+            Vfx.Burst(m.transform.position + Vector3.up, Danao.WuXing[e], 16);
+            Vfx.Ring(player.position, Danao.WuXing[e], 0.55f);
+        }
+        hp = Mathf.Min(maxHp, hp + 1);
+        m.dead = true;
+        Destroy(m.gameObject);
+    }
+
     public void OnMobKilled(Mob m)
     {
         Vfx.Burst(m.transform.position + Vector3.up, m.element >= 0 ? Danao.WuXing[m.element] : Danao.Gold, 18);
         if (stage == 1 && m.element >= 0)
         {
-            int gain = Random.Range(8, 13);
-            wuXing[m.element] = Mathf.Min(999, wuXing[m.element] + gain);
-            FloatText.Show(m.transform.position + Vector3.up * 0.4f, Danao.WuXingNames[m.element] + "+" + gain, Danao.WuXing[m.element]);
+            wuXing[m.element] = Mathf.Min(QiNeed, wuXing[m.element] + 1);
+            FloatText.Show(m.transform.position + Vector3.up * 0.4f, Danao.WuXingNames[m.element] + "+1", Danao.WuXing[m.element]);
         }
         else
         {
@@ -88,7 +103,7 @@ public partial class GameRoot
         _gateLock = 0.2f;
         if (stage == 1 && g.element >= 0)
         {
-            wuXing[g.element] = Mathf.Min(999, wuXing[g.element] + g.add);
+            wuXing[g.element] = Mathf.Min(QiNeed, wuXing[g.element] + g.add);
             FloatText.Show(player.position, Danao.WuXingNames[g.element] + "+" + g.add, Danao.WuXing[g.element]);
         }
         else
@@ -104,7 +119,7 @@ public partial class GameRoot
     {
         if (p.element >= 0)
         {
-            wuXing[p.element] = Mathf.Min(999, wuXing[p.element] + p.qi);
+            wuXing[p.element] = Mathf.Min(QiNeed, wuXing[p.element] + p.qi);
             FloatText.Show(player.position, Danao.WuXingNames[p.element] + "+" + p.qi, Danao.WuXing[p.element]);
         }
         if (p.xiu > 0)
@@ -121,8 +136,8 @@ public partial class GameRoot
         if (stage == 1)
         {
             int e = Random.Range(0, 5);
-            int g = Random.Range(10, 22);
-            wuXing[e] = Mathf.Min(999, wuXing[e] + g);
+            int g = Random.Range(2, 5);
+            wuXing[e] = Mathf.Min(QiNeed, wuXing[e] + g);
             FloatText.Show(pos, Danao.WuXingNames[e] + "+" + g, Danao.WuXing[e]);
         }
         else
@@ -143,14 +158,9 @@ public partial class GameRoot
 
     public bool CanBreak()
     {
-        if (stage >= 5)
-        {
-            return xiuwei >= NeedXiu();
-        }
         if (stage == 1)
         {
-            if (_playTime < 300f) return false;
-            for (int i = 0; i < 5; i++) if (wuXing[i] < 999) return false;
+            for (int i = 0; i < 5; i++) if (wuXing[i] < QiNeed) return false;
             return true;
         }
         return xiuwei >= NeedXiu();
