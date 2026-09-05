@@ -82,9 +82,9 @@ public class StageBackdrop : MonoBehaviour
     void TickSun()
     {
         float t = Mathf.Repeat(Time.time / _period, 1f);
-        const float span = 78f;
-        const float peakH = 58f;
-        const float z = 102f;
+        const float span = 70f;
+        const float peakH = 52f;
+        const float z = 98f;
         Vector3 local = new Vector3(
             Mathf.Lerp(-span, span, t),
             SeaY + peakH * Mathf.Sin(t * Mathf.PI),

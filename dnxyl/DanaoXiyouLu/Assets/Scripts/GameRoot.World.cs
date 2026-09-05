@@ -362,7 +362,7 @@ public partial class GameRoot
         if (_cam != null)
         {
             _cam.backgroundColor = skyA;
-            _cam.fieldOfView = stage == 1 ? 66f : 60f;
+            _cam.fieldOfView = stage == 1 ? 72f : 60f;
         }
         var skyShader = Shader.Find("Skybox/Procedural");
         if (skyShader != null)
