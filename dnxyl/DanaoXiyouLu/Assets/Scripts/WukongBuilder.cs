@@ -50,15 +50,8 @@ public static class WukongBuilder
         }
 
         var nest = Danao.Node(root.transform, "nest", new Vector3(0, -0.42f, 0));
-        for (int i = 0; i < 5; i++)
-        {
-            Color c = Color.Lerp(Color.white, cols[i], 0.45f);
-            c.a = 0.85f;
-            var puff = Danao.Mesh(nest, "n" + i, MeshForge.Sphere(12, 8),
-                Quaternion.Euler(0, i * 72f, 0) * new Vector3(0.28f, 0, 0),
-                new Vector3(0.42f, 0.16f, 0.36f), Mats.Cloud(c, "nest" + i));
-            puff.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        }
+        Danao.Mesh(nest, "seat", MeshForge.Cylinder(16), Vector3.zero, new Vector3(0.7f, 0.12f, 0.7f),
+            Mats.Solid(new Color(0.82f, 0.74f, 0.66f), "mtnRock"));
 
         Danao.Glow(root.transform, Danao.Gold, 0.4f, 3.4f);
         var bob = root.AddComponent<BobSpin>();

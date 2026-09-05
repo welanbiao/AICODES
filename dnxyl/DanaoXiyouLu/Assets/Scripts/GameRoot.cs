@@ -239,7 +239,7 @@ public partial class GameRoot : MonoBehaviour
             case 3:
                 mf.sharedMesh = MeshForge.Cylinder(12);
                 go.transform.localScale = new Vector3(0.22f, 0.22f, 1.35f);
-                go.transform.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(90f, 0f, 0f);
+                go.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
                 mr.sharedMaterial = Mats.Spirit(2);
                 faceVel = true;
                 speed = 24f;
@@ -247,7 +247,7 @@ public partial class GameRoot : MonoBehaviour
             case 4:
                 mf.sharedMesh = MeshForge.StaffPole();
                 go.transform.localScale = new Vector3(0.07f, 0.85f, 0.07f);
-                go.transform.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(90f, 0f, 0f);
+                go.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
                 mr.sharedMaterial = Mats.Solid(new Color(0.45f, 0.28f, 0.12f), "bark");
                 faceVel = true;
                 speed = 20f;
