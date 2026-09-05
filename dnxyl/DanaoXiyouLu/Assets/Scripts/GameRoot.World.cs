@@ -108,8 +108,8 @@ public partial class GameRoot
 
     void PlaceGates(Transform chunk, float z)
     {
-        MakeGate(chunk, new Vector3(-2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
-        MakeGate(chunk, new Vector3(2.15f, 0f, z), Random.Range(0, 5), Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(-2.15f, 0f, z), Random.Range(0, 5), stage == 1 ? Random.Range(3, 7) : Random.Range(28, 55));
+        MakeGate(chunk, new Vector3(2.15f, 0f, z), Random.Range(0, 5), stage == 1 ? Random.Range(3, 7) : Random.Range(28, 55));
     }
 
     void MakeGate(Transform parent, Vector3 pos, int elem, int add)
