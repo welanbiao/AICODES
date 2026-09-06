@@ -10,7 +10,7 @@ import { STAGE_COUNT, WX_COLORS, WX_NAMES } from './game/constants'
 import type { GameProgress, HudSnap } from './game/types'
 import './App.css'
 
-function useFillViewport<T extends HTMLElement>(ref: React.RefObject<T | null>) {
+function useFillViewport<T extends HTMLElement>(ref: RefObject<T | null>) {
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
