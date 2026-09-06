@@ -366,12 +366,12 @@
 }
 
 .break-btn.inline {
-  min-width: 180px;
-  height: 48px;
+  min-width: calc(180px * var(--ui, 1));
+  height: calc(48px * var(--ui, 1));
   border-radius: 12px;
   background: rgba(70, 32, 18, 0.94);
   color: #fff;
-  font-size: 1.25rem;
+  font-size: calc(1.25rem * var(--ui, 1));
   border: 2px solid #8a5a28;
   display: inline-grid;
   place-items: center;
