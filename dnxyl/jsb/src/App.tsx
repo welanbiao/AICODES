@@ -273,7 +273,7 @@ function PlayView({
     if (!root || !frame) return
     const apply = () => {
       pinToViewport(root)
-      fitPortraitFrame(frame, root)
+      fitPlayFrame(frame, root)
     }
     apply()
     return onViewportChange(apply)
