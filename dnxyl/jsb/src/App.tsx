@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type PointerEvent as PE, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as PE, type ReactNode } from 'react'
 import { fetchMe, fetchProgress, loadAuthSession, logoutAccount, pushProgress, saveAuthSession, type AuthSession } from './api'
 import { AuthGate, Lobby } from './AuthScreens'
 import gateBg from './assets/bg_gate_xiyou.png'
+import { fitPortraitFrame, onViewportChange, pinToViewport } from './fit'
 import { ensureStages, loadArtForProgress, type ArtPack } from './game/assets'
 import { StageMusic } from './game/audio'
 import { Game } from './game/Game'
@@ -9,9 +10,21 @@ import { STAGE_COUNT, WX_COLORS, WX_NAMES } from './game/constants'
 import type { GameProgress, HudSnap } from './game/types'
 import './App.css'
 
+function useFillViewport<T extends HTMLElement>(ref: React.RefObject<T | null>) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const apply = () => pinToViewport(el)
+    apply()
+    return onViewportChange(apply)
+  }, [ref])
+}
+
 function GateShell({ children }: { children: ReactNode }) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  useFillViewport(rootRef)
   return (
-    <div className="app-root is-gate">
+    <div className="app-root is-gate" ref={rootRef}>
       <img className="gate-scene" src={gateBg} alt="" />
       {children}
     </div>
