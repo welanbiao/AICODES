@@ -38,19 +38,20 @@
 }
 
 .phone-frame {
+  --ui: 1;
   position: relative;
   overflow: hidden;
-  width: min(100vw, calc(100vh * 9 / 16));
-  height: min(100vh, calc(100vw * 16 / 9));
   aspect-ratio: 9 / 16;
-  max-width: 720px;
-  max-height: 1280px;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   background: #0a0610;
   box-shadow:
     0 0 0 3px #5c3d1e,
     0 0 0 6px #e8c44a,
     0 16px 48px rgba(0, 0, 0, 0.45);
-  border-radius: 18px;
+  border-radius: calc(18px * var(--ui));
   touch-action: none;
 }
 
