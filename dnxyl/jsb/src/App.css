@@ -210,22 +210,22 @@
 
 .hud-stage {
   position: absolute;
-  left: 12px;
-  top: 10px;
+  left: calc(12px * var(--ui, 1));
+  top: calc(10px * var(--ui, 1));
   color: #fff;
-  font-size: 0.82rem;
+  font-size: calc(0.82rem * var(--ui, 1));
   text-shadow: 0 1px 0 #000, 0 0 6px rgba(0, 0, 0, 0.6);
 }
 
 .hud-exp {
   position: absolute;
-  right: 54px;
-  top: 10px;
+  right: calc(54px * var(--ui, 1));
+  top: calc(10px * var(--ui, 1));
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--ui, 1));
   color: #fff;
-  font-size: 0.72rem;
+  font-size: calc(0.72rem * var(--ui, 1));
   text-shadow: 0 1px 0 #000;
 }
 
