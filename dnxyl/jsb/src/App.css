@@ -349,7 +349,7 @@
 }
 
 .veil-card h2 {
-  font-size: 1.55rem;
+  font-size: calc(1.55rem * var(--ui, 1));
   margin-bottom: 8px;
   white-space: pre-line;
 }
@@ -357,7 +357,7 @@
 .veil-card p {
   color: #fff;
   margin-bottom: 18px;
-  font-size: 1rem;
+  font-size: calc(1rem * var(--ui, 1));
 }
 
 .veil-card .break-btn.inline {
