@@ -329,7 +329,7 @@
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 0.7rem;
+  font-size: calc(0.7rem * var(--ui, 1));
 }
 
 .veil {
