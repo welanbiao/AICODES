@@ -267,6 +267,18 @@ function PlayView({
     if (art.portraits[i]) setFace(canvasPng(art.portraits[i]))
   }, [hud.stage])
 
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    const frame = frameRef.current
+    if (!root || !frame) return
+    const apply = () => {
+      pinToViewport(root)
+      fitPortraitFrame(frame, root)
+    }
+    apply()
+    return onViewportChange(apply)
+  }, [])
+
   const aim = (e: PE<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('button')) return
     const box = frameRef.current?.getBoundingClientRect()
