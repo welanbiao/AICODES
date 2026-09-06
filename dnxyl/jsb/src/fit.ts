@@ -28,15 +28,23 @@ export function pinToViewport(el: HTMLElement) {
   el.style.height = `${Math.max(1, Math.round(h))}px`
 }
 
-/** 在宿主矩形内放入最大的 9:16 竖屏，并给出 HUD 缩放。 */
-export function fitPortraitFrame(frame: HTMLElement, host: HTMLElement) {
+/** 竖屏铺满可视区；横屏/宽屏则放入最大的 9:16 竖框。 */
+export function fitPlayFrame(frame: HTMLElement, host: HTMLElement) {
   const maxW = Math.max(1, host.clientWidth)
   const maxH = Math.max(1, host.clientHeight)
-  let w = maxW
-  let h = w / RATIO
-  if (h > maxH) {
+  const landscape = maxW > maxH * 1.08
+  let w: number
+  let h: number
+  if (landscape) {
     h = maxH
     w = h * RATIO
+    if (w > maxW) {
+      w = maxW
+      h = w / RATIO
+    }
+  } else {
+    w = maxW
+    h = maxH
   }
   w = Math.max(1, Math.floor(w))
   h = Math.max(1, Math.floor(h))

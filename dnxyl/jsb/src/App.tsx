@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as PE, 
 import { fetchMe, fetchProgress, loadAuthSession, logoutAccount, pushProgress, saveAuthSession, type AuthSession } from './api'
 import { AuthGate, Lobby } from './AuthScreens'
 import gateBg from './assets/bg_gate_xiyou.png'
-import { fitPortraitFrame, onViewportChange, pinToViewport } from './fit'
+import { fitPlayFrame, onViewportChange, pinToViewport } from './fit'
 import { ensureStages, loadArtForProgress, type ArtPack } from './game/assets'
 import { StageMusic } from './game/audio'
 import { Game } from './game/Game'
