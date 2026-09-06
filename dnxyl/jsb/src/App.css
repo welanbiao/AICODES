@@ -243,14 +243,14 @@
 .pause-btn {
   position: absolute;
   z-index: 8;
-  top: 8px;
-  right: 10px;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  top: calc(8px * var(--ui, 1));
+  right: calc(10px * var(--ui, 1));
+  width: calc(40px * var(--ui, 1));
+  height: calc(40px * var(--ui, 1));
+  border-radius: calc(10px * var(--ui, 1));
   background: rgba(20, 12, 8, 0.72);
   color: #fff;
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--ui, 1));
   border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
