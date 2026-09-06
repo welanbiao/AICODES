@@ -82,10 +82,10 @@
 }
 
 .gate {
-  width: min(92vw, 420px);
-  max-height: min(96vh, 920px);
+  width: min(92%, 420px);
+  max-height: 100%;
   overflow-y: auto;
-  padding: 28px 22px 32px;
+  padding: clamp(14px, 4.2vw, 28px) clamp(14px, 4vw, 22px) clamp(18px, 4.5vw, 32px);
   color: #ffd24a;
   text-align: center;
   background: rgba(12, 6, 18, 0.38);
@@ -94,7 +94,7 @@
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(8px, 2vw, 12px);
 }
 
 .lobby-gate {
