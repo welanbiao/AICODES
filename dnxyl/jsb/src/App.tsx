@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as PE, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as PE, type ReactNode, type RefObject } from 'react'
 import { fetchMe, fetchProgress, loadAuthSession, logoutAccount, pushProgress, saveAuthSession, type AuthSession } from './api'
 import { AuthGate, Lobby } from './AuthScreens'
 import gateBg from './assets/bg_gate_xiyou.png'
