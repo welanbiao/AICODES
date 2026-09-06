@@ -25,9 +25,18 @@ public class Mob : MonoBehaviour
         if (element >= 0) xiuReward = Random.Range(8, 13);
 
         var col = gameObject.AddComponent<CapsuleCollider>();
-        col.height = 1.6f;
-        col.radius = 0.45f;
-        col.center = new Vector3(0, 0.7f, 0);
+        if (stage == 1 && element >= 0)
+        {
+            col.height = 2.35f;
+            col.radius = 0.72f;
+            col.center = new Vector3(0, 1.05f, 0);
+        }
+        else
+        {
+            col.height = 1.6f;
+            col.radius = 0.45f;
+            col.center = new Vector3(0, 0.7f, 0);
+        }
         col.isTrigger = true;
         var rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
@@ -36,13 +45,27 @@ public class Mob : MonoBehaviour
 
     void Update()
     {
-        if (dead || _player == null || GameRoot.I == null || GameRoot.I.Paused) return;
-        Vector3 p = transform.position;
+        if (dead || _player == null || GameRoot.I == null || GameRoot.I.Halted) return;
         Vector3 t = _player.position;
+        if (GameRoot.I.stage == 1)
+        {
+            t.z += Stage1Boost.ForwardZ;
+            transform.position += Vector3.back * speed * GameRoot.I.PlayPace * Time.deltaTime;
+            Vector3 p1 = transform.position;
+            float d1 = Vector3.Distance(new Vector3(p1.x, 0f, p1.z), new Vector3(t.x, 0f, t.z));
+            if (d1 < 2.4f && p1.z > t.z - 0.35f)
+            {
+                GameRoot.I.CaptureSpirit(this);
+                return;
+            }
+            if (p1.z < t.z - 1.35f) Die(false);
+            return;
+        }
+        Vector3 p = transform.position;
         t.y = p.y;
         if (p.z <= t.z)
         {
-            transform.position += Vector3.back * speed * 0.35f * Time.deltaTime;
+            transform.position += Vector3.back * speed * GameRoot.I.PlayPace * 0.35f * Time.deltaTime;
             if (transform.position.z < t.z - 1.35f) Die(false);
             return;
         }
@@ -56,7 +79,7 @@ public class Mob : MonoBehaviour
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(look), Time.deltaTime * 5f);
             Vector3 step = new Vector3(dir.x * 0.25f, 0f, dir.z);
             if (step.sqrMagnitude > 0.01f) step.Normalize();
-            transform.position += step * speed * Time.deltaTime;
+            transform.position += step * speed * GameRoot.I.PlayPace * Time.deltaTime;
         }
         float dist = Vector3.Distance(new Vector3(p.x, 0, p.z), new Vector3(t.x, 0, t.z));
         if (dist < 1.15f && p.z > t.z - 0.25f)
@@ -81,6 +104,7 @@ public class Mob : MonoBehaviour
         hp -= dmg;
         FloatText.Show(transform.position, "-" + Mathf.CeilToInt(dmg), elem >= 0 ? Danao.WuXing[elem] : Danao.Gold);
         Vfx.Burst(transform.position + Vector3.up, elem >= 0 ? Danao.WuXing[elem] : Danao.Gold, 10);
+        StageAudio.PlayHit();
         if (hp <= 0) Die(true);
     }
 
@@ -162,7 +186,10 @@ public class PickupOrb : MonoBehaviour
         transform.Rotate(0, 90f * Time.deltaTime, 0);
         if (GameRoot.I != null && GameRoot.I.player != null)
         {
-            if ((transform.position - GameRoot.I.player.position).sqrMagnitude < 1.6f)
+            float reach = GameRoot.I.stage == 1 ? 3.4f : 1.6f;
+            Vector3 avatar = GameRoot.I.player.position;
+            if (GameRoot.I.stage == 1) avatar.z += Stage1Boost.ForwardZ;
+            if ((transform.position - avatar).sqrMagnitude < reach * reach)
                 Collect();
         }
     }
@@ -191,6 +218,7 @@ public class Barrel : MonoBehaviour
         if (_dead) return;
         hp -= dmg;
         FloatText.Show(transform.position, Mathf.CeilToInt(hp).ToString(), Color.white);
+        StageAudio.PlayHit();
         if (hp <= 0)
         {
             _dead = true;

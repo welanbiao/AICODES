@@ -47,47 +47,13 @@ public static class EnemyBuilder
 
     static GameObject Spirit(Transform parent, int elem)
     {
-        var root = Danao.Node(parent, "Spirit_" + Danao.WuXingNames[elem], Vector3.up * 0.62f).gameObject;
-        var mat = Mats.Spirit(elem);
-        switch (elem)
-        {
-            case 0:
-                Danao.Mesh(root.transform, "body", MeshForge.Crystal(), Vector3.zero, new Vector3(0.7f, 1.05f, 0.7f), mat);
-                Danao.Mesh(root.transform, "s1", MeshForge.Crystal(), new Vector3(-0.22f, -0.05f, 0.08f), new Vector3(0.32f, 0.55f, 0.32f), Quaternion.Euler(0, 25, 18), mat);
-                Danao.Mesh(root.transform, "s2", MeshForge.Crystal(), new Vector3(0.2f, -0.08f, -0.04f), new Vector3(0.28f, 0.48f, 0.28f), Quaternion.Euler(8, -18, -12), mat);
-                Danao.Mesh(root.transform, "core", MeshForge.Sphere(14, 10), new Vector3(0, 0.08f, 0.12f), Vector3.one * 0.16f, Mats.Gold);
-                break;
-            case 1:
-                Danao.Mesh(root.transform, "trunk", MeshForge.Cylinder(12), new Vector3(0, -0.08f, 0), new Vector3(0.18f, 0.55f, 0.18f), mat);
-                Danao.Mesh(root.transform, "leaf", MeshForge.Sphere(16, 12), new Vector3(0, 0.42f, 0), new Vector3(0.55f, 0.42f, 0.55f), mat);
-                Danao.Mesh(root.transform, "leaf2", MeshForge.Sphere(12, 8), new Vector3(0.22f, 0.28f, 0.1f), new Vector3(0.28f, 0.22f, 0.28f), mat);
-                Danao.Mesh(root.transform, "armL", MeshForge.Capsule(10, 6), new Vector3(-0.28f, 0.05f, 0), new Vector3(0.1f, 0.22f, 0.1f), mat);
-                Danao.Mesh(root.transform, "armR", MeshForge.Capsule(10, 6), new Vector3(0.28f, 0.05f, 0), new Vector3(0.1f, 0.22f, 0.1f), mat);
-                break;
-            case 2:
-                Danao.Mesh(root.transform, "body", MeshForge.Drop(), Vector3.zero, new Vector3(0.62f, 0.9f, 0.62f), mat);
-                Danao.Mesh(root.transform, "d2", MeshForge.Drop(), new Vector3(-0.22f, -0.12f, 0.05f), new Vector3(0.28f, 0.4f, 0.28f), mat);
-                Danao.Mesh(root.transform, "d3", MeshForge.Drop(), new Vector3(0.2f, -0.16f, -0.04f), new Vector3(0.24f, 0.34f, 0.24f), mat);
-                Danao.Mesh(root.transform, "core", MeshForge.Sphere(12, 8), new Vector3(0, 0.06f, 0.12f), Vector3.one * 0.14f, Mats.White);
-                break;
-            case 3:
-                Danao.Mesh(root.transform, "fl", MeshForge.Flame(), Vector3.zero, new Vector3(0.62f, 0.95f, 0.62f), mat);
-                Danao.Mesh(root.transform, "fl2", MeshForge.Flame(), new Vector3(0.1f, -0.08f, 0), new Vector3(0.36f, 0.62f, 0.36f), Quaternion.Euler(0, 40, 10), mat);
-                Danao.Mesh(root.transform, "core", MeshForge.Sphere(12, 8), new Vector3(0, -0.12f, 0.04f), Vector3.one * 0.18f, Mats.Gold);
-                break;
-            default:
-                Danao.Mesh(root.transform, "body", MeshForge.Golem(), Vector3.zero, new Vector3(0.85f, 0.72f, 0.85f), mat);
-                Danao.Mesh(root.transform, "r2", MeshForge.Golem(), new Vector3(0.22f, -0.12f, 0.08f), new Vector3(0.42f, 0.38f, 0.42f), mat);
-                Danao.Mesh(root.transform, "head", MeshForge.Sphere(14, 10), new Vector3(0, 0.42f, 0.06f), Vector3.one * 0.32f, mat);
-                Danao.Mesh(root.transform, "armL", MeshForge.Capsule(10, 6), new Vector3(-0.32f, 0.08f, 0), new Vector3(0.14f, 0.22f, 0.14f), mat);
-                Danao.Mesh(root.transform, "armR", MeshForge.Capsule(10, 6), new Vector3(0.32f, 0.08f, 0), new Vector3(0.14f, 0.22f, 0.14f), mat);
-                break;
-        }
-        Danao.Mesh(root.transform, "eyeL", MeshForge.Sphere(10, 8), new Vector3(-0.08f, 0.22f, 0.22f), Vector3.one * 0.07f, Mats.EyeGold);
-        Danao.Mesh(root.transform, "eyeR", MeshForge.Sphere(10, 8), new Vector3(0.08f, 0.22f, 0.22f), Vector3.one * 0.07f, Mats.EyeGold);
+        var root = Danao.Node(parent, "Spirit_" + Danao.WuXingNames[elem], Vector3.zero).gameObject;
+        SpiritFigure.Attach(root.transform, elem, 1f);
+        root.AddComponent<HumanoidMark>();
         var bob = root.AddComponent<BobSpin>();
-        bob.spin = new Vector3(0, 28 + elem * 6, 0);
-        bob.amp = 0.12f;
+        bob.spin = Vector3.zero;
+        bob.amp = 0.07f;
+        bob.freq = 1.35f;
         return root;
     }
 

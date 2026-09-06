@@ -123,7 +123,8 @@ public static class Danao
             if (tm.font != null && tm.font.material != null)
                 r.sharedMaterial = tm.font.material;
         }
-        go.AddComponent<FaceCam>();
+        var face = go.AddComponent<FaceCam>();
+        face.invert = true;
         return tm;
     }
 }
@@ -135,17 +136,34 @@ public static class Fonts
     public static Font Cjk()
     {
         if (_cjk != null) return _cjk;
-        _cjk = Font.CreateDynamicFontFromOSFont(new[]
+        _cjk = Resources.Load<Font>("Fonts/Cjk");
+        if (_cjk == null)
         {
-            "Microsoft YaHei",
-            "Microsoft YaHei UI",
-            "SimHei",
-            "PingFang SC",
-            "Noto Sans CJK SC",
-            "Source Han Sans SC",
-            "Arial Unicode MS",
-            "Arial"
-        }, 28);
+            var pack = Resources.LoadAll<Font>("Fonts");
+            if (pack != null && pack.Length > 0) _cjk = pack[0];
+        }
+        if (_cjk == null)
+        {
+            _cjk = Font.CreateDynamicFontFromOSFont(new[]
+            {
+                "Microsoft YaHei",
+                "Microsoft YaHei UI",
+                "SimHei",
+                "PingFang SC",
+                "Noto Sans CJK SC",
+                "Source Han Sans SC",
+                "Arial Unicode MS",
+                "Arial"
+            }, 28);
+        }
+        if (_cjk != null)
+        {
+            const string glyphs = "大闹西游路石猴补天五灵炼形正在进入游戏关修为无限模式弹威力捕获突破点击金身问道学成出师方寸山法成阶段圆满可继续在山中或关闭重开金木水火土五彩石流沙河火焰山第选项暂停";
+            _cjk.RequestCharactersInTexture(glyphs, 16, FontStyle.Normal);
+            _cjk.RequestCharactersInTexture(glyphs, 28, FontStyle.Normal);
+            _cjk.RequestCharactersInTexture(glyphs, 42, FontStyle.Bold);
+            _cjk.RequestCharactersInTexture(glyphs, 64, FontStyle.Normal);
+        }
         return _cjk;
     }
 }
@@ -182,54 +200,167 @@ public static class Tex
 
     public static Texture2D SunArt()
     {
+        Texture2D t = NamedPng("太阳.png");
+        if (t != Soft) return CutoutPrep.RunSun(t);
+        t = NamedPng("3.png");
+        if (t != Soft) return t;
+        return Res("Tex/tex_sun", Soft);
+    }
+
+    static string[] PngAliases(string fileName)
+    {
+        if (fileName == "太阳.png") return new[] { "太阳.png", "sun_art.png", "tex_sun.png" };
+        if (fileName == "五彩石.png") return new[] { "五彩石.png", "wucaishi.png" };
+        if (fileName == "五彩山.png") return new[] { "五彩山.png", "wucaishan.png" };
+        return new[] { fileName };
+    }
+
+    public static Texture2D NamedPng(string fileName)
+    {
+        string key = "named_" + fileName;
         Texture2D t;
-        if (Files.TryGetValue("sunArt", out t) && t != null) return t;
-        byte[] bytes = null;
-        string[] paths =
+        if (Files.TryGetValue(key, out t) && t != null) return t;
+        string[] resKeys =
         {
-            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "3.png")),
-            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "3.PNG")),
-            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "3.png")),
-            Application.dataPath + "/Resources/Tex/tex_sun.png"
+            "Art/" + System.IO.Path.GetFileNameWithoutExtension(PngAliases(fileName)[0]),
+            fileName.IndexOf("太阳") >= 0 ? "Art/sun" : null,
+            fileName.IndexOf("五彩石") >= 0 ? "Art/wucaishi" : null,
+            fileName.IndexOf("五彩山") >= 0 ? "Art/wucaishan" : null,
+            "Tex/tex_sun",
+            "Tex/tex_fetus_stone",
+            "Tex/tex_mountain"
         };
-        for (int i = 0; i < paths.Length; i++)
+        for (int i = 0; i < resKeys.Length; i++)
         {
-            if (System.IO.File.Exists(paths[i]))
+            if (string.IsNullOrEmpty(resKeys[i])) continue;
+            t = Resources.Load<Texture2D>(resKeys[i]);
+            if (t != null)
             {
-                bytes = System.IO.File.ReadAllBytes(paths[i]);
-                break;
+                t = CutoutPrep.RunNamed(t, fileName);
+                Files[key] = t;
+                return t;
             }
         }
-        if (bytes != null)
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return Soft;
+#else
+        string[] names = PngAliases(fileName);
+        string[] roots =
         {
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..")),
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..")),
+            System.IO.Path.Combine(Application.dataPath, "Resources", "Tex"),
+            Application.streamingAssetsPath
+        };
+        var paths = new List<string>();
+        for (int r = 0; r < roots.Length; r++)
+        {
+            if (string.IsNullOrEmpty(roots[r])) continue;
+            for (int n = 0; n < names.Length; n++)
+                paths.Add(System.IO.Path.Combine(roots[r], names[n]));
+        }
+        try
+        {
+            string scan = roots[0];
+            if (System.IO.Directory.Exists(scan))
+            {
+                string[] found = System.IO.Directory.GetFiles(scan, "*.png");
+                for (int i = 0; i < found.Length; i++)
+                {
+                    string fn = System.IO.Path.GetFileName(found[i]);
+                    for (int n = 0; n < names.Length; n++)
+                    {
+                        if (fn == names[n])
+                        {
+                            paths.Insert(0, found[i]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+        for (int i = 0; i < paths.Count; i++)
+        {
+            if (string.IsNullOrEmpty(paths[i]) || !System.IO.File.Exists(paths[i])) continue;
             t = new Texture2D(2, 2, TextureFormat.RGBA32, true);
-            t.LoadImage(bytes);
-            PunchPaper(t);
-            t.wrapMode = TextureWrapMode.Clamp;
-            t.filterMode = FilterMode.Bilinear;
-            t.anisoLevel = 4;
-            Files["sunArt"] = t;
+            t.LoadImage(System.IO.File.ReadAllBytes(paths[i]));
+            t = CutoutPrep.RunNamed(t, fileName);
+            Files[key] = t;
             return t;
         }
-        return Res("Tex/tex_sun", Soft);
+        for (int n = 0; n < names.Length; n++)
+        {
+            string res = "Tex/" + System.IO.Path.GetFileNameWithoutExtension(names[n]);
+            t = Resources.Load<Texture2D>(res);
+            if (t != null)
+            {
+                t = CutoutPrep.RunNamed(t, fileName);
+                Files[key] = t;
+                return t;
+            }
+        }
+        return Soft;
+#endif
+    }
+
+    public static Vector3 BillboardScale(Texture2D tex, float height)
+    {
+        float a = (tex != null && tex.height > 0) ? tex.width / (float)tex.height : 1f;
+        return new Vector3(height * a, height, 1f);
+    }
+
+    static bool IsPaper(Color c)
+    {
+        float lum = c.r * 0.30f + c.g * 0.50f + c.b * 0.20f;
+        float chroma = Mathf.Max(c.r, Mathf.Max(c.g, c.b)) - Mathf.Min(c.r, Mathf.Min(c.g, c.b));
+        return lum > 0.90f && chroma < 0.10f && c.a > 0.08f;
     }
 
     static void PunchPaper(Texture2D tex)
     {
+        int w = tex.width;
+        int h = tex.height;
+        if (w < 2 || h < 2) return;
         Color[] px = tex.GetPixels();
+        int alreadyClear = 0;
         for (int i = 0; i < px.Length; i++)
         {
-            Color c = px[i];
-            float lum = c.r * 0.30f + c.g * 0.50f + c.b * 0.20f;
-            float chroma = Mathf.Max(c.r, Mathf.Max(c.g, c.b)) - Mathf.Min(c.r, Mathf.Min(c.g, c.b));
-            if (lum > 0.86f && chroma < 0.12f)
-            {
-                c.r = 0f;
-                c.g = 0f;
-                c.b = 0f;
-                c.a = 0f;
-                px[i] = c;
-            }
+            if (px[i].a < 0.08f) alreadyClear++;
+        }
+        if (alreadyClear > px.Length * 0.02f) return;
+
+        var seen = new bool[px.Length];
+        var q = new Queue<int>();
+        System.Action<int, int> enq = (x, y) =>
+        {
+            if ((uint)x >= (uint)w || (uint)y >= (uint)h) return;
+            int i = y * w + x;
+            if (seen[i] || !IsPaper(px[i])) return;
+            seen[i] = true;
+            q.Enqueue(i);
+        };
+        for (int x = 0; x < w; x++)
+        {
+            enq(x, 0);
+            enq(x, h - 1);
+        }
+        for (int y = 0; y < h; y++)
+        {
+            enq(0, y);
+            enq(w - 1, y);
+        }
+        if (q.Count == 0) return;
+        while (q.Count > 0)
+        {
+            int i = q.Dequeue();
+            px[i] = new Color(0f, 0f, 0f, 0f);
+            int x = i % w;
+            int y = i / w;
+            enq(x + 1, y);
+            enq(x - 1, y);
+            enq(x, y + 1);
+            enq(x, y - 1);
         }
         tex.SetPixels(px);
         tex.Apply(true, false);
@@ -475,15 +606,23 @@ public static class Mats
     static Shader _glow;
     static Shader _cloud;
     static Shader _sun;
+    static Shader _cutout;
     static readonly Dictionary<string, Material> Cache = new Dictionary<string, Material>();
 
     public static Shader MythicShader
     {
         get
         {
+            if (_mythic == null)
+            {
+                var keep = Resources.Load<Material>("Keep/KeepMythic");
+                if (keep != null) _mythic = keep.shader;
+            }
             if (_mythic == null) _mythic = Shader.Find("Danao/Mythic");
             if (_mythic == null) _mythic = Shader.Find("Standard");
             if (_mythic == null) _mythic = Shader.Find("Diffuse");
+            if (_mythic == null) _mythic = Shader.Find("Unlit/Color");
+            if (_mythic == null) _mythic = Shader.Find("Sprites/Default");
             return _mythic;
         }
     }
@@ -492,6 +631,11 @@ public static class Mats
     {
         get
         {
+            if (_glow == null)
+            {
+                var keep = Resources.Load<Material>("Keep/KeepGlowAdd");
+                if (keep != null) _glow = keep.shader;
+            }
             if (_glow == null) _glow = Shader.Find("Danao/GlowAdd");
             if (_glow == null) _glow = Shader.Find("Particles/Standard Unlit");
             if (_glow == null) _glow = Shader.Find("Mobile/Particles/Additive");
@@ -504,6 +648,11 @@ public static class Mats
     {
         get
         {
+            if (_cloud == null)
+            {
+                var keep = Resources.Load<Material>("Keep/KeepCloud");
+                if (keep != null) _cloud = keep.shader;
+            }
             if (_cloud == null) _cloud = Shader.Find("Danao/Cloud");
             if (_cloud == null) _cloud = GlowShader;
             return _cloud;
@@ -514,9 +663,30 @@ public static class Mats
     {
         get
         {
+            if (_sun == null)
+            {
+                var keep = Resources.Load<Material>("Keep/KeepSun");
+                if (keep != null) _sun = keep.shader;
+            }
             if (_sun == null) _sun = Shader.Find("Danao/Sun");
             if (_sun == null) _sun = GlowShader;
             return _sun;
+        }
+    }
+
+    public static Shader CutoutShader
+    {
+        get
+        {
+            if (_cutout == null)
+            {
+                var keep = Resources.Load<Material>("Keep/KeepCutout");
+                if (keep != null) _cutout = keep.shader;
+            }
+            if (_cutout == null) _cutout = Shader.Find("Danao/Cutout");
+            if (_cutout == null) _cutout = Shader.Find("Sprites/Default");
+            if (_cutout == null) _cutout = SunShader;
+            return _cutout;
         }
     }
 
@@ -554,6 +724,8 @@ public static class Mats
         if (Cache.ContainsKey(key)) return Cache[key];
         var sh = Shader.Find("Unlit/Color");
         if (sh == null) sh = Shader.Find("Sprites/Default");
+        if (sh == null) sh = Shader.Find("UI/Default");
+        if (sh == null) return Solid(c, key);
         var m = new Material(sh);
         m.color = c;
         Cache[key] = m;
@@ -623,14 +795,45 @@ public static class Mats
 
     public static Material SunBall()
     {
-        if (Cache.ContainsKey("sunBallTex")) return Cache["sunBallTex"];
+        if (Cache.ContainsKey("sunBall")) return Cache["sunBall"];
         var m = new Material(SunShader);
-        m.SetColor("_Tint", new Color(1f, 0.95f, 0.72f, 1f));
-        Texture2D tex = Tex.SunArt();
-        tex.wrapMode = TextureWrapMode.Clamp;
-        m.SetTexture("_MainTex", tex);
-        m.SetFloat("_Boost", 1.85f);
-        Cache["sunBallTex"] = m;
+        m.SetColor("_Tint", new Color(1f, 0.93f, 0.58f, 1f));
+        Texture2D tex = Tex.Res("Tex/tex_sun", Tex.Soft);
+        if (tex != null)
+        {
+            tex.wrapMode = TextureWrapMode.Clamp;
+            m.SetTexture("_MainTex", tex);
+        }
+        m.SetFloat("_Boost", 2.05f);
+        Cache["sunBall"] = m;
+        return m;
+    }
+
+    public static Material SunHalo()
+    {
+        return Glow(new Color(1f, 0.82f, 0.32f, 0.7f), "sunHalo");
+    }
+
+    public static Material Art(string key, string fileName)
+    {
+        var m = Picture(key, Tex.NamedPng(fileName), false);
+        if (m != null && m.HasProperty("_Cutoff") && fileName != null && fileName.IndexOf("山") >= 0)
+            m.SetFloat("_Cutoff", 0.28f);
+        return m;
+    }
+
+    public static Material Picture(string key, Texture2D tex, bool additive)
+    {
+        if (Cache.ContainsKey(key)) return Cache[key];
+        var m = new Material(additive ? SunShader : CutoutShader);
+        m.SetColor("_Tint", Color.white);
+        if (tex != null)
+        {
+            tex.wrapMode = TextureWrapMode.Clamp;
+            m.SetTexture("_MainTex", tex);
+        }
+        if (additive && m.HasProperty("_Boost")) m.SetFloat("_Boost", 1.55f);
+        Cache[key] = m;
         return m;
     }
 
@@ -689,18 +892,6 @@ public static class Mats
     public static Material EyeGold { get { return Solid(new Color(0.95f, 0.72f, 0.12f), Color.yellow, new Color(0.55f, 0.32f, 0.02f), "eyeg"); } }
 }
 
-public class FaceCam : MonoBehaviour
-{
-    void LateUpdate()
-    {
-        var cam = Camera.main;
-        if (cam == null) return;
-        Vector3 dir = transform.position - cam.transform.position;
-        if (dir.sqrMagnitude < 0.0001f) return;
-        transform.rotation = Quaternion.LookRotation(dir);
-    }
-}
-
 public class BobSpin : MonoBehaviour
 {
     public Vector3 spin = new Vector3(0, 40, 0);
@@ -716,6 +907,25 @@ public class BobSpin : MonoBehaviour
         Vector3 p = transform.localPosition;
         p.y = baseY + Mathf.Sin(Time.time * freq) * amp;
         transform.localPosition = p;
+    }
+}
+
+public class FaceCam : MonoBehaviour
+{
+    public bool lockYawOnly;
+    public bool parallel = true;
+    public bool invert;
+
+    void LateUpdate()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+        Vector3 fwd = parallel ? -cam.transform.forward : (cam.transform.position - transform.position);
+        if (invert) fwd = -fwd;
+        if (lockYawOnly) fwd.y = 0f;
+        if (fwd.sqrMagnitude < 0.0001f) return;
+        Vector3 up = lockYawOnly ? Vector3.up : (parallel ? cam.transform.up : Vector3.up);
+        transform.rotation = Quaternion.LookRotation(fwd.normalized, up);
     }
 }
 
@@ -795,6 +1005,8 @@ public static class Ui
         var t = go.AddComponent<Text>();
         t.font = Fonts.Cjk();
         t.fontSize = size;
+        t.resizeTextForBestFit = false;
+        t.alignByGeometry = false;
         t.alignment = anchor;
         t.color = color;
         t.text = text;

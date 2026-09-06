@@ -8,8 +8,17 @@ public partial class GameRoot
         _breaking = true;
         Paused = true;
         int from = stage;
+        StageBreakAudio.Play(from);
         Color[] cols = Danao.WuXing;
         Vector3 p = player.position + Vector3.up;
+        if (_breakRoot != null)
+        {
+            _breakRoot.gameObject.SetActive(true);
+            _breakRoot.color = new Color(0.08f, 0.02f, 0.12f, 0.42f);
+            if (_breakTitle != null)
+                _breakTitle.text = Danao.BreakTitles[Mathf.Clamp(from - 1, 0, 4)];
+            if (_breakBtn != null) _breakBtn.gameObject.SetActive(false);
+        }
 
         if (from == 1)
         {
@@ -59,6 +68,7 @@ public partial class GameRoot
 
         if (from >= 5)
         {
+            if (_breakRoot != null) _breakRoot.gameObject.SetActive(false);
             _endRoot.gameObject.SetActive(true);
             _breaking = false;
             yield break;
@@ -70,6 +80,8 @@ public partial class GameRoot
         }
         xiuwei = 0;
         stage = from + 1;
+        ResetCombatBonus();
+        _playTime = 0f;
         maxHp = 100 + stage * 20;
         hp = maxHp;
         _breakPrompted = false;
@@ -78,6 +90,7 @@ public partial class GameRoot
         RebuildModel();
         EnsureChunks();
         FloatText.Show(player.position + Vector3.up * 2f, Danao.BreakTitles[from - 1], Danao.Gold);
+        if (_breakRoot != null) _breakRoot.gameObject.SetActive(false);
         Paused = false;
         _breaking = false;
     }

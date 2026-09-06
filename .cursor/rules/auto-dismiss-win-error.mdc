@@ -1,0 +1,13 @@
+---
+description: Auto-click 确定 on Windows error dialogs during agent work
+alwaysApply: true
+---
+
+# Windows error dialogs
+
+If a Windows MessageBox / error dialog appears while the agent is working (disk full, SQLITE_FULL, application error, Unity/Git prompts with 确定 or OK):
+
+1. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1`
+2. Continue the task. Do not wait for the user to click 确定.
+3. Never click UAC, Windows Security, or credential dialogs.
+4. SQLITE_FULL / disk-full dialogs: dismiss, then free regenerable caches (Unity `Library/ShaderCache`, `Library/Bee`, `Temp`) and retry the original edit via PowerShell file I/O if Cursor Read/Write is blocked.

@@ -1,13 +1,39 @@
 {
   "version": 1,
   "hooks": {
+    "sessionStart": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1 -StartWatcher",
+        "timeout": 12
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1",
+        "timeout": 8
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1",
+        "timeout": 8
+      }
+    ],
     "stop": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1",
+        "timeout": 8
+      },
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/auto-git.ps1",
         "timeout": 120
       }
     ],
     "afterFileEdit": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1",
+        "timeout": 8
+      },
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/auto-git.ps1",
         "timeout": 120

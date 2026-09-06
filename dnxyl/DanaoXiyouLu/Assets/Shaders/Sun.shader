@@ -5,11 +5,12 @@ Shader "Danao/Sun"
         _MainTex ("Texture", 2D) = "white" {}
         _Tint ("Tint", Color) = (1, 0.9, 0.55, 1)
         _Boost ("Boost", Range(0.5, 6)) = 1.8
+        _WhiteMix ("White Mix", Range(0, 1)) = 0
     }
     SubShader
     {
         Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
-        Blend One OneMinusSrcColor
+        Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         Cull Off
         Lighting Off
@@ -23,6 +24,7 @@ Shader "Danao/Sun"
             float4 _MainTex_ST;
             fixed4 _Tint;
             half _Boost;
+            half _WhiteMix;
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -48,9 +50,17 @@ Shader "Danao/Sun"
                 float mx = max(t.r, max(t.g, t.b));
                 float chroma = mx - mn;
                 float paper = saturate((lum - 0.82) / 0.14) * saturate(1.15 - chroma * 9.0);
-                clip(lum - 0.04 - paper);
-                float a = saturate((lum - 0.04) * 1.55) * (1.0 - paper) * max(t.a, 0.35);
-                return t * _Tint * _Boost * a;
+                float sky = saturate((t.b - max(t.r, t.g) - 0.012) * 14.0);
+                float pale = saturate((t.b - t.r - 0.045) * 10.0) * saturate(1.15 - chroma * 3.5);
+                float a = saturate(max(t.a, lum) * 1.35) * (1.0 - paper) * (1.0 - sky) * (1.0 - pale);
+                clip(a - 0.04);
+                fixed3 rgb = t.rgb;
+                fixed3 hot = fixed3(1.08, 1.06, 1.02);
+                rgb = lerp(rgb, hot, _WhiteMix);
+                rgb = lerp(rgb, hot * 1.12, _WhiteMix * _WhiteMix);
+                rgb.b = min(rgb.b, lerp(rgb.b, min(rgb.r, rgb.g) * 0.97, _WhiteMix));
+                rgb *= _Tint.rgb * lerp(1.0, _Boost, 0.55 + 0.45 * _WhiteMix);
+                return fixed4(rgb, saturate(a));
             }
             ENDCG
         }

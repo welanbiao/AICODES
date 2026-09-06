@@ -19,45 +19,24 @@ public static class WukongBuilder
 
     static GameObject BuildStone(Transform parent)
     {
-        var root = Danao.Node(parent, "FiveColorStone", new Vector3(0, 0.72f, 0)).gameObject;
-        var sit = Danao.Node(root.transform, "sit", Vector3.zero);
-        sit.localRotation = Quaternion.Euler(-18f, 12f, 8f);
-
-        var shell = Mats.Painted(Color.white, Danao.Gold, new Color(0.28f, 0.16f, 0.04f), "fetusShell", "Tex/tex_fetus_stone");
-        Danao.Mesh(sit, "egg", MeshForge.FetusEgg(), Vector3.zero, Vector3.one * 1.35f, shell);
-        Danao.Mesh(sit, "core", MeshForge.FetusBody(), new Vector3(0.02f, -0.02f, 0.04f), Vector3.one * 1.05f,
-            Mats.Solid(new Color(1f, 0.82f, 0.35f), Color.white, new Color(0.7f, 0.4f, 0.05f), "goldFetusCore"));
-        Danao.Mesh(sit, "head", MeshForge.Sphere(18, 14), new Vector3(0.02f, 0.16f, 0.10f), new Vector3(0.22f, 0.20f, 0.22f),
-            Mats.Solid(new Color(1f, 0.84f, 0.42f), "skinFetusHead"));
-        Danao.Mesh(sit, "armL", MeshForge.Capsule(10, 6), new Vector3(-0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, 35),
-            Mats.Gold);
-        Danao.Mesh(sit, "armR", MeshForge.Capsule(10, 6), new Vector3(0.12f, 0.02f, 0.10f), new Vector3(0.07f, 0.12f, 0.07f), Quaternion.Euler(40, 0, -35),
-            Mats.Gold);
-        Danao.Mesh(sit, "legL", MeshForge.Capsule(10, 6), new Vector3(-0.07f, -0.16f, 0.06f), new Vector3(0.08f, 0.13f, 0.08f), Quaternion.Euler(55, 10, 8),
-            Mats.Gold);
-        Danao.Mesh(sit, "legR", MeshForge.Capsule(10, 6), new Vector3(0.07f, -0.16f, 0.06f), new Vector3(0.08f, 0.13f, 0.08f), Quaternion.Euler(55, -10, -8),
-            Mats.Gold);
-
-        Color[] cols = Danao.WuXing;
-        for (int i = 0; i < 5; i++)
-        {
-            float a = i * 72f;
-            var mat = Mats.Solid(cols[i], Color.white, cols[i] * 0.4f, "crystal" + i);
-            Danao.Mesh(sit, "vein" + i, MeshForge.Crystal(),
-                Quaternion.Euler(0, a, 0) * new Vector3(0f, 0.02f, 0.28f),
-                new Vector3(0.22f, 0.42f, 0.18f),
-                Quaternion.Euler(18 + i * 6, a, 12), mat);
-        }
-
-        var nest = Danao.Node(root.transform, "nest", new Vector3(0, -0.42f, 0));
-        Danao.Mesh(nest, "seat", MeshForge.Cylinder(16), Vector3.zero, new Vector3(0.7f, 0.12f, 0.7f),
-            Mats.Solid(new Color(0.82f, 0.74f, 0.66f), "mtnRock"));
-
-        Danao.Glow(root.transform, Danao.Gold, 0.4f, 3.4f);
+        Texture2D stoneTex = Tex.NamedPng("五彩石.png");
+        Texture2D mtnTex = Tex.NamedPng("五彩山.png");
+        float mtnH = 2.12f;
+        float stoneH = 1.52f;
+        var root = Danao.Node(parent, "FiveColorStone", new Vector3(0f, 0.06f, 0f)).gameObject;
+        var mtn = Danao.Mesh(root.transform, "mountain", MeshForge.Billboard(),
+            new Vector3(0f, mtnH * 0.48f, -0.07f), Tex.BillboardScale(mtnTex, mtnH),
+            Mats.Art("mtnArtSmall", "五彩山.png"));
+        mtn.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        var art = Danao.Mesh(root.transform, "stone", MeshForge.Billboard(),
+            new Vector3(0f, mtnH * 0.70f + stoneH * 0.22f, 0.04f), Tex.BillboardScale(stoneTex, stoneH),
+            Mats.Art("stoneArt", "五彩石.png"));
+        art.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        root.AddComponent<FaceCam>();
         var bob = root.AddComponent<BobSpin>();
-        bob.spin = new Vector3(0, 12, 0);
-        bob.amp = 0.06f;
-        bob.freq = 1.3f;
+        bob.spin = Vector3.zero;
+        bob.amp = 0.04f;
+        bob.freq = 1.15f;
         return root;
     }
 

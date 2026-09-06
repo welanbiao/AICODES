@@ -161,6 +161,29 @@ public static class MeshForge
         }, 26));
     }
 
+    public static Mesh SpiritBody()
+    {
+        return Get("spiritBody", () => Lathe(new[]
+        {
+            new Vector2(0.09f, 0.48f),
+            new Vector2(0.23f, 0.42f),
+            new Vector2(0.27f, 0.30f),
+            new Vector2(0.24f, 0.12f),
+            new Vector2(0.18f, -0.02f),
+            new Vector2(0.20f, -0.16f),
+            new Vector2(0.16f, -0.26f)
+        }, 36));
+    }
+
+    public static Mesh SpiritHead()
+    {
+        return Get("spiritHead", () => BuildSphere(36, 24, p =>
+        {
+            Vector3 v = new Vector3(p.x * 0.90f, p.y * 1.08f + 0.02f, p.z * 0.88f);
+            return v * 0.5f;
+        }));
+    }
+
     public static Mesh StaffPole()
     {
         return Get("staff", () => BuildCylinder(18, false));
@@ -222,6 +245,11 @@ public static class MeshForge
     public static Mesh Billboard()
     {
         return Get("billboard", BuildBillboard);
+    }
+
+    public static Mesh WoodBoat()
+    {
+        return Get("woodBoat3", BuildWoodBoat);
     }
 
     static Vector3 WarpEgg(Vector3 p)
@@ -572,6 +600,102 @@ public static class MeshForge
             new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1)
         };
         var tris = new List<int> { 0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2 };
+        return Finish(verts, null, uv, tris);
+    }
+
+    static Mesh BuildWoodBoat()
+    {
+        int nz = 18;
+        int nq = 10;
+        int ring = nq + 1;
+        var verts = new List<Vector3>();
+        var uv = new List<Vector2>();
+        var tris = new List<int>();
+        for (int iz = 0; iz <= nz; iz++)
+        {
+            float t = iz / (float)nz;
+            float z = Mathf.Lerp(-0.5f, 0.5f, t);
+            float belly = Mathf.Sin(t * Mathf.PI);
+            float bow = t > 0.70f ? Mathf.Clamp01(1f - (t - 0.70f) / 0.30f) : 1f;
+            float stern = t < 0.14f ? Mathf.Lerp(0.50f, 1f, t / 0.14f) : 1f;
+            float halfW = 0.038f + 0.20f * belly * bow * stern;
+            if (t > 0.90f) halfW = Mathf.Lerp(halfW, 0.010f, (t - 0.90f) / 0.10f);
+            float keel = 0.015f - 0.11f * belly;
+            float gun = 0.155f + (t > 0.74f ? (t - 0.74f) * 0.42f : 0f) + (t < 0.12f ? 0.05f : 0f);
+            for (int iq = 0; iq <= nq; iq++)
+            {
+                float q = iq / (float)nq;
+                float ang = q * Mathf.PI * 0.5f;
+                float x = halfW * Mathf.Sin(ang);
+                float y = Mathf.Lerp(keel, gun, 1f - Mathf.Cos(ang));
+                verts.Add(new Vector3(x, y, z));
+                uv.Add(new Vector2(t, q));
+            }
+        }
+        int side = (nz + 1) * ring;
+        for (int iz = 0; iz < nz; iz++)
+        {
+            for (int iq = 0; iq < nq; iq++)
+            {
+                int i = iz * ring + iq;
+                tris.Add(i);
+                tris.Add(i + ring);
+                tris.Add(i + 1);
+                tris.Add(i + 1);
+                tris.Add(i + ring);
+                tris.Add(i + ring + 1);
+            }
+        }
+        for (int i = 0; i < side; i++)
+        {
+            Vector3 v = verts[i];
+            verts.Add(new Vector3(-v.x, v.y, v.z));
+            uv.Add(uv[i]);
+        }
+        for (int iz = 0; iz < nz; iz++)
+        {
+            for (int iq = 0; iq < nq; iq++)
+            {
+                int i = side + iz * ring + iq;
+                tris.Add(i);
+                tris.Add(i + 1);
+                tris.Add(i + ring);
+                tris.Add(i + 1);
+                tris.Add(i + ring + 1);
+                tris.Add(i + ring);
+            }
+        }
+        int deck0 = verts.Count;
+        for (int iz = 0; iz <= nz; iz++)
+        {
+            int iL = side + iz * ring + nq;
+            int iR = iz * ring + nq;
+            Vector3 l = verts[iL];
+            Vector3 r = verts[iR];
+            Vector3 c = new Vector3(0f, (l.y + r.y) * 0.5f - 0.012f, l.z);
+            verts.Add(new Vector3(l.x * 0.86f, c.y, c.z));
+            uv.Add(new Vector2(iz / (float)nz, 0f));
+            verts.Add(c);
+            uv.Add(new Vector2(iz / (float)nz, 0.5f));
+            verts.Add(new Vector3(r.x * 0.86f, c.y, c.z));
+            uv.Add(new Vector2(iz / (float)nz, 1f));
+        }
+        for (int iz = 0; iz < nz; iz++)
+        {
+            int i = deck0 + iz * 3;
+            tris.Add(i);
+            tris.Add(i + 3);
+            tris.Add(i + 1);
+            tris.Add(i + 1);
+            tris.Add(i + 3);
+            tris.Add(i + 4);
+            tris.Add(i + 1);
+            tris.Add(i + 4);
+            tris.Add(i + 2);
+            tris.Add(i + 2);
+            tris.Add(i + 4);
+            tris.Add(i + 5);
+        }
         return Finish(verts, null, uv, tris);
     }
 

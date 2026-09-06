@@ -11,6 +11,8 @@ public partial class GameRoot : MonoBehaviour
     public int hp = 100;
     public int maxHp = 100;
     public bool Paused;
+    public bool UserPaused;
+    public bool Halted { get { return Paused || UserPaused; } }
     public const int QiNeed = 99;
 
     public Transform player;
@@ -22,6 +24,7 @@ public partial class GameRoot : MonoBehaviour
     Light _sun;
     Light _heroLight;
     StageBackdrop _backdrop;
+    Transform _laneShift;
 
     float _x;
     float _pathW = 4.2f;
@@ -56,10 +59,11 @@ public partial class GameRoot : MonoBehaviour
         BuildSun();
         BuildPlayer();
         BuildHud();
+        EnsureLaneShift();
         ApplyStageVisuals();
         RebuildModel();
         EnsureChunks();
-        if (_backdrop != null) _backdrop.Follow(player.position);
+        if (_backdrop != null) _backdrop.Follow(new Vector3(0f, 0f, player.position.z));
         ShowLoading();
     }
 
@@ -122,11 +126,35 @@ public partial class GameRoot : MonoBehaviour
         _heroLight = Danao.Glow(player, Danao.Gold, 0.45f, 4.5f);
     }
 
+    void EnsureLaneShift()
+    {
+        if (_laneShift != null) return;
+        var go = new GameObject("LaneShift");
+        _laneShift = go.transform;
+        _laneShift.position = Vector3.zero;
+    }
+
     public void RebuildModel()
     {
         if (_model != null) Destroy(_model);
         _model = WukongBuilder.Build(stage, modelSlot);
         _run = _model.GetComponent<RunCycle>();
+        var col = player.GetComponent<CapsuleCollider>();
+        if (col != null)
+        {
+            if (stage <= 1)
+            {
+                col.height = 2.35f;
+                col.radius = 0.42f;
+                col.center = new Vector3(0f, 1.15f, 0f);
+            }
+            else
+            {
+                col.height = 1.7f;
+                col.radius = 0.35f;
+                col.center = new Vector3(0f, 0.85f, 0f);
+            }
+        }
         if (_boat != null) Destroy(_boat.gameObject);
         _boat = null;
         if (stage == 3)
@@ -143,9 +171,13 @@ public partial class GameRoot : MonoBehaviour
     void Update()
     {
         if (_loading) { TickLoading(); return; }
-        if (_breakPrompted && !_breaking && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+        if (!UserPaused && _breakPrompted && !_breaking && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
             OnClickBreak();
-        if (Paused) return;
+        if (Halted)
+        {
+            if (UserPaused) FitHud();
+            return;
+        }
         if (_breaking) return;
 
         _playTime += Time.deltaTime;
@@ -167,7 +199,14 @@ public partial class GameRoot : MonoBehaviour
 
     void HandleMove()
     {
-        bool hold = Input.GetMouseButton(0) || Input.touchCount > 0;
+        bool overUi = false;
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null)
+        {
+            if (Input.touchCount > 0) overUi = es.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+            else overUi = es.IsPointerOverGameObject();
+        }
+        bool hold = !overUi && (Input.GetMouseButton(0) || Input.touchCount > 0);
         if (hold)
         {
             Vector3 sp = Input.touchCount > 0 ? (Vector3)Input.GetTouch(0).position : Input.mousePosition;
@@ -178,7 +217,18 @@ public partial class GameRoot : MonoBehaviour
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) _x -= 9f * Time.deltaTime;
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) _x += 9f * Time.deltaTime;
         _x = Mathf.Clamp(_x, -_pathW, _pathW);
-        player.position = new Vector3(_x, 0, player.position.z + _speed * Time.deltaTime);
+        EnsureLaneShift();
+        float z = player.position.z + _speed * Time.deltaTime;
+        if (stage == 1)
+        {
+            player.position = new Vector3(0f, 0f, z);
+            _laneShift.position = new Vector3(-_x, 0f, 0f);
+        }
+        else
+        {
+            player.position = new Vector3(_x, 0f, z);
+            _laneShift.position = Vector3.zero;
+        }
         if (_boat != null)
         {
             var lp = _boat.localPosition;
@@ -332,10 +382,23 @@ public partial class GameRoot : MonoBehaviour
 
     void TickCamera()
     {
-        Vector3 want = player.position + (stage == 1 ? new Vector3(0, 6.8f, -11.2f) : new Vector3(0, 10.5f, -11.5f));
+        bool port = Screen.height >= Screen.width * 0.98f;
+        Vector3 want;
+        Vector3 look;
+        if (stage == 1)
+        {
+            want = player.position + (port ? new Vector3(0f, 16.2f, -20.5f) : new Vector3(0f, 6.8f, -11.2f));
+            look = player.position + (port ? new Vector3(0f, 4.4f, 22f) : new Vector3(0f, 1.35f, 18f));
+        }
+        else
+        {
+            want = player.position + (port ? new Vector3(0f, 9.2f, -9.4f) : new Vector3(0f, 10.5f, -11.5f));
+            look = player.position + (port ? new Vector3(0f, 1.4f, 6.2f) : new Vector3(0f, 1.1f, 7.5f));
+        }
         _cam.transform.position = Vector3.Lerp(_cam.transform.position, want, 1f - Mathf.Exp(-8f * Time.deltaTime));
-        _cam.transform.LookAt(player.position + (stage == 1 ? new Vector3(0, 1.15f, 18f) : new Vector3(0, 1.1f, 7.5f)));
-        if (_backdrop != null) _backdrop.Follow(player.position);
+        _cam.transform.LookAt(look);
+        _cam.fieldOfView = port ? 60f : 55f;
+        if (_backdrop != null) _backdrop.Follow(new Vector3(0f, 0f, player.position.z));
     }
 
     public bool IsPlayerCollider(Collider c)
@@ -364,6 +427,7 @@ public partial class GameRoot : MonoBehaviour
         _breaking = false;
         _breakPrompted = false;
         Paused = false;
+        SetUserPause(false);
         ShowBreakPrompt(false);
         if (_endRoot != null) _endRoot.gameObject.SetActive(false);
 
@@ -374,6 +438,7 @@ public partial class GameRoot : MonoBehaviour
         hp = maxHp;
         _playTime = 0f;
         _x = 0f;
+        if (_laneShift != null) _laneShift.position = Vector3.zero;
         _atkCd = 0f;
         _hurtCd = 0.8f;
         _spawnCd = 1.2f;
@@ -385,6 +450,25 @@ public partial class GameRoot : MonoBehaviour
         RebuildModel();
         EnsureChunks();
         FloatText.Show(player.position + Vector3.up * 2f, "元神溃散 · 从头再炼", new Color(1f, 0.45f, 0.35f));
+    }
+
+    public void SetUserPause(bool on)
+    {
+        UserPaused = on;
+        Time.timeScale = on ? 0f : 1f;
+        AudioListener.pause = on;
+        StageAudio.SetHeld(on);
+        StageBreakAudio.SetHeld(on);
+        if (_pauseLabel != null) _pauseLabel.text = on ? "继续" : "暂停";
+    }
+
+    void OnDestroy()
+    {
+        if (UserPaused)
+        {
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+        }
     }
 
     void LateUpdate()

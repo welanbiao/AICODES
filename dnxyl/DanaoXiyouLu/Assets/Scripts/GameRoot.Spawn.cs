@@ -11,18 +11,24 @@ public partial class GameRoot
         if (live >= 28) return;
 
         int pack = Random.Range(1, PackSize() + 1);
+        float[] lanes = stage == 1
+            ? new[] { -4.4f, -2.2f, 0f, 2.2f, 4.4f }
+            : new[] { -2.8f, -1.4f, 0f, 1.4f, 2.8f };
         for (int i = 0; i < pack; i++)
         {
-            float[] lanes = { -2.8f, -1.4f, 0f, 1.4f, 2.8f };
-            Vector3 pos = player.position + new Vector3(lanes[Random.Range(0, lanes.Length)], 0, Random.Range(16f, 28f) + i * 1.1f);
+            float lane = lanes[Random.Range(0, lanes.Length)];
+            float dz = Random.Range(16f, 28f) + i * 1.1f;
+            Vector3 pos = stage == 1
+                ? new Vector3(lane, 0f, player.position.z + dz)
+                : player.position + new Vector3(lane, 0f, dz);
             SpawnMob(PickKind(), pos);
         }
     }
 
     float SpawnInterval()
     {
-        if (stage == 1) return 1.05f;
-        return Mathf.Max(0.7f, 1.2f - stage * 0.08f);
+        if (stage == 1) return Mathf.Max(0.34f, 1.05f / PlayPace);
+        return Mathf.Max(0.28f, (1.15f - stage * 0.08f) / PlayPace);
     }
 
     int PackSize()
@@ -53,12 +59,24 @@ public partial class GameRoot
     void SpawnMob(MobKind k, Vector3 pos)
     {
         var root = new GameObject("Mob_" + k);
-        root.transform.position = pos;
+        if (stage == 1)
+        {
+            EnsureLaneShift();
+            root.transform.SetParent(_laneShift, false);
+            root.transform.localPosition = pos;
+        }
+        else
+        {
+            root.transform.position = pos;
+        }
         var vis = EnemyBuilder.Build(k, root.transform);
-        vis.transform.localPosition = Vector3.zero;
+        vis.transform.localPosition = stage == 1 ? Vector3.up * 0.85f : Vector3.zero;
+        if (stage == 1) vis.transform.localScale = Vector3.one * 1.65f;
         var mob = root.AddComponent<Mob>();
         mob.Init(k, player, stage);
-        root.transform.LookAt(new Vector3(player.position.x, pos.y, player.position.z));
+        Vector3 lookAt = new Vector3(player.position.x, root.transform.position.y, player.position.z);
+        if ((lookAt - root.transform.position).sqrMagnitude > 0.01f)
+            root.transform.LookAt(lookAt);
     }
 
     public void CaptureSpirit(Mob m)
@@ -67,10 +85,11 @@ public partial class GameRoot
         int e = m.element;
         if (e >= 0)
         {
-            wuXing[e] = Mathf.Min(QiNeed, wuXing[e] + 1);
-            FloatText.Show(m.transform.position + Vector3.up * 0.4f, "捕获 " + Danao.WuXingNames[e] + "  " + wuXing[e] + "/" + QiNeed, Danao.WuXing[e]);
+            wuXing[e] = Mathf.Min(20, wuXing[e] + 1);
+            FloatText.Show(m.transform.position + Vector3.up * 0.4f, "捕获 " + Danao.WuXingNames[e] + "  " + wuXing[e] + "/20", Danao.WuXing[e]);
             Vfx.Burst(m.transform.position + Vector3.up, Danao.WuXing[e], 16);
             Vfx.Ring(player.position, Danao.WuXing[e], 0.55f);
+            StageAudio.PlayHit();
         }
         hp = Mathf.Min(maxHp, hp + 1);
         m.dead = true;
@@ -82,7 +101,7 @@ public partial class GameRoot
         Vfx.Burst(m.transform.position + Vector3.up, m.element >= 0 ? Danao.WuXing[m.element] : Danao.Gold, 18);
         if (stage == 1 && m.element >= 0)
         {
-            wuXing[m.element] = Mathf.Min(QiNeed, wuXing[m.element] + 1);
+            wuXing[m.element] = Mathf.Min(20, wuXing[m.element] + 1);
             FloatText.Show(m.transform.position + Vector3.up * 0.4f, Danao.WuXingNames[m.element] + "+1", Danao.WuXing[m.element]);
         }
         else
@@ -101,25 +120,29 @@ public partial class GameRoot
     {
         if (_gateLock > 0) return;
         _gateLock = 0.2f;
+        var bonus = g.GetComponent<GateBonus>();
+        if (bonus != null) bonus.Grant();
         if (stage == 1 && g.element >= 0)
         {
-            wuXing[g.element] = Mathf.Min(QiNeed, wuXing[g.element] + g.add);
+            wuXing[g.element] = Mathf.Min(20, wuXing[g.element] + g.add);
             FloatText.Show(player.position, Danao.WuXingNames[g.element] + "+" + g.add, Danao.WuXing[g.element]);
         }
         else
         {
             if (g.mul > 1.01f) xiuwei = (long)(xiuwei * g.mul);
             xiuwei += g.xiuAdd;
-            FloatText.Show(player.position, "修为提升", Danao.Gold);
+            if (bonus == null || string.IsNullOrEmpty(bonus.label))
+                FloatText.Show(player.position, "修为提升", Danao.Gold);
         }
         Vfx.Ring(player.position, stage == 1 && g.element >= 0 ? Danao.WuXing[g.element] : Danao.Gold, 0.8f);
+        StageAudio.PlayPickup();
     }
 
     public void ApplyPickup(PickupOrb p)
     {
         if (p.element >= 0)
         {
-            wuXing[p.element] = Mathf.Min(QiNeed, wuXing[p.element] + p.qi);
+            wuXing[p.element] = Mathf.Min(20, wuXing[p.element] + p.qi);
             FloatText.Show(player.position, Danao.WuXingNames[p.element] + "+" + p.qi, Danao.WuXing[p.element]);
         }
         if (p.xiu > 0)
@@ -129,6 +152,7 @@ public partial class GameRoot
         }
         if (p.heal > 0) hp = Mathf.Min(maxHp, hp + p.heal);
         Vfx.Burst(p.transform.position, Danao.Gold, 16);
+        StageAudio.PlayPickup();
     }
 
     public void OnBarrelBreak(Vector3 pos)
@@ -137,7 +161,7 @@ public partial class GameRoot
         {
             int e = Random.Range(0, 5);
             int g = Random.Range(2, 5);
-            wuXing[e] = Mathf.Min(QiNeed, wuXing[e] + g);
+            wuXing[e] = Mathf.Min(20, wuXing[e] + g);
             FloatText.Show(pos, Danao.WuXingNames[e] + "+" + g, Danao.WuXing[e]);
         }
         else
@@ -151,6 +175,7 @@ public partial class GameRoot
 
     public long NeedXiu()
     {
+        if (stage == 2) return 6000;
         long n = 3000;
         for (int i = 2; i < stage; i++) n *= 5;
         return n;
@@ -158,9 +183,10 @@ public partial class GameRoot
 
     public bool CanBreak()
     {
+        if (stage >= 5) return false;
         if (stage == 1)
         {
-            for (int i = 0; i < 5; i++) if (wuXing[i] < QiNeed) return false;
+            for (int i = 0; i < 5; i++) if (wuXing[i] < 20) return false;
             return true;
         }
         return xiuwei >= NeedXiu();

@@ -25,7 +25,9 @@ public partial class GameRoot
     GameObject BuildChunk(int index)
     {
         var go = new GameObject("Chunk_" + index);
-        go.transform.position = new Vector3(0, 0, index * ChunkLen);
+        EnsureLaneShift();
+        go.transform.SetParent(_laneShift, false);
+        go.transform.localPosition = new Vector3(0f, 0f, index * ChunkLen);
 
         if (stage == 1)
         {
@@ -43,16 +45,6 @@ public partial class GameRoot
                     new Vector3(1.85f, 1f, ChunkLen),
                     Mats.CloudLane(i));
                 strip.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                for (int k = 0; k < 4; k++)
-                {
-                    float z = 2.2f + k * (ChunkLen / 4f);
-                    float bump = (k % 2 == 0 ? -0.28f : 0.28f);
-                    var puff = Danao.Mesh(go.transform, "puff" + i + "_" + k, MeshForge.Sphere(12, 8),
-                        new Vector3(x + bump, 0.02f, z),
-                        new Vector3(1.25f, 0.28f, 1.7f),
-                        Mats.CloudLane(i));
-                    puff.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                }
             }
             Color bank = Color.Lerp(Color.white, new Color(1f, 0.82f, 0.55f), 0.35f);
             bank.a = 0.8f;
@@ -151,7 +143,8 @@ public partial class GameRoot
             new Vector3(0.9f, 0.18f, 0.9f), Mats.Solid(new Color(0.55f, 0.42f, 0.32f), "stele"));
 
         var icon = Danao.Node(go.transform, "icon", new Vector3(0, ItemY, 0));
-        BuildGateIcon(icon, elem, stage == 1 ? Mats.Spirit(elem) : Mats.Gold);
+        if (stage == 1) LootArt.GateIcon(icon, stage, elem);
+        else BuildGateIcon(icon, elem, Mats.Gold);
         icon.gameObject.AddComponent<BobSpin>().amp = 0.05f;
 
         var col = go.AddComponent<BoxCollider>();
@@ -379,6 +372,8 @@ public partial class GameRoot
             RenderSettings.skybox = sky;
         }
         DynamicGI.UpdateEnvironment();
+        EnsureLaneShift();
+        if (stage != 1) _laneShift.position = Vector3.zero;
         if (_heroLight != null) _heroLight.color = stage == 1 ? new Color(1f, 0.78f, 0.45f) : Danao.Gold;
         if (_backdrop != null)
         {

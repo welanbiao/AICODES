@@ -1,0 +1,7 @@
+node_modules
+dist
+server/data/*.json
+server/ai-workspace/**
+!server/ai-workspace/.gitkeep
+.env
+*.local
