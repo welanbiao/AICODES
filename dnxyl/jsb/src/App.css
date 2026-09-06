@@ -103,7 +103,7 @@
 
 .gate h1,
 .gate h2 {
-  font-size: 1.7rem;
+  font-size: clamp(1.28rem, 5.2vw, 1.7rem);
 }
 
 .gate p,
