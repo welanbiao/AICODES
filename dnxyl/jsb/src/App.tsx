@@ -188,6 +188,7 @@ function PlayView({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Game | null>(null)
   const artRef = useRef<ArtPack | null>(null)
   const tokenRef = useRef(session.token)
