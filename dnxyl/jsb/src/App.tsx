@@ -296,7 +296,7 @@ function PlayView({
   const expText = hud.stage === 1 ? `EXP ${qi}` : `EXP ${hud.xiuwei}`
 
   return (
-    <div className="app-root">
+    <div className="app-root" ref={rootRef}>
       <div className="phone-frame" ref={frameRef} onPointerDown={onDown} onPointerMove={aim}>
         <canvas ref={canvasRef} />
         {boot && !err ? <div className="boot">{boot}</div> : null}
