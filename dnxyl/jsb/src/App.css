@@ -256,16 +256,16 @@
 
 .wx-row {
   position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 132px;
+  left: calc(10px * var(--ui, 1));
+  right: calc(10px * var(--ui, 1));
+  bottom: calc(132px * var(--ui, 1));
   display: flex;
-  gap: 6px;
+  gap: calc(6px * var(--ui, 1));
 }
 
 .wx {
   flex: 1;
-  height: 28px;
+  height: calc(28px * var(--ui, 1));
   background: rgba(0, 0, 0, 0.45);
   border-radius: 6px;
   overflow: hidden;
