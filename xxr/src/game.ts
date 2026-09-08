@@ -863,6 +863,7 @@ declare global {
       identify: () => void;
       fire: () => void;
       explode: () => void;
+      lookAtPhone: () => void;
       tryMove: (x: number, y: number, z: number) => number[];
     };
   }
