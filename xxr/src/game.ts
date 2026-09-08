@@ -611,6 +611,7 @@ export class Game {
     const hand = this.arms.rightHand;
     const prev = hand.position.clone();
     hand.position.addInPlace(this.handVel.scale(dt));
+    aimHook(hand, this.handVel);
     const delta = hand.position.subtract(prev);
     const dist = delta.length();
     this.handFlight += dist;
