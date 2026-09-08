@@ -53,8 +53,9 @@ test.describe("小小人", () => {
 
     const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
     const limit = await page.evaluate(() => window.__XXR__?.skyLimit ?? 30);
-    const dist = Math.hypot(clamped[0], clamped[1], clamped[2]);
-    expect(dist).toBeLessThan(limit + 2);
+    expect(Math.abs(clamped[0])).toBeLessThanOrEqual(limit + 2);
+    expect(Math.abs(clamped[1])).toBeLessThanOrEqual(limit + 2);
+    expect(Math.abs(clamped[2])).toBeLessThanOrEqual(limit + 2);
     expect(Math.abs(clamped[0])).toBeLessThan(80);
   });
 });

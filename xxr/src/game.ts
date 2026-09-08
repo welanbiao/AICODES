@@ -6,7 +6,6 @@ import {
   DirectionalLight,
   Engine,
   HemisphericLight,
-  ISceneLoaderAsyncResult,
   Matrix,
   Mesh,
   MeshBuilder,
@@ -22,6 +21,7 @@ import {
   UniversalCamera,
   Vector3,
 } from "@babylonjs/core";
+import type { ISceneLoaderAsyncResult } from "@babylonjs/core/Loading/sceneLoader";
 import "@babylonjs/loaders/glTF";
 import {
   createArms,
