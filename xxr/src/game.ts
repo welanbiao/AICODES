@@ -534,18 +534,14 @@ export class Game {
     const hand = this.arms.rightHand;
     const prev = hand.position.clone();
     hand.position.addInPlace(this.handVel.scale(dt));
-    this.handFlight += this.handVel.length() * dt;
-    const dir = hand.position.subtract(prev);
-    const dist = dir.length();
+    const delta = hand.position.subtract(prev);
+    const dist = delta.length();
+    this.handFlight += dist;
     if (dist > 0.0001) {
-      const rayHit = this.scene.pickWithRay(
-        this.fpsCam.getForwardRay(this.handFlight + 1),
-        (m) => m.isPickable && m.isEnabled(),
+      const hit = this.scene.pickWithRay(
+        new Ray(prev, delta.normalize(), dist + 0.2),
+        (m) => m.isPickable && m.isEnabled() && m.name !== "floor",
       );
-      const hit = this.scene.meshes.reduce<PickingInfo | null>((best, mesh) => {
-        if (!mesh.isPickable) return best;
-        return best;
-      }, rayHit);
       if (hit?.hit && hit.pickedMesh && hit.pickedPoint) {
         this.catchPart(hit);
         return;
@@ -560,17 +556,16 @@ export class Game {
   private catchPart(hit: PickingInfo) {
     if (!this.arms || !hit.pickedPoint || !hit.pickedMesh) return;
     this.arms.rightHand.position.copyFrom(hit.pickedPoint);
+    this.arms.rightHand.setParent(hit.pickedMesh);
     this.handState = "stuck";
     this.observePivot.copyFrom(hit.pickedPoint);
-    const normal = hit.getNormal(true) ?? Vector3.Up();
-    const stand = hit.pickedPoint.add(normal.normalize().scale(1.15));
-    this.fpsCam.position.copyFrom(stand);
-    this.phase = "observe";
-    setPhase("observe");
+    const normal = (hit.getNormal(true) ?? Vector3.Up()).normalize();
+    const stand = hit.pickedPoint.add(normal.scale(1.15));
+    this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand };
     $<HTMLElement>("#play-status").textContent = `站在 ${infoFor(this.resolveName(hit.pickedMesh)).name} 上`;
     this.syncHandButtons();
     this.identify();
-    toast("抓住了，360° 观察");
+    toast("抓住零件，飞过去");
   }
 
   private publish() {
