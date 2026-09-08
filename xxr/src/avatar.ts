@@ -163,9 +163,9 @@ export function createArms(scene: Scene, parent: Node): Arms {
   box("xxrIdentLens", { width: 0.022, height: 0.012, depth: 0.022 }, scene, cyan, scanner, new Vector3(0, 0.01, -0.055));
 
   const hook = right.hand;
-  box("xxrHookBody", { width: 0.028, height: 0.028, depth: 0.11 }, scene, chassis, hook, new Vector3(0, 0, -0.02));
-  cyl("xxrHookSpike", { height: 0.07, diameterTop: 0.004, diameterBottom: 0.02 }, scene, blade, hook, new Vector3(0, 0, -0.09)).rotation.x = Math.PI / 2;
-  box("xxrHookCore", { width: 0.018, height: 0.018, depth: 0.04 }, scene, amber, hook, new Vector3(0, 0, -0.01));
+  box("xxrHookBody", { width: 0.034, height: 0.034, depth: 0.13 }, scene, chassis, hook, new Vector3(0, 0, -0.02));
+  cyl("xxrHookSpike", { height: 0.09, diameterTop: 0.005, diameterBottom: 0.024 }, scene, blade, hook, new Vector3(0, 0, -0.1)).rotation.x = Math.PI / 2;
+  box("xxrHookCore", { width: 0.022, height: 0.022, depth: 0.048 }, scene, amber, hook, new Vector3(0, 0, -0.01));
 
   const claws: TransformNode[] = [];
   for (let i = 0; i < 3; i++) {
