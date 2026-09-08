@@ -493,15 +493,13 @@ export class Game {
     if (!this.worldReady) return;
     this.exploded = !this.exploded;
     this.explodeGoal = this.exploded ? 1 : 0;
-    if (this.explodeGroup) {
-      const g = this.explodeGroup;
-      const dur = Math.max(0.001, g.to - g.from);
-      g.speedRatio = dur / EXPLODE_SEC;
-      g.stop();
-      if (this.exploded) g.start(false, g.speedRatio, g.from, g.to);
-      else g.start(false, g.speedRatio, g.to, g.from);
-    }
     toast(this.exploded ? "爆炸图展开" : "零件合拢");
+  }
+
+  lookAtPhone() {
+    this.look.yaw = this.phoneAngle;
+    this.look.pitch = -0.1;
+    this.applyLook();
   }
 
   identify() {
