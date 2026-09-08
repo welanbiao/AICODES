@@ -245,8 +245,8 @@ export function updateRope(arms: Arms, from: Vector3, to: Vector3) {
 
 export function aimHook(hook: TransformNode, dir: Vector3) {
   if (dir.lengthSquared() < 1e-8) return;
-  const n = dir.normalize();
-  hook.rotationQuaternion = Quaternion.FromLookDirectionLH(n, Vector3.Up());
+  const n = dir.normalizeToNew();
+  hook.rotationQuaternion = Quaternion.FromLookDirectionLH(n.scale(-1), Vector3.Up());
 }
 
 export const setRightHandOnWrist = holsterHook;
