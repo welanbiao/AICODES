@@ -53,15 +53,11 @@ body,
   display: none !important;
 }
 
-#screen-menu,
 #screen-load {
   pointer-events: auto;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(62, 224, 200, 0.16), transparent 55%),
-    radial-gradient(800px 500px at 80% 100%, rgba(227, 155, 108, 0.12), transparent 50%),
-    rgba(8, 10, 14, 0.55);
+  background: rgba(8, 10, 14, 0.42);
 }
 
 .menu-card,

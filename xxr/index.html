@@ -13,61 +13,30 @@
     <title>小小人</title>
   </head>
   <body>
-    <div id="app" data-phase="menu">
+    <div id="app" data-phase="loading">
       <canvas id="view" tabindex="0" aria-label="小小人游戏画面"></canvas>
       <div id="hud">
-        <section id="screen-menu" class="screen" data-testid="screen-menu">
-          <div class="menu-card">
-            <p class="eyebrow">第一人称 · 缩进模型</p>
-            <h1 data-testid="title">小小人</h1>
-            <p class="lead">上帝视角看清整机，再迅速缩小钻进内部。左手鉴定器扫描零件，右手发射带绳钩爪抓住后沿索飞过去。</p>
-            <div class="levels">
-              <button type="button" class="level open" data-testid="level-phone" data-level="phone">
-                <span class="lv">第一关</span>
-                <strong>我的手机</strong>
-                <em>iPhone 12 拆机模型</em>
-              </button>
-              <button type="button" class="level locked" data-testid="level-laptop" data-level="laptop" disabled>
-                <span class="lv">第二关</span>
-                <strong>笔记本电脑</strong>
-                <em>即将开放</em>
-              </button>
-              <button type="button" class="level locked" data-testid="level-earbuds" data-level="earbuds" disabled>
-                <span class="lv">第三关</span>
-                <strong>无线耳机</strong>
-                <em>即将开放</em>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section id="screen-load" class="screen" data-testid="loading" hidden>
+        <section id="screen-load" class="screen" data-testid="loading">
           <div class="load-card">
-            <p>正在把世界放大，把你缩小…</p>
+            <p class="eyebrow">第一人称 · 星空枢纽</p>
+            <h1 data-testid="title">小小人</h1>
+            <p>正在进入星空…</p>
             <div class="bar" data-testid="load-bar"><i id="load-bar"></i></div>
             <span id="load-pct" data-testid="load-pct">0%</span>
           </div>
         </section>
 
-        <section id="screen-god" class="screen overlay" data-testid="screen-god" hidden>
-          <div class="top-bar">
-            <span data-testid="level-title">第一关 · 我的手机</span>
-            <span class="hint">拖动环视 · 滚轮远近</span>
-          </div>
-          <div class="god-actions">
-            <button type="button" data-testid="btn-explode">爆炸图</button>
-            <button type="button" class="primary" data-testid="btn-enter">进入内部</button>
-            <button type="button" class="ghost" data-testid="btn-menu">关卡</button>
-          </div>
-        </section>
-
         <section id="screen-play" class="screen overlay" data-testid="screen-play" hidden>
           <div class="top-bar">
-            <span id="play-status">内部穿梭</span>
-            <span class="hint kbd">WASD 移动 · E 鉴定 · F 钩爪 · R 收索 · 鼠标环视</span>
+            <span id="play-status">星空枢纽</span>
+            <span class="hint kbd">WASD 移动 · E 鉴定 · F 钩爪 · R 收索 · X 爆炸图 · 鼠标环视</span>
           </div>
           <div class="crosshair" data-testid="crosshair"></div>
           <aside id="identify-card" class="card" data-testid="identify-card" hidden></aside>
+          <div class="float-label" data-testid="level-label">第一关 · 我的手机</div>
+          <div class="float-label muted" data-testid="level-2-label">第二关 · 即将开放</div>
+          <div class="float-label muted" data-testid="level-3-label">第三关 · 即将开放</div>
+          <p class="credit">iPhone 12 Teardown · Peter_D（CC BY）· 参考 iFixit</p>
           <div class="play-actions">
             <button type="button" data-testid="btn-identify">鉴定</button>
             <button type="button" class="primary" data-testid="btn-fire">发射钩爪</button>
