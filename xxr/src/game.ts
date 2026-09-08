@@ -83,6 +83,7 @@ export class Game {
   private entering = 0;
   private enterFrom = 0;
   private enterTo = 0;
+  private enterStartedAt = 0;
   private floor!: Mesh;
   private riding: { t: number; from: Vector3; to: Vector3 } | null = null;
   private restAbs = new Map<number, Vector3>();

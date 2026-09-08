@@ -17,11 +17,11 @@ test.describe("小小人", () => {
     await expect(page.locator("#view")).toBeVisible();
 
     await page.getByTestId("btn-explode").click();
-    await page.waitForTimeout(800);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded)).toBe(true);
 
     await page.getByTestId("btn-enter").click();
-    await expect(page.getByTestId("btn-identify")).toBeVisible({ timeout: 8_000 });
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("fps");
+    await expect(page.getByTestId("btn-identify")).toBeVisible();
     await expect(page.getByTestId("btn-fire")).toBeVisible();
     await expect(page.getByTestId("crosshair")).toBeVisible();
 
