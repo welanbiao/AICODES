@@ -543,8 +543,7 @@ export class Game {
     }
     this.applyExplode(dt);
     if (this.phase === "entering") {
-      this.entering += dt;
-      const t = Math.min(1, this.entering / 1.05);
+      const t = Math.min(1, (performance.now() - this.enterStartedAt) / 1050);
       this.godCam.radius = this.enterFrom + (this.enterTo - this.enterFrom) * easeInOut(t);
       this.godCam.beta = 1.05 + (1.35 - 1.05) * t;
       if (t >= 1) this.finishEnter();

@@ -43,7 +43,8 @@ test.describe("小小人", () => {
     await page.getByTestId("level-phone").click();
     await expect(page.getByTestId("btn-enter")).toBeVisible({ timeout: 120_000 });
     await page.getByTestId("btn-enter").click();
-    await expect(page.getByTestId("btn-identify")).toBeVisible({ timeout: 8_000 });
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("fps");
+    await expect(page.getByTestId("btn-identify")).toBeVisible();
 
     const before = await page.evaluate(() => window.__XXR__?.phase);
     expect(before).toBe("fps");
