@@ -626,7 +626,7 @@ export class Game {
       }
     }
     if (this.handFlight > Math.max(18, this.phoneSize.length() * 0.35)) {
-      toast("没有抓住零件");
+      toast("钩索没有勾住");
       this.recallHand();
     }
   }
