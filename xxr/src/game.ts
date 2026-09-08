@@ -507,7 +507,7 @@ export class Game {
   private moveObserve(dt: number) {
     if (this.keys.has("KeyA") || this.joy.x < -0.2) this.look.yaw -= dt * 1.2;
     if (this.keys.has("KeyD") || this.joy.x > 0.2) this.look.yaw += dt * 1.2;
-    const orbit = this.keys.has("KeyQ") ? -1 : this.keys.has("KeyE") ? 1 : 0;
+    const orbit = this.keys.has("KeyQ") ? -1 : this.keys.has("KeyZ") ? 1 : 0;
     if (orbit) {
       const rel = this.fpsCam.position.subtract(this.observePivot);
       const q = orbit * dt * 1.4;
