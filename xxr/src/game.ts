@@ -477,7 +477,18 @@ export class Game {
       this.godCam.beta = 1.05 + (1.35 - 1.05) * t;
       if (t >= 1) this.finishEnter();
     }
-    if (this.phase === "fps") this.moveFps(dt);
+    if (this.riding) {
+      this.riding.t += dt / 0.75;
+      const t = easeInOut(Math.min(1, this.riding.t));
+      Vector3.LerpToRef(this.riding.from, this.riding.to, t, this.fpsCam.position);
+      if (this.riding.t >= 1) {
+        this.riding = null;
+        this.phase = "observe";
+        setPhase("observe");
+        this.syncHandButtons();
+        toast("抓住了，360° 观察");
+      }
+    } else if (this.phase === "fps") this.moveFps(dt);
     if (this.phase === "observe") this.moveObserve(dt);
     if (this.handState === "flying") this.tickHand(dt);
     this.applyLook();
