@@ -25,7 +25,7 @@ function mat(scene: Scene, name: string, color: Color3, spec = 0.25) {
   return m;
 }
 
-export function createArms(scene: Scene, parent: TransformNode): Arms {
+export function createArms(scene: Scene, parent: Node): Arms {
   const root = new TransformNode("arms", scene);
   root.parent = parent;
 
