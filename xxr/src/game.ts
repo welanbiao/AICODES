@@ -10,6 +10,7 @@ import {
   Mesh,
   MeshBuilder,
   Node,
+  PBRMaterial,
   PickingInfo,
   PointLight,
   Ray,
