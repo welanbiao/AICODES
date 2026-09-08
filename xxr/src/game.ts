@@ -460,7 +460,7 @@ export class Game {
     const ray = this.fpsCam.getForwardRay(this.phoneSize.length() * 1.2);
     return this.scene.pickWithRay(ray, (m) => {
       if (!m.isPickable || !m.isEnabled()) return false;
-      if (m.name === "floor" || m.name === "__root__" || m.name === "phoneWrap") return false;
+      if (m.name === "floor" || m.name === "__root__" || m.name === "phoneWrap" || isAvatarMesh(m.name)) return false;
       return true;
     });
   }
