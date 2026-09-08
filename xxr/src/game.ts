@@ -611,7 +611,9 @@ declare global {
       phase: string;
       fps: number;
       ready: boolean;
-      exploded: boolean;
+      size?: number[];
+      radius?: number;
+      meshes?: number;
       identify: () => void;
       fire: () => void;
       explode: () => void;
