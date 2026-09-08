@@ -44,6 +44,7 @@ for (const job of jobs) {
   if (job.preserveAnim) {
     args.push("--flatten", "false", "--join", "false", "--simplify", "false", "--instance", "false");
   }
+  const result = spawnSync("npx", args, { cwd: root, stdio: "inherit", shell: true });
   if (result.status !== 0) {
     console.warn("compress failed, keeping uncompressed copy:", job.name);
     copy(src, dest);

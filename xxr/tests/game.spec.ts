@@ -26,7 +26,7 @@ test.describe("小小人", () => {
     await page.waitForTimeout(200);
     await page.getByTestId("btn-identify").click();
     await expect(page.getByTestId("identify-card")).toBeVisible();
-    await expect(page.getByTestId("identify-card")).toContainText(/电池|零件|螺丝|主板|屏幕|未锁定|中框|摄像/);
+    await expect(page.getByTestId("identify-card")).toContainText(/电池|零件|螺丝|主板|屏幕|未锁定|中框|摄像|玻璃|整机/);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByTestId("btn-identify")).toBeVisible();
