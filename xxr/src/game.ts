@@ -820,6 +820,8 @@ export class Game {
       meshes: this.scene.meshes.length,
       pos: [p.x, p.y, p.z],
       skyLimit: this.skyLimit,
+      armsOn: !!this.arms?.root.isEnabled(),
+      armMeshes: this.arms?.root.getChildMeshes().length ?? 0,
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       explode: () => this.toggleExplode(),
