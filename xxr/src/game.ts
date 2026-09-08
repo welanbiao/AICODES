@@ -562,6 +562,8 @@ export class Game {
     } else if (this.phase === "fps") this.moveFps(dt);
     if (this.phase === "observe") this.moveObserve(dt);
     if (this.handState === "flying") this.tickHand(dt);
+    else if (this.handState === "reeling") this.tickReel(dt);
+    this.updateHookRope();
     this.applyLook();
   }
 
