@@ -50,7 +50,7 @@ function xxrModelsDev(): Plugin {
 
 export default defineConfig({
   base: "./",
-  plugins: [xxrModels()],
+  plugins: [xxrModels(), xxrModelsDev()],
   server: {
     host: true,
     port: 5173,
