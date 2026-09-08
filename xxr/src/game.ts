@@ -312,7 +312,7 @@ export class Game {
     this.phoneSize = b3.max.subtract(b3.min);
 
     for (const mesh of this.scene.meshes) {
-      if (mesh.name.includes("$Assimp") || mesh.name === "floor" || mesh.name.startsWith("left") || mesh.name.startsWith("right") || mesh.name.startsWith("scanner")) {
+      if (mesh.name.includes("$Assimp") || mesh.name === "floor" || isAvatarMesh(mesh.name)) {
         mesh.isPickable = false;
       }
     }
