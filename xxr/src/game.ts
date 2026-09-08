@@ -147,8 +147,8 @@ export class Game {
 
     this.headlamp = new SpotLight("headlamp", new Vector3(0, 0.04, 0.06), new Vector3(0, -0.04, 1), 0.92, 1.8, this.scene);
     this.headlamp.parent = this.fpsCam;
-    this.headlamp.intensity = 3.6;
-    this.headlamp.range = 22;
+    this.headlamp.intensity = 5.4;
+    this.headlamp.range = 28;
     this.headlamp.diffuse = new Color3(1, 0.96, 0.86);
     this.headlamp.specular = new Color3(1, 0.95, 0.85);
     this.headlamp.angle = 0.98;
