@@ -443,6 +443,10 @@ export class Game {
         mat.directIntensity = 1.7;
         mat.environmentIntensity = 1.15;
         mat.emissiveColor = mat.emissiveColor.add(new Color3(0.04, 0.04, 0.045));
+        if (mat.subSurface) {
+          mat.subSurface.isRefractionEnabled = false;
+          mat.subSurface.isTranslucencyEnabled = false;
+        }
       }
     }
 
