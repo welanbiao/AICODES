@@ -344,7 +344,11 @@ export const CATALOG: Record<string, PartInfo> = {
 };
 
 export function partKeyFromName(name: string): string {
-  const base = name.split("_$Assimp")[0].replace(/_node$/i, "").trim();
+  const base = name
+    .split("_$Assimp")[0]
+    .replace(/_primitive\d+$/i, "")
+    .replace(/_node$/i, "")
+    .trim();
   if (CATALOG[base]) return base;
   if (/^Screw/i.test(base) || /^screw/i.test(base)) return "__screw__";
   return base;

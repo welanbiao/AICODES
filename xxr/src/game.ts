@@ -22,7 +22,7 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { createArms, setRightHandOnWrist, type Arms } from "./avatar";
-import { infoFor } from "./catalog";
+import { infoFor, partKeyFromName, CATALOG } from "./catalog";
 
 export type Phase = "menu" | "loading" | "god" | "entering" | "fps" | "observe";
 
