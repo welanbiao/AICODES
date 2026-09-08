@@ -122,11 +122,11 @@ export class Game {
     const floorMat = new StandardMaterial("floorMat", this.scene);
     floorMat.diffuseColor = new Color3(0.07, 0.08, 0.1);
     floorMat.specularColor = Color3.Black();
-    const floor = MeshBuilder.CreateDisc("floor", { radius: 90, tessellation: 48 }, this.scene);
-    floor.rotation.x = Math.PI / 2;
-    floor.position.y = -12;
-    floor.material = floorMat;
-    floor.isPickable = false;
+    this.floor = MeshBuilder.CreateDisc("floor", { radius: 90, tessellation: 48 }, this.scene);
+    this.floor.rotation.x = Math.PI / 2;
+    this.floor.position.y = -12;
+    this.floor.material = floorMat;
+    this.floor.isPickable = false;
 
     this.bindUi();
     this.bindInput();
