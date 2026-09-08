@@ -383,6 +383,7 @@ export class Game {
     setPhase("entering");
     this.entering = 0;
     this.enterFrom = this.godCam.radius;
+    this.enterStartedAt = performance.now();
     toast("缩小进入…");
   }
 
