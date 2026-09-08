@@ -358,7 +358,6 @@ button.ghost {
   h1 {
     font-size: calc(28px * var(--ui));
   }
-  .god-actions,
   .play-actions {
     bottom: 8px;
   }
