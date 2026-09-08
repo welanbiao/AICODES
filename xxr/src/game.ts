@@ -381,7 +381,6 @@ export class Game {
     this.godCam.detachControl();
     this.phase = "entering";
     setPhase("entering");
-    this.entering = 0;
     this.enterFrom = this.godCam.radius;
     this.enterStartedAt = performance.now();
     toast("缩小进入…");
