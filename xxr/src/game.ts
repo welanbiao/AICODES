@@ -424,20 +424,24 @@ export class Game {
   fireHand() {
     if (this.phase !== "fps" || !this.arms) return;
     if (this.handState !== "holstered") return;
-    const origin = this.arms.rightHand.getAbsolutePosition();
-    this.arms.rightHand.setParent(null);
-    this.arms.rightHand.position.copyFrom(origin);
-    this.handVel = this.fpsCam.getForwardRay(1).direction.scale(this.moveSpeed * 3.2);
+    const hook = this.arms.rightHand;
+    const origin = hook.getAbsolutePosition();
+    hook.setParent(null);
+    hook.position.copyFrom(origin);
+    this.handVel = this.fpsCam.getForwardRay(1).direction.scale(this.moveSpeed * 3.6);
+    aimHook(hook, this.handVel);
+    setClaws(this.arms.claws, 0.92);
     this.handFlight = 0;
     this.handState = "flying";
     this.syncHandButtons();
   }
 
   recallHand() {
-    if (!this.arms || this.handState === "holstered") return;
+    if (!this.arms || this.handState === "holstered" || this.handState === "reeling") return;
     this.riding = null;
-    setRightHandOnWrist(this.arms);
-    this.handState = "holstered";
+    this.arms.rightHand.setParent(null);
+    setClaws(this.arms.claws, 0.35);
+    this.handState = "reeling";
     this.syncHandButtons();
     if (this.phase === "observe") this.dismount();
   }
