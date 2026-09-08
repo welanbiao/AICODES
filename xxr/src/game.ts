@@ -333,9 +333,25 @@ export class Game {
       skyboxSize: Math.max(200, diag * 6),
       enableGroundShadow: false,
     });
-    this.scene.environmentIntensity = 1.15;
-    this.scene.imageProcessingConfiguration.exposure = 1.25;
-    this.scene.imageProcessingConfiguration.contrast = 1.08;
+    this.scene.environmentIntensity = 1.35;
+    this.scene.imageProcessingConfiguration.exposure = 1.45;
+    this.scene.imageProcessingConfiguration.contrast = 1.1;
+    for (const mat of this.scene.materials) {
+      if (mat instanceof PBRMaterial) {
+        mat.directIntensity = 1.6;
+        mat.environmentIntensity = 1.2;
+        mat.emissiveColor = mat.emissiveColor.add(new Color3(0.03, 0.03, 0.035));
+      }
+    }
+
+    this.restAbs.clear();
+    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
+    for (const mesh of this.scene.meshes) {
+      if (mesh === this.floor || !mesh.getTotalVertices()) continue;
+      this.restAbs.set(mesh.uniqueId, mesh.getAbsolutePosition().clone());
+    }
+    this.explodeT = 0;
+    this.explodeGoal = 0;
   }
 
   private toGod() {
