@@ -364,7 +364,7 @@ export class Game {
     this.godCam.attachControl(this.canvas, true);
     this.arms?.root.setEnabled(false);
     this.handState = "holstered";
-    if (this.arms) setRightHandOnWrist(this.arms);
+    if (this.arms) holsterHook(this.arms);
     this.syncHandButtons();
   }
 
@@ -499,7 +499,7 @@ export class Game {
     this.applyLook();
     this.scene.activeCamera = this.fpsCam;
     this.arms?.root.setEnabled(true);
-    if (this.arms) setRightHandOnWrist(this.arms);
+    if (this.arms) holsterHook(this.arms);
     this.phase = "fps";
     setPhase("fps");
     $<HTMLElement>("#play-status").textContent = "内部穿梭";
