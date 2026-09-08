@@ -158,8 +158,8 @@ export class Game {
     this.scene.onBeforeRenderObservable.add(() => this.tick());
     this.engine.runRenderLoop(() => {
       this.fps = this.engine.getFps();
-      if (this.fps > 1 && this.fps < 22 && this.engine.getHardwareScalingLevel() < 1.25) {
-        this.engine.setHardwareScalingLevel(1.2);
+      if (this.fps > 1 && this.fps < 40 && this.engine.getHardwareScalingLevel() < 1.35) {
+        this.engine.setHardwareScalingLevel(1.28);
       }
       this.scene.render();
       this.publish();
