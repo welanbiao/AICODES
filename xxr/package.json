@@ -1,0 +1,23 @@
+{
+  "name": "xiaoxiaoren",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5180 --host --strictPort",
+    "convert": "node scripts/convert-fbx.mjs",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^8.32.0",
+    "@babylonjs/loaders": "^8.32.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  }
+}
