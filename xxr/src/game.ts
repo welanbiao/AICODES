@@ -40,7 +40,7 @@ export type Phase = "loading" | "fps" | "observe";
 type HandState = "holstered" | "flying" | "stuck" | "reeling";
 
 const SKY_SIZE = 72;
-const PHONE_SPAN = 0.95;
+const PHONE_SPAN = 1.15;
 const ORBIT_RADIUS = 2.52;
 const ORBIT_SPEED = 0.32;
 const SPIN_SPEED = 0.55;
