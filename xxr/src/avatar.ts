@@ -237,7 +237,7 @@ export function updateRope(arms: Arms, from: Vector3, to: Vector3) {
   const dir = delta.scale(1 / len);
   const up = Vector3.Up();
   let axis = Vector3.Cross(up, dir);
-  if (axis.lengthSquared() < 1e-8) axis = Vector3.Right();
+  if (axis.lengthSquared() < 1e-8) axis = new Vector3(1, 0, 0);
   axis.normalize();
   const angle = Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(up, dir))));
   arms.rope.rotationQuaternion = Quaternion.RotationAxis(axis, angle);
