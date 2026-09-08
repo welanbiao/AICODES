@@ -28,23 +28,22 @@ for (const job of jobs) {
     continue;
   }
   copy(src, dest);
-  const result = spawnSync(
-    "npx",
-    [
-      "--yes",
-      "@gltf-transform/cli",
-      "optimize",
-      src,
-      dest,
-      "--compress",
-      "draco",
-      "--texture-compress",
-      "webp",
-      "--texture-size",
-      job.textureSize,
-    ],
-    { cwd: root, stdio: "inherit", shell: true },
-  );
+  const args = [
+    "--yes",
+    "@gltf-transform/cli",
+    "optimize",
+    src,
+    dest,
+    "--compress",
+    "draco",
+    "--texture-compress",
+    "webp",
+    "--texture-size",
+    job.textureSize,
+  ];
+  if (job.preserveAnim) {
+    args.push("--flatten", "false", "--join", "false", "--simplify", "false", "--instance", "false");
+  }
   if (result.status !== 0) {
     console.warn("compress failed, keeping uncompressed copy:", job.name);
     copy(src, dest);

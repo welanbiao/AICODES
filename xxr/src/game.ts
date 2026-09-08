@@ -446,20 +446,6 @@ export class Game {
     wrap.position.set(0, 0.16, ORBIT_RADIUS);
   }
 
-  private markDriven(node: Node) {
-    this.animDriven.add(node.uniqueId);
-    for (const child of node.getChildren()) this.markDriven(child);
-  }
-
-  private isAnimDriven(node: Node) {
-    let n: Node | null = node;
-    while (n) {
-      if (this.animDriven.has(n.uniqueId)) return true;
-      n = n.parent;
-    }
-    return false;
-  }
-
   private isPhonePart(mesh: AbstractMesh) {
     let n: Node | null = mesh;
     while (n) {
