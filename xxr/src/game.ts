@@ -408,6 +408,7 @@ export class Game {
     const size = extents.max.subtract(extents.min);
     const longest = Math.max(size.x, size.y, size.z, 0.001);
     spin.scaling.setAll(PHONE_SPAN / longest);
+    spin.rotation.y = Math.PI / 2;
     spin.computeWorldMatrix(true);
     const b2 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
