@@ -309,7 +309,9 @@ export class Game {
 
     const diag = this.phoneSize.length();
     this.godCam.setTarget(Vector3.Zero());
-    this.godCam.radius = Math.max(24, diag * 1.15);
+    this.godCam.alpha = 1.35;
+    this.godCam.beta = 1.12;
+    this.godCam.radius = Math.max(24, diag * 1.05);
     this.godCam.lowerRadiusLimit = 4;
     this.godCam.upperRadiusLimit = Math.max(80, diag * 3);
     this.moveSpeed = Math.max(16, diag * 0.08);
