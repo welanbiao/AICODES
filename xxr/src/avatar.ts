@@ -179,7 +179,7 @@ export function createArms(scene: Scene, parent: Node): Arms {
     claws.push(pivot);
   }
 
-  const rope = MeshBuilder.CreateCylinder("xxrRope", { height: 1, diameter: 0.007, tessellation: 7 }, scene);
+  const rope = MeshBuilder.CreateCylinder("xxrRope", { height: 1, diameter: 0.01, tessellation: 7 }, scene);
   rope.material = cable;
   tag(rope);
   rope.isVisible = false;
