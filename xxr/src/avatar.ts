@@ -79,8 +79,16 @@ function cyl(
   return tag(m);
 }
 
-export function isAvatarMesh(name: string) {
-  return name.startsWith("xxr");
+export function isAvatarMesh(mesh: AbstractMesh | Node | string) {
+  if (typeof mesh === "string") {
+    return mesh.startsWith("xxr") || mesh.startsWith("armmesh");
+  }
+  let n: Node | null = mesh;
+  while (n) {
+    if (n.name === "xxrArms" || n.name.startsWith("xxr")) return true;
+    n = n.parent;
+  }
+  return false;
 }
 
 export function createArms(scene: Scene, parent: Node): Arms {
