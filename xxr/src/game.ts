@@ -394,6 +394,7 @@ export class Game {
 
   recallHand() {
     if (!this.arms || this.handState === "holstered") return;
+    this.riding = null;
     setRightHandOnWrist(this.arms);
     this.handState = "holstered";
     this.syncHandButtons();
