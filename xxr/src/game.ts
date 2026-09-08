@@ -848,6 +848,7 @@ declare global {
       skyLimit?: number;
       armsOn?: boolean;
       armMeshes?: number;
+      wrist?: number[];
       identify: () => void;
       fire: () => void;
       explode: () => void;
