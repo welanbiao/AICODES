@@ -327,12 +327,13 @@ export class Game {
     this.floor.position.y = b3.min.y - 1.2;
     this.floor.scaling.setAll(Math.max(1, diag / 70));
 
-    this.scene.createDefaultEnvironment({
+    const env = this.scene.createDefaultEnvironment({
       createGround: false,
       createSkybox: true,
       skyboxSize: Math.max(200, diag * 6),
       enableGroundShadow: false,
     });
+    env?.skybox?.setEnabled(false);
     this.scene.environmentIntensity = 1.35;
     this.scene.imageProcessingConfiguration.exposure = 1.45;
     this.scene.imageProcessingConfiguration.contrast = 1.1;
