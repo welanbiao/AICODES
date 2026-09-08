@@ -42,9 +42,9 @@ type HandState = "holstered" | "flying" | "stuck" | "reeling";
 const SKY_SIZE = 72;
 const PHONE_SPAN = 1.15;
 const ORBIT_RADIUS = 2.52;
-const ORBIT_SPEED = 0.32;
-const SPIN_SPEED = 0.55;
-const EXPLODE_SEC = 16;
+const ORBIT_SPEED = 0.14;
+const SPIN_SPEED = 0.5;
+const EXPLODE_SEC = 12;
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
