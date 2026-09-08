@@ -496,9 +496,7 @@ export class Game {
     if (this.keys.has("Space")) y += 1;
     if (this.keys.has("KeyC") || this.keys.has("ControlLeft")) y -= 1;
     const fwd = this.fpsCam.getForwardRay(1).direction;
-    const right = Vector3.Cross(fwd, Vector3.Up());
-    if (right.lengthSquared() > 0.0001) right.normalize();
-    else Vector3.Right().rotateByQuaternionToRef(this.fpsCam.absoluteRotation, right);
+    const right = this.fpsCam.getDirection(Vector3.Right());
     this.fpsCam.position.addInPlace(fwd.scale(z * speed * dt));
     this.fpsCam.position.addInPlace(right.scale(x * speed * dt));
     this.fpsCam.position.addInPlace(Vector3.Up().scale(y * speed * dt));
