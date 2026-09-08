@@ -264,22 +264,39 @@ export class Game {
   }
 
   private preparePhone() {
-    const root =
-      this.scene.getMeshByName("__root__") ||
-      this.scene.meshes.find((m) => m.name === "__root__") ||
-      this.scene.meshes[0];
-    const wrap = new TransformNode("phoneWrap", this.scene);
-    if (root) root.parent = wrap;
+    this.explodeGroup = this.scene.animationGroups.find((g) => /take/i.test(g.name)) ?? this.scene.animationGroups[0] ?? null;
+    if (this.explodeGroup) {
+      this.explodeGroup.stop();
+      this.explodeGroup.reset();
+      this.explodeGroup.goToFrame(this.explodeGroup.from);
+    }
 
-    const bounds = wrap.getHierarchyBoundingVectors(true);
-    const size = bounds.max.subtract(bounds.min);
+    const wrap = this.scene.getTransformNodeByName("phoneWrap") ?? new TransformNode("phoneWrap", this.scene);
+    const root =
+      this.scene.getTransformNodeByName("__root__") ||
+      this.scene.getMeshByName("__root__") ||
+      this.scene.transformNodes.find((n) => n.name === "__root__") ||
+      null;
+    if (root && root !== wrap) root.parent = wrap;
+
+    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
+    const extents = this.scene.getWorldExtends((m) => {
+      if (m === this.floor) return false;
+      if (m.name === "floor") return false;
+      if (m.name.startsWith("left") || m.name.startsWith("right") || m.name.startsWith("scanner") || m.name === "arms") return false;
+      return m.isEnabled() && !!m.getTotalVertices();
+    });
+    const size = extents.max.subtract(extents.min);
     const thick = Math.max(0.0001, Math.min(size.x, size.y, size.z));
     const s = 18 / thick;
     wrap.scaling.setAll(s);
-    const b2 = wrap.getHierarchyBoundingVectors(true);
+    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
+    const b2 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
     wrap.position.subtractInPlace(center);
-    this.phoneSize = b2.max.subtract(b2.min);
+    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
+    const b3 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !!m.getTotalVertices());
+    this.phoneSize = b3.max.subtract(b3.min);
 
     for (const mesh of this.scene.meshes) {
       if (mesh.name.includes("$Assimp") || mesh.name === "floor" || mesh.name.startsWith("left") || mesh.name.startsWith("right") || mesh.name.startsWith("scanner")) {
@@ -287,21 +304,25 @@ export class Game {
       }
     }
 
-    this.explodeGroup = this.scene.animationGroups.find((g) => /take/i.test(g.name)) ?? this.scene.animationGroups[0] ?? null;
-    if (this.explodeGroup) {
-      this.explodeGroup.stop();
-      this.explodeGroup.goToFrame(this.explodeGroup.from);
-    }
-
     const diag = this.phoneSize.length();
-    this.godCam.radius = Math.max(28, diag * 0.95);
-    this.godCam.lowerRadiusLimit = 8;
-    this.godCam.upperRadiusLimit = diag * 2.4;
+    this.godCam.setTarget(Vector3.Zero());
+    this.godCam.radius = Math.max(24, diag * 1.15);
+    this.godCam.lowerRadiusLimit = 4;
+    this.godCam.upperRadiusLimit = Math.max(80, diag * 3);
     this.moveSpeed = Math.max(16, diag * 0.08);
-    this.enterTo = Math.max(2.2, thick * s * 0.2);
-    const grounded = wrap.getHierarchyBoundingVectors(true);
-    this.floor.position.y = grounded.min.y - 1.2;
+    this.enterTo = Math.max(2.2, thick * s * 0.22);
+    this.floor.position.y = b3.min.y - 1.2;
     this.floor.scaling.setAll(Math.max(1, diag / 70));
+
+    this.scene.createDefaultEnvironment({
+      createGround: false,
+      createSkybox: true,
+      skyboxSize: Math.max(200, diag * 6),
+      enableGroundShadow: false,
+    });
+    this.scene.environmentIntensity = 1.15;
+    this.scene.imageProcessingConfiguration.exposure = 1.25;
+    this.scene.imageProcessingConfiguration.contrast = 1.08;
   }
 
   private toGod() {
