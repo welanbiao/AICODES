@@ -509,7 +509,7 @@ export class Game {
     if (this.keys.has("Space")) y += 1;
     if (this.keys.has("KeyC") || this.keys.has("ControlLeft")) y -= 1;
     const fwd = this.fpsCam.getForwardRay(1).direction;
-    const right = this.fpsCam.getDirection(Vector3.Right());
+    const right = this.fpsCam.getDirection(new Vector3(1, 0, 0));
     this.fpsCam.position.addInPlace(fwd.scale(z * speed * dt));
     this.fpsCam.position.addInPlace(right.scale(x * speed * dt));
     this.fpsCam.position.addInPlace(Vector3.Up().scale(y * speed * dt));
