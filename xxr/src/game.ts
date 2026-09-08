@@ -95,7 +95,7 @@ export class Game {
     this.scene.skipPointerMovePicking = true;
 
     const hemi = new HemisphericLight("hemi", new Vector3(0.2, 1, 0.3), this.scene);
-    hemi.intensity = 0.85;
+    hemi.intensity = 1.15;
     hemi.groundColor = new Color3(0.12, 0.14, 0.18);
     const sun = new DirectionalLight("sun", new Vector3(-0.4, -1, 0.35), this.scene);
     sun.intensity = 0.55;
