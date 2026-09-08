@@ -317,10 +317,9 @@ export class Game {
         env.skybox.setEnabled(false);
         env.skybox.isPickable = false;
       }
-      this.scene.environmentIntensity = 0.85;
-      this.scene.imageProcessingConfiguration.exposure = 1.15;
-      this.scene.imageProcessingConfiguration.contrast = 1.05;
-      this.scene.cleanCachedTextureBuffer();
+      this.scene.environmentIntensity = 1.45;
+      this.scene.imageProcessingConfiguration.exposure = 1.25;
+      this.scene.imageProcessingConfiguration.contrast = 1.08;
 
       this.setLoad(1);
       this.worldReady = true;
