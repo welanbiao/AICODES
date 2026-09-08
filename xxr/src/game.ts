@@ -374,11 +374,14 @@ export class Game {
     const pad = 1.6;
     this.skyMin.copyFrom(b3.min.add(new Vector3(pad, pad, pad)));
     this.skyMax.copyFrom(b3.max.subtract(new Vector3(pad, pad, pad)));
-    this.skyLimit = Math.min(
-      Math.abs(this.skyMax.x - this.skyMin.x),
-      Math.abs(this.skyMax.y - this.skyMin.y),
-      Math.abs(this.skyMax.z - this.skyMin.z),
-    ) * 0.5;
+    this.skyLimit = Math.max(
+      Math.abs(this.skyMin.x),
+      Math.abs(this.skyMax.x),
+      Math.abs(this.skyMin.y),
+      Math.abs(this.skyMax.y),
+      Math.abs(this.skyMin.z),
+      Math.abs(this.skyMax.z),
+    );
   }
 
   private preparePhone(loaded: ISceneLoaderAsyncResult) {
