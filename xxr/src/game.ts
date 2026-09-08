@@ -822,6 +822,7 @@ export class Game {
       skyLimit: this.skyLimit,
       armsOn: !!this.arms?.root.isEnabled(),
       armMeshes: this.arms?.root.getChildMeshes().length ?? 0,
+      wrist: this.arms ? this.arms.wristAnchor.getAbsolutePosition().asArray() : [0, 0, 0],
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       explode: () => this.toggleExplode(),

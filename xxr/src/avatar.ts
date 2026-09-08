@@ -342,8 +342,11 @@ export async function loadFpsArms(
   glbRoot.name = "xxrArmModel";
   for (const mesh of loaded.meshes) {
     mesh.isPickable = false;
-    mesh.renderingGroupId = ARM_GROUP;
+    mesh.renderingGroupId = 0;
     mesh.alwaysSelectAsActiveMesh = true;
+    mesh.isVisible = true;
+    mesh.visibility = 1;
+    if (mesh.material) mesh.material.backFaceCulling = false;
   }
 
   fitFirstPerson(glbRoot);
@@ -360,6 +363,16 @@ export async function loadFpsArms(
     root.dispose();
     throw new Error("fps_arms.glb missing wrist bones");
   }
+
+  leftWrist.computeWorldMatrix(true);
+  rightWrist.computeWorldMatrix(true);
+  const mid = leftWrist.getAbsolutePosition().add(rightWrist.getAbsolutePosition()).scale(0.5);
+  if (mid.z < 0.05) glbRoot.rotation.y += Math.PI;
+  glbRoot.computeWorldMatrix(true);
+  leftWrist.computeWorldMatrix(true);
+  rightWrist.computeWorldMatrix(true);
+  const mid2 = leftWrist.getAbsolutePosition().add(rightWrist.getAbsolutePosition()).scale(0.5);
+  glbRoot.position.addInPlace(new Vector3(0, -0.2, 0.42).subtract(mid2));
 
   const kit = createGrapple(scene, rightWrist, leftWrist);
   const arms: Arms = {
