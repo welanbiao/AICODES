@@ -17,3 +17,7 @@ onViewportChange(() => {
 });
 window.addEventListener("orientationchange", () => game.resize());
 window.addEventListener("resize", () => game.resize());
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => game.dispose());
+}

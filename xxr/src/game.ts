@@ -144,6 +144,10 @@ export class Game {
     this.engine.resize();
   }
 
+  dispose() {
+    this.engine.dispose();
+  }
+
   private bindUi() {
     $<HTMLButtonElement>('[data-testid="level-phone"]').onclick = () => void this.startLevel();
     for (const id of ["level-laptop", "level-earbuds"] as const) {
