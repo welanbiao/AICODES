@@ -599,10 +599,16 @@ export class Game {
   }
 
   private applyExplode(dt: number) {
-    const diff = this.explodeGoal - this.explodeT;
-    this.explodeT += diff * Math.min(1, dt / EXPLODE_SEC);
-    if (Math.abs(this.explodeGoal - this.explodeT) < 0.002) this.explodeT = this.explodeGoal;
+    const step = dt / EXPLODE_SEC;
+    if (this.explodeT < this.explodeGoal) this.explodeT = Math.min(this.explodeGoal, this.explodeT + step);
+    else if (this.explodeT > this.explodeGoal) this.explodeT = Math.max(this.explodeGoal, this.explodeT - step);
     const ease = this.explodeT * this.explodeT * (3 - 2 * this.explodeT);
+    if (this.explodeGroup) {
+      const g = this.explodeGroup;
+      const frame = g.from + (g.to - g.from) * ease;
+      g.goToFrame(frame);
+      g.pause();
+    }
     for (const mesh of this.phoneMeshes) {
       const rest = this.restLocal.get(mesh.uniqueId);
       if (!rest) continue;
