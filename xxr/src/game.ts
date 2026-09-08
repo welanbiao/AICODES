@@ -9,6 +9,7 @@ import {
   HemisphericLight,
   Mesh,
   MeshBuilder,
+  Node,
   PickingInfo,
   PointLight,
   Ray,
