@@ -106,7 +106,6 @@ export class Game {
   private worldReady = false;
   private riding: { t: number; from: Vector3; to: Vector3 } | null = null;
   private restLocal = new Map<number, Vector3>();
-  private animDriven = new Set<number>();
   private explodeT = 0;
   private explodeGoal = 0;
   private phoneWrap: TransformNode | null = null;

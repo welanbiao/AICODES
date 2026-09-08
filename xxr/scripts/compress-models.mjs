@@ -9,9 +9,9 @@ const outDir = resolve(root, "public/models");
 mkdirSync(outDir, { recursive: true });
 
 const jobs = [
-  { name: "skybox.glb", textureSize: "2048" },
-  { name: "fps_arms.glb", textureSize: "1024" },
-  { name: "iphone_12_teardown.glb", textureSize: "1024" },
+  { name: "skybox.glb", textureSize: "2048", preserveAnim: false },
+  { name: "fps_arms.glb", textureSize: "1024", preserveAnim: false },
+  { name: "iphone_12_teardown.glb", textureSize: "1024", preserveAnim: true },
 ];
 
 function copy(src, dest) {
