@@ -172,9 +172,9 @@ export function createArms(scene: Scene, parent: Node): Arms {
     const pivot = new TransformNode(`xxrClawP${i}`, scene);
     pivot.parent = hook;
     const ang = (i / 3) * Math.PI * 2;
-    pivot.position = new Vector3(Math.cos(ang) * 0.012, Math.sin(ang) * 0.012, -0.04);
+    pivot.position = new Vector3(Math.cos(ang) * 0.014, Math.sin(ang) * 0.014, -0.045);
     pivot.rotation.z = ang;
-    const claw = box(`xxrClaw${i}`, { width: 0.01, height: 0.006, depth: 0.07 }, scene, blade, pivot, new Vector3(0.018, 0, -0.028));
+    const claw = box(`xxrClaw${i}`, { width: 0.012, height: 0.007, depth: 0.085 }, scene, blade, pivot, new Vector3(0.022, 0, -0.032));
     claw.rotation.y = 0.35;
     claws.push(pivot);
   }
