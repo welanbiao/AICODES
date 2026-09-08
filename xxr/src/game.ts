@@ -300,7 +300,10 @@ export class Game {
     this.godCam.lowerRadiusLimit = 8;
     this.godCam.upperRadiusLimit = diag * 2.4;
     this.moveSpeed = Math.max(16, diag * 0.08);
-    this.enterTo = Math.max(2.2, Math.min(size.x, size.y, size.z) * s * 0.12);
+    this.enterTo = Math.max(2.2, thick * s * 0.2);
+    const grounded = wrap.getHierarchyBoundingVectors(true);
+    this.floor.position.y = grounded.min.y - 1.2;
+    this.floor.scaling.setAll(Math.max(1, diag / 70));
   }
 
   private toGod() {
