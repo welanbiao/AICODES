@@ -508,6 +508,25 @@ export class Game {
     toast("已进入内部，自由穿梭");
   }
 
+  private applyExplode(dt: number) {
+    const diff = this.explodeGoal - this.explodeT;
+    if (Math.abs(diff) < 0.0005 && (this.explodeT === 0 || this.explodeT === 1)) return;
+    this.explodeT += diff * Math.min(1, dt * 2.4);
+    if (Math.abs(this.explodeGoal - this.explodeT) < 0.002) this.explodeT = this.explodeGoal;
+    const t = this.explodeT;
+    const ease = t * t * (3 - 2 * t);
+    for (const mesh of this.scene.meshes) {
+      const rest = this.restAbs.get(mesh.uniqueId);
+      if (!rest) continue;
+      const dir = rest.clone();
+      const len = dir.length();
+      if (len < 0.05) continue;
+      dir.scaleInPlace(1 / len);
+      const extra = 8 + Math.min(28, len * 0.22);
+      mesh.setAbsolutePosition(rest.add(dir.scale(extra * ease)));
+    }
+  }
+
   private applyLook() {
     this.fpsCam.rotation.x = this.look.pitch;
     this.fpsCam.rotation.y = this.look.yaw;
