@@ -421,14 +421,6 @@ export class Game {
     const b3 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     this.phoneSize = b3.max.subtract(b3.min);
 
-    this.animDriven.clear();
-    if (this.explodeGroup) {
-      for (const ta of this.explodeGroup.targetedAnimations) {
-        const target = ta.target as Node | undefined;
-        if (target) this.markDriven(target);
-      }
-    }
-
     this.phoneMeshes = [];
     this.restLocal.clear();
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
