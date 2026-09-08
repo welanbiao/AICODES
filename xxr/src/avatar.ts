@@ -1,14 +1,17 @@
 import {
+  AbstractMesh,
   Color3,
   Mesh,
   MeshBuilder,
   Node,
   Quaternion,
   Scene,
+  SceneLoader,
   StandardMaterial,
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
+import type { ISceneLoaderProgressEvent } from "@babylonjs/core/Loading/sceneLoader";
 
 export type Arms = {
   root: TransformNode;
