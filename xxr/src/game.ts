@@ -27,7 +27,7 @@ import { infoFor, partKeyFromName, CATALOG } from "./catalog";
 
 export type Phase = "menu" | "loading" | "god" | "entering" | "fps" | "observe";
 
-type HandState = "holstered" | "flying" | "stuck";
+type HandState = "holstered" | "flying" | "stuck" | "reeling";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
