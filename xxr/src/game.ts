@@ -1,38 +1,59 @@
 import {
   AbstractMesh,
   AnimationGroup,
-  ArcRotateCamera,
   Color3,
   Color4,
   DirectionalLight,
   Engine,
   HemisphericLight,
+  ISceneLoaderAsyncResult,
+  Matrix,
   Mesh,
   MeshBuilder,
   Node,
   PBRMaterial,
   PickingInfo,
-  PointLight,
   Ray,
   Scene,
   SceneLoader,
+  SpotLight,
   StandardMaterial,
   TransformNode,
   UniversalCamera,
   Vector3,
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
-import { createArms, holsterHook, updateRope, setClaws, aimHook, isAvatarMesh, type Arms } from "./avatar";
+import {
+  createArms,
+  holsterHook,
+  updateRope,
+  setClaws,
+  aimHook,
+  isAvatarMesh,
+  loadFpsArms,
+  type Arms,
+} from "./avatar";
 import { infoFor, partKeyFromName, CATALOG } from "./catalog";
 
-export type Phase = "menu" | "loading" | "god" | "entering" | "fps" | "observe";
+export type Phase = "loading" | "fps" | "observe";
 
 type HandState = "holstered" | "flying" | "stuck" | "reeling";
+
+const SKY_SIZE = 72;
+const PHONE_SPAN = 0.95;
+const ORBIT_RADIUS = 2.52;
+const ORBIT_SPEED = 0.32;
+const SPIN_SPEED = 0.55;
+const EXPLODE_SEC = 16;
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
 function easeInOut(t: number) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
+
+function clamp(v: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, v));
 }
 
 function toast(text: string) {
@@ -44,11 +65,14 @@ function toast(text: string) {
   }, 1600);
 }
 
+function loadProgress(ev: { loaded: number; total: number; lengthComputable?: boolean }) {
+  if (ev.lengthComputable && ev.total) return Math.min(1, ev.loaded / ev.total);
+  return ev.total ? Math.min(0.92, ev.loaded / ev.total) : 0.12;
+}
+
 function setPhase(phase: Phase) {
   $("#app").dataset.phase = phase;
-  $<HTMLElement>("#screen-menu").hidden = phase !== "menu";
   $<HTMLElement>("#screen-load").hidden = phase !== "loading";
-  $<HTMLElement>("#screen-god").hidden = phase !== "god" && phase !== "entering";
   $<HTMLElement>("#screen-play").hidden = phase !== "fps" && phase !== "observe";
   const joy = $<HTMLElement>("#joystick");
   const coarse = window.matchMedia("(pointer: coarse)").matches;
@@ -58,93 +82,90 @@ function setPhase(phase: Phase) {
 export class Game {
   readonly engine: Engine;
   readonly scene: Scene;
-  phase: Phase = "menu";
+  phase: Phase = "loading";
   fps = 0;
 
   private canvas: HTMLCanvasElement;
-  private godCam!: ArcRotateCamera;
   private fpsCam!: UniversalCamera;
+  private headlamp!: SpotLight;
   private arms: Arms | null = null;
   private explodeGroup: AnimationGroup | null = null;
   private exploded = false;
   private keys = new Set<string>();
-  private look = { yaw: 0, pitch: 0 };
+  private look = { yaw: 0, pitch: -0.08 };
   private dragging = false;
   private lastPtr = { x: 0, y: 0 };
   private joy = { x: 0, y: 0 };
   private phoneSize = new Vector3(1, 1, 1);
-  private moveSpeed = 22;
+  private moveSpeed = 7.5;
   private handState: HandState = "holstered";
   private handVel = Vector3.Zero();
   private handFlight = 0;
   private highlight: AbstractMesh | null = null;
   private observePivot = Vector3.Zero();
   private worldReady = false;
-  private enterFrom = 0;
-  private enterTo = 0;
-  private enterStartedAt = 0;
-  private floor!: Mesh;
   private riding: { t: number; from: Vector3; to: Vector3 } | null = null;
-  private restAbs = new Map<number, Vector3>();
+  private restLocal = new Map<number, Vector3>();
+  private animDriven = new Set<number>();
   private explodeT = 0;
   private explodeGoal = 0;
+  private phoneWrap: TransformNode | null = null;
+  private phoneSpin: TransformNode | null = null;
+  private phoneMeshes: AbstractMesh[] = [];
+  private lv2: Mesh | null = null;
+  private lv3: Mesh | null = null;
+  private phoneAngle = 0;
+  private skyMin = new Vector3(-30, -30, -30);
+  private skyMax = new Vector3(30, 30, 30);
+  private skyLimit = 30;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.engine = new Engine(canvas, true, { adaptToDeviceRatio: false, stencil: true, preserveDrawingBuffer: true }, true);
-    const cap = Math.min(window.devicePixelRatio || 1, 1.6);
+    const cap = Math.min(window.devicePixelRatio || 1, 1.5);
     this.engine.setHardwareScalingLevel(1 / cap);
     this.scene = new Scene(this.engine);
-    this.scene.clearColor = new Color4(0.043, 0.05, 0.07, 1);
+    this.scene.clearColor = new Color4(0.01, 0.012, 0.02, 1);
     this.scene.skipPointerMovePicking = true;
+    this.scene.autoClear = true;
+    this.scene.animationsEnabled = true;
 
-    const hemi = new HemisphericLight("hemi", new Vector3(0.2, 1, 0.3), this.scene);
-    hemi.intensity = 1.15;
-    hemi.groundColor = new Color3(0.12, 0.14, 0.18);
-    const sun = new DirectionalLight("sun", new Vector3(-0.4, -1, 0.35), this.scene);
-    sun.intensity = 0.55;
-    const bulb = new PointLight("bulb", Vector3.Zero(), this.scene);
-    bulb.intensity = 0.45;
-    bulb.range = 80;
-
-    this.godCam = new ArcRotateCamera("god", 0.85, 1.05, 40, Vector3.Zero(), this.scene);
-    this.godCam.lowerBetaLimit = 0.12;
-    this.godCam.upperBetaLimit = Math.PI / 2 - 0.04;
-    this.godCam.wheelDeltaPercentage = 0.01;
-    this.godCam.minZ = 0.05;
-    this.godCam.maxZ = 20000;
-    this.scene.activeCamera = this.godCam;
+    const hemi = new HemisphericLight("hemi", new Vector3(0.15, 1, 0.2), this.scene);
+    hemi.intensity = 0.32;
+    hemi.groundColor = new Color3(0.04, 0.05, 0.08);
+    const sun = new DirectionalLight("sun", new Vector3(-0.25, -1, 0.2), this.scene);
+    sun.intensity = 0.18;
 
     this.fpsCam = new UniversalCamera("fps", new Vector3(0, 0, 0), this.scene);
-    this.fpsCam.minZ = 0.03;
-    this.fpsCam.maxZ = 20000;
+    this.fpsCam.minZ = 0.04;
+    this.fpsCam.maxZ = 400;
     this.fpsCam.inertia = 0;
     this.fpsCam.speed = 0;
     this.fpsCam.applyGravity = false;
     this.fpsCam.checkCollisions = false;
-    this.arms = createArms(this.scene, this.fpsCam);
+    this.scene.activeCamera = this.fpsCam;
 
-    const floorMat = new StandardMaterial("floorMat", this.scene);
-    floorMat.diffuseColor = new Color3(0.07, 0.08, 0.1);
-    floorMat.specularColor = Color3.Black();
-    this.floor = MeshBuilder.CreateDisc("floor", { radius: 90, tessellation: 48 }, this.scene);
-    this.floor.rotation.x = Math.PI / 2;
-    this.floor.position.y = -12;
-    this.floor.material = floorMat;
-    this.floor.isPickable = false;
+    this.headlamp = new SpotLight("headlamp", new Vector3(0, 0.04, 0.06), new Vector3(0, -0.04, 1), 0.92, 1.8, this.scene);
+    this.headlamp.parent = this.fpsCam;
+    this.headlamp.intensity = 3.6;
+    this.headlamp.range = 22;
+    this.headlamp.diffuse = new Color3(1, 0.96, 0.86);
+    this.headlamp.specular = new Color3(1, 0.95, 0.85);
+    this.headlamp.angle = 0.98;
 
     this.bindUi();
     this.bindInput();
     this.scene.onBeforeRenderObservable.add(() => this.tick());
     this.engine.runRenderLoop(() => {
       this.fps = this.engine.getFps();
-      if (this.fps > 1 && this.fps < 24 && this.engine.getHardwareScalingLevel() < 1.2) {
-        this.engine.setHardwareScalingLevel(1.15);
+      if (this.fps > 1 && this.fps < 22 && this.engine.getHardwareScalingLevel() < 1.25) {
+        this.engine.setHardwareScalingLevel(1.2);
       }
       this.scene.render();
       this.publish();
     });
-    setPhase("menu");
+    setPhase("loading");
+    void this.boot();
   }
 
   resize() {
@@ -156,14 +177,7 @@ export class Game {
   }
 
   private bindUi() {
-    $<HTMLButtonElement>('[data-testid="level-phone"]').onclick = () => void this.startLevel();
-    for (const id of ["level-laptop", "level-earbuds"] as const) {
-      $<HTMLButtonElement>(`[data-testid="${id}"]`).onclick = () => toast("这一关还在制作中");
-    }
-    $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterInside();
-    $<HTMLButtonElement>('[data-testid="btn-explode"]').onclick = () => this.toggleExplode();
     $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').onclick = () => this.toggleExplode();
-    $<HTMLButtonElement>('[data-testid="btn-menu"]').onclick = () => this.backToMenu();
     $<HTMLButtonElement>('[data-testid="btn-identify"]').onclick = () => this.identify();
     $<HTMLButtonElement>('[data-testid="btn-fire"]').onclick = () => this.fireHand();
     $<HTMLButtonElement>('[data-testid="btn-recall"]').onclick = () => this.recallHand();
@@ -185,7 +199,6 @@ export class Game {
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
 
     this.canvas.addEventListener("pointerdown", (e) => {
-      if (this.phase === "god") return;
       if (this.phase !== "fps" && this.phase !== "observe") return;
       this.dragging = true;
       this.lastPtr = { x: e.clientX, y: e.clientY };
@@ -249,148 +262,228 @@ export class Game {
     base.addEventListener("pointercancel", end);
   }
 
-  async startLevel() {
-    if (this.worldReady) {
-      this.toGod();
-      return;
-    }
+  private setLoad(p: number) {
+    const pct = Math.round(clamp(p, 0, 1) * 100);
+    $<HTMLElement>("#load-bar").style.width = `${pct}%`;
+    $<HTMLElement>("#load-pct").textContent = `${pct}%`;
+  }
+
+  private async boot() {
     this.phase = "loading";
     setPhase("loading");
-    const bar = $<HTMLElement>("#load-bar");
-    const pct = $<HTMLElement>("#load-pct");
+    this.setLoad(0.02);
     try {
-      await SceneLoader.ImportMeshAsync("", "/models/", "iphone12.glb", this.scene, (ev) => {
-        const p = ev.lengthComputable && ev.total ? ev.loaded / ev.total : 0.15;
-        bar.style.width = `${Math.round(p * 100)}%`;
-        pct.textContent = `${Math.round(p * 100)}%`;
+      let skyP = 0;
+      let armsP = 0;
+      let phoneP = 0;
+      const bump = () => this.setLoad(skyP * 0.16 + armsP * 0.22 + phoneP * 0.6);
+
+      const skyJob = SceneLoader.ImportMeshAsync("", "/models/", "skybox.glb", this.scene, (ev) => {
+        skyP = loadProgress(ev);
+        bump();
       });
-      this.preparePhone();
+      const phoneJob = SceneLoader.ImportMeshAsync("", "/models/", "iphone_12_teardown.glb", this.scene, (ev) => {
+        phoneP = loadProgress(ev);
+        bump();
+      });
+      const armsJob = loadFpsArms(this.scene, this.fpsCam, (ev) => {
+        armsP = loadProgress(ev);
+        bump();
+      }).catch((err) => {
+        console.warn("fps_arms.glb failed, using fallback arms", err);
+        return createArms(this.scene, this.fpsCam);
+      });
+
+      const [skyRes, phoneRes, arms] = await Promise.all([skyJob, phoneJob, armsJob]);
+      this.arms = arms;
+      this.prepareSkybox(skyRes);
+      this.preparePhone(phoneRes);
+      this.makeLevelOrbs();
+      this.look.yaw = 0;
+      this.look.pitch = -0.08;
+      this.fpsCam.position.set(0, 0, 0);
+      this.applyLook();
+      this.scene.activeCamera = this.fpsCam;
+      this.arms.root.setEnabled(true);
+      if (this.arms) holsterHook(this.arms);
+
+      const env = this.scene.createDefaultEnvironment({
+        createGround: false,
+        createSkybox: true,
+        skyboxSize: 4,
+        enableGroundShadow: false,
+      });
+      if (env?.skybox) {
+        env.skybox.setEnabled(false);
+        env.skybox.isPickable = false;
+      }
+      this.scene.environmentIntensity = 0.85;
+      this.scene.imageProcessingConfiguration.exposure = 1.15;
+      this.scene.imageProcessingConfiguration.contrast = 1.05;
+      this.scene.cleanCachedTextureBuffer();
+
+      this.setLoad(1);
       this.worldReady = true;
-      bar.style.width = "100%";
-      pct.textContent = "100%";
-      this.toGod();
+      this.phase = "fps";
+      setPhase("fps");
+      $<HTMLElement>("#play-status").textContent = "星空枢纽";
+      this.syncHandButtons();
+      toast("第一关：我的手机");
     } catch (err) {
       console.error(err);
       toast("模型加载失败");
-      this.phase = "menu";
-      setPhase("menu");
     }
   }
 
-  private preparePhone() {
-    this.explodeGroup = this.scene.animationGroups.find((g) => /take/i.test(g.name)) ?? this.scene.animationGroups[0] ?? null;
+  private prepareSkybox(loaded: ISceneLoaderAsyncResult) {
+    const root = loaded.meshes[0];
+    if (!root) return;
+    root.name = "skyRoot";
+    for (const mesh of loaded.meshes) {
+      mesh.isPickable = false;
+      mesh.alwaysSelectAsActiveMesh = true;
+      const mat = mesh.material;
+      if (!mat) continue;
+      mat.backFaceCulling = false;
+      if (mat instanceof PBRMaterial) {
+        mat.unlit = true;
+        mat.emissiveColor = Color3.White();
+        if (mat.albedoTexture) mat.emissiveTexture = mat.albedoTexture;
+      }
+      if (mat instanceof StandardMaterial) {
+        mat.disableLighting = true;
+        mat.emissiveColor = Color3.White();
+        mat.diffuseColor = Color3.White();
+        if (mat.diffuseTexture) mat.emissiveTexture = mat.diffuseTexture;
+      }
+    }
+    root.computeWorldMatrix(true);
+    const b = root.getHierarchyBoundingVectors(true);
+    const size = b.max.subtract(b.min);
+    const longest = Math.max(size.x, size.y, size.z, 0.001);
+    root.scaling.scaleInPlace(SKY_SIZE / longest);
+    root.computeWorldMatrix(true);
+    const b2 = root.getHierarchyBoundingVectors(true);
+    const center = b2.min.add(b2.max).scale(0.5);
+    root.position.subtractInPlace(center);
+    root.computeWorldMatrix(true);
+    const b3 = root.getHierarchyBoundingVectors(true);
+    const pad = 1.6;
+    this.skyMin.copyFrom(b3.min.add(new Vector3(pad, pad, pad)));
+    this.skyMax.copyFrom(b3.max.subtract(new Vector3(pad, pad, pad)));
+    this.skyLimit = Math.min(
+      Math.abs(this.skyMax.x - this.skyMin.x),
+      Math.abs(this.skyMax.y - this.skyMin.y),
+      Math.abs(this.skyMax.z - this.skyMin.z),
+    ) * 0.5;
+  }
+
+  private preparePhone(loaded: ISceneLoaderAsyncResult) {
+    this.explodeGroup = loaded.animationGroups.find((g) => /teardown/i.test(g.name)) ?? loaded.animationGroups[0] ?? null;
     if (this.explodeGroup) {
       this.explodeGroup.stop();
       this.explodeGroup.reset();
+      this.explodeGroup.loopAnimation = false;
       this.explodeGroup.goToFrame(this.explodeGroup.from);
     }
 
-    const wrap = this.scene.getTransformNodeByName("phoneWrap") ?? new TransformNode("phoneWrap", this.scene);
-    const root =
-      this.scene.getTransformNodeByName("__root__") ||
-      this.scene.getMeshByName("__root__") ||
-      this.scene.transformNodes.find((n) => n.name === "__root__") ||
-      null;
-    if (root && root !== wrap) root.parent = wrap;
+    const wrap = new TransformNode("phoneWrap", this.scene);
+    const spin = new TransformNode("phoneSpin", this.scene);
+    spin.parent = wrap;
+    const glbRoot = loaded.meshes[0];
+    if (glbRoot) {
+      glbRoot.parent = spin;
+      glbRoot.name = "phoneModel";
+    }
+    this.phoneWrap = wrap;
+    this.phoneSpin = spin;
 
-    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
-    const extents = this.scene.getWorldExtends((m) => {
-      if (m === this.floor) return false;
-      if (m.name === "floor" || isAvatarMesh(m.name)) return false;
-      return m.isEnabled() && !!m.getTotalVertices();
-    });
+    spin.computeWorldMatrix(true);
+    const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const size = extents.max.subtract(extents.min);
-    const thick = Math.max(0.0001, Math.min(size.x, size.y, size.z));
-    const s = 18 / thick;
-    wrap.scaling.setAll(s);
-    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
-    const b2 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !isAvatarMesh(m.name) && !!m.getTotalVertices());
+    const longest = Math.max(size.x, size.y, size.z, 0.001);
+    spin.scaling.setAll(PHONE_SPAN / longest);
+    spin.computeWorldMatrix(true);
+    const b2 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
-    wrap.position.subtractInPlace(center);
-    this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
-    const b3 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !isAvatarMesh(m.name) && !!m.getTotalVertices());
+    if (glbRoot) glbRoot.position.subtractInPlace(center);
+    spin.computeWorldMatrix(true);
+    const b3 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     this.phoneSize = b3.max.subtract(b3.min);
 
-    for (const mesh of this.scene.meshes) {
-      if (mesh.name.includes("$Assimp") || mesh.name === "floor" || isAvatarMesh(mesh.name)) {
-        mesh.isPickable = false;
+    this.animDriven.clear();
+    if (this.explodeGroup) {
+      for (const ta of this.explodeGroup.targetedAnimations) {
+        const target = ta.target as Node | undefined;
+        if (target) this.markDriven(target);
       }
     }
 
-    const diag = this.phoneSize.length();
-    this.godCam.setTarget(Vector3.Zero());
-    this.godCam.alpha = 0.32;
-    this.godCam.beta = 1.18;
-    this.godCam.radius = Math.max(24, diag * 1.05);
-    this.godCam.lowerRadiusLimit = 4;
-    this.godCam.upperRadiusLimit = Math.max(80, diag * 3);
-    this.moveSpeed = Math.max(16, diag * 0.08);
-    this.enterTo = Math.max(2.2, thick * s * 0.22);
-    this.floor.position.y = b3.min.y - 1.2;
-    this.floor.scaling.setAll(Math.max(1, diag / 70));
-
-    const env = this.scene.createDefaultEnvironment({
-      createGround: false,
-      createSkybox: true,
-      skyboxSize: Math.max(200, diag * 6),
-      enableGroundShadow: false,
-    });
-    env?.skybox?.setEnabled(false);
-    this.scene.environmentIntensity = 1.35;
-    this.scene.imageProcessingConfiguration.exposure = 1.45;
-    this.scene.imageProcessingConfiguration.contrast = 1.1;
-    for (const mat of this.scene.materials) {
-      if (mat instanceof PBRMaterial) {
-        mat.directIntensity = 1.6;
-        mat.environmentIntensity = 1.2;
-        mat.emissiveColor = mat.emissiveColor.add(new Color3(0.03, 0.03, 0.035));
-      }
-    }
-
-    this.restAbs.clear();
+    this.phoneMeshes = [];
+    this.restLocal.clear();
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
     for (const mesh of this.scene.meshes) {
-      if (mesh === this.floor || isAvatarMesh(mesh.name) || !mesh.getTotalVertices()) continue;
-      this.restAbs.set(mesh.uniqueId, mesh.getAbsolutePosition().clone());
+      if (!this.isPhonePart(mesh) || !mesh.getTotalVertices()) continue;
+      mesh.isPickable = true;
+      this.phoneMeshes.push(mesh);
+      if (!this.isAnimDriven(mesh)) this.restLocal.set(mesh.uniqueId, mesh.position.clone());
     }
+
     this.explodeT = 0;
     this.explodeGoal = 0;
+    wrap.position.set(0, 0.16, ORBIT_RADIUS);
   }
 
-  private toGod() {
-    this.phase = "god";
-    setPhase("god");
-    this.scene.activeCamera = this.godCam;
-    this.godCam.attachControl(this.canvas, true);
-    this.arms?.root.setEnabled(false);
-    this.handState = "holstered";
-    if (this.arms) holsterHook(this.arms);
-    this.syncHandButtons();
+  private markDriven(node: Node) {
+    this.animDriven.add(node.uniqueId);
+    for (const child of node.getChildren()) this.markDriven(child);
   }
 
-  private backToMenu() {
-    this.godCam.detachControl();
-    document.exitPointerLock();
-    this.phase = "menu";
-    setPhase("menu");
+  private isAnimDriven(node: Node) {
+    let n: Node | null = node;
+    while (n) {
+      if (this.animDriven.has(n.uniqueId)) return true;
+      n = n.parent;
+    }
+    return false;
   }
 
-  private enterInside() {
-    if (this.phase !== "god") return;
-    this.godCam.detachControl();
-    this.phase = "entering";
-    setPhase("entering");
-    this.enterFrom = this.godCam.radius;
-    this.enterStartedAt = performance.now();
-    toast("缩小进入…");
-    window.setTimeout(() => {
-      if (this.phase === "entering") this.finishEnter();
-    }, 1100);
+  private isPhonePart(mesh: AbstractMesh) {
+    let n: Node | null = mesh;
+    while (n) {
+      if (n.name === "phoneWrap" || n.name === "phoneSpin" || n.name === "phoneModel") return true;
+      n = n.parent;
+    }
+    return false;
+  }
+
+  private makeLevelOrbs() {
+    const mk = (name: string, color: Color3) => {
+      const mat = new StandardMaterial(`${name}Mat`, this.scene);
+      mat.diffuseColor = color;
+      mat.emissiveColor = color.scale(0.45);
+      mat.specularColor = Color3.Black();
+      const mesh = MeshBuilder.CreateBox(name, { size: 0.28 }, this.scene);
+      mesh.material = mat;
+      mesh.isPickable = false;
+      return mesh;
+    };
+    this.lv2 = mk("level-laptop-orb", new Color3(0.25, 0.32, 0.4));
+    this.lv3 = mk("level-earbuds-orb", new Color3(0.25, 0.32, 0.4));
   }
 
   toggleExplode() {
+    if (!this.worldReady) return;
     this.exploded = !this.exploded;
     this.explodeGoal = this.exploded ? 1 : 0;
+    if (this.explodeGroup) {
+      const g = this.explodeGroup;
+      const dur = Math.max(0.001, g.to - g.from);
+      g.speedRatio = dur / EXPLODE_SEC;
+      g.stop();
+      if (this.exploded) g.start(false, g.speedRatio, g.from, g.to);
+      else g.start(false, g.speedRatio, g.to, g.from);
+    }
     toast(this.exploded ? "爆炸图展开" : "零件合拢");
   }
 
@@ -428,7 +521,7 @@ export class Game {
     const origin = hook.getAbsolutePosition();
     hook.setParent(null);
     hook.position.copyFrom(origin);
-    this.handVel = this.fpsCam.getForwardRay(1).direction.scale(this.moveSpeed * 3.6);
+    this.handVel = this.fpsCam.getForwardRay(1).direction.scale(Math.max(14, this.moveSpeed * 2.4));
     aimHook(hook, this.handVel);
     setClaws(this.arms.claws, 0.92);
     this.handFlight = 0;
@@ -450,7 +543,7 @@ export class Game {
     if (this.phase !== "observe") return;
     this.phase = "fps";
     setPhase("fps");
-    $<HTMLElement>("#play-status").textContent = "内部穿梭";
+    $<HTMLElement>("#play-status").textContent = "星空枢纽";
     this.syncHandButtons();
   }
 
@@ -461,12 +554,8 @@ export class Game {
   }
 
   private pickPart(): PickingInfo | null {
-    const ray = this.fpsCam.getForwardRay(this.phoneSize.length() * 1.2);
-    return this.scene.pickWithRay(ray, (m) => {
-      if (!m.isPickable || !m.isEnabled()) return false;
-      if (m.name === "floor" || m.name === "__root__" || m.name === "phoneWrap" || isAvatarMesh(m.name)) return false;
-      return true;
-    });
+    const ray = this.fpsCam.getForwardRay(12);
+    return this.scene.pickWithRay(ray, (m) => m.isPickable && m.isEnabled() && this.isPhonePart(m) && !isAvatarMesh(m));
   }
 
   private resolveName(mesh: AbstractMesh): string {
@@ -474,7 +563,7 @@ export class Game {
     let fallback = mesh.name;
     while (n) {
       const raw = partKeyFromName(n.name);
-      if (raw && raw !== "__root__" && raw !== "phoneWrap") {
+      if (raw && raw !== "__root__" && raw !== "phoneWrap" && raw !== "phoneSpin" && raw !== "phoneModel") {
         fallback = raw;
         if (raw in CATALOG || raw === "__screw__") return n.name;
       }
@@ -487,50 +576,34 @@ export class Game {
     const glow = this.arms?.scannerGlow;
     if (!glow) return;
     const mat = glow.material as StandardMaterial;
+    if (!mat?.emissiveColor) return;
     mat.emissiveColor = new Color3(0.55, 1, 0.92);
     window.setTimeout(() => {
       mat.emissiveColor = new Color3(0.12, 0.7, 0.62);
     }, 180);
   }
 
-  private finishEnter() {
-    this.godCam.detachControl();
-    const pos = this.godCam.position.clone();
-    this.fpsCam.position.copyFrom(pos);
-    this.look.yaw = Math.atan2(pos.x, pos.z);
-    this.look.pitch = 0.08;
-    this.fpsCam.position.set(0, 0, 0);
-    this.applyLook();
-    this.scene.activeCamera = this.fpsCam;
-    this.arms?.root.setEnabled(true);
-    if (this.arms) holsterHook(this.arms);
-    this.phase = "fps";
-    setPhase("fps");
-    $<HTMLElement>("#play-status").textContent = "内部穿梭";
-    this.syncHandButtons();
-    toast("已进入内部，自由穿梭");
-  }
-
   private applyExplode(dt: number) {
     const diff = this.explodeGoal - this.explodeT;
-    if (Math.abs(diff) < 0.0005 && (this.explodeT === 0 || this.explodeT === 1)) return;
-    this.explodeT += diff * Math.min(1, dt * 2.4);
+    if (Math.abs(diff) < 0.0005 && (this.explodeT === 0 || this.explodeT === 1)) {
+      // still apply if mid-orbit so local rest stays valid
+    }
+    this.explodeT += diff * Math.min(1, dt / EXPLODE_SEC);
     if (Math.abs(this.explodeGoal - this.explodeT) < 0.002) this.explodeT = this.explodeGoal;
-    const t = this.explodeT;
-    const ease = t * t * (3 - 2 * t);
-    for (const mesh of this.scene.meshes) {
-      const rest = this.restAbs.get(mesh.uniqueId);
+    const ease = this.explodeT * this.explodeT * (3 - 2 * this.explodeT);
+    for (const mesh of this.phoneMeshes) {
+      const rest = this.restLocal.get(mesh.uniqueId);
       if (!rest) continue;
       const key = partKeyFromName(mesh.name);
       let dir = rest.clone();
       const len = dir.length();
-      if (len < 0.05) dir = new Vector3(0, 1, 0);
+      if (len < 0.0008) dir = new Vector3(0, 1, 0);
       else dir.scaleInPlace(1 / len);
-      if (key === "front_panel") dir = new Vector3(rest.x >= 0 ? 1 : -1, 0, 0);
-      if (key === "back_cover" || key === "backplate") dir = new Vector3(rest.x >= 0 ? -1 : 1, 0, 0);
+      if (key === "front_panel") dir = new Vector3(rest.x >= 0 ? 1 : -1, 0.15, 0);
+      if (key === "back_cover" || key === "backplate") dir = new Vector3(rest.x >= 0 ? -1 : 1, -0.1, 0);
       if (key === "battery") dir = new Vector3(0, 0, rest.z >= 0 ? 1 : -1);
-      const extra = key === "front_panel" || key === "back_cover" ? 26 : 8 + Math.min(28, Math.max(len, 1) * 0.22);
-      mesh.setAbsolutePosition(rest.add(dir.scale(extra * ease)));
+      const extra = key === "front_panel" || key === "back_cover" ? 12 : 3.5 + Math.min(9, Math.max(len, 0.2) * 0.45);
+      mesh.position.copyFrom(rest.add(dir.scale(extra * ease)));
     }
   }
 
@@ -540,22 +613,60 @@ export class Game {
     this.fpsCam.rotation.z = 0;
   }
 
+  private orbitLevels(dt: number) {
+    this.phoneAngle += dt * ORBIT_SPEED;
+    const cam = this.fpsCam.position;
+    const place = (node: TransformNode | null, offset: number, y: number) => {
+      if (!node) return;
+      const a = this.phoneAngle + offset;
+      node.position.set(cam.x + Math.sin(a) * ORBIT_RADIUS, cam.y + y, cam.z + Math.cos(a) * ORBIT_RADIUS);
+    };
+    place(this.phoneWrap, 0, 0.16);
+    place(this.lv2, (Math.PI * 2) / 3, 0.02);
+    place(this.lv3, (Math.PI * 4) / 3, 0.02);
+    if (this.phoneSpin) this.phoneSpin.rotation.y += dt * SPIN_SPEED;
+    if (this.lv2) this.lv2.rotation.y += dt * 0.7;
+    if (this.lv3) this.lv3.rotation.y += dt * 0.7;
+  }
+
+  private projectLabel(el: HTMLElement, world: Vector3) {
+    const cam = this.fpsCam;
+    const dir = world.subtract(cam.position);
+    if (Vector3.Dot(cam.getForwardRay(1).direction, dir) < 0.08) {
+      el.style.opacity = "0";
+      return;
+    }
+    const w = this.engine.getRenderWidth();
+    const h = this.engine.getRenderHeight();
+    const viewport = cam.viewport.toGlobal(w, h);
+    const p = Vector3.Project(world, Matrix.Identity(), this.scene.getTransformMatrix(), viewport);
+    el.style.opacity = p.z > 0 && p.z < 1 ? "1" : "0";
+    el.style.left = `${(p.x / w) * 100}%`;
+    el.style.top = `${(p.y / h) * 100}%`;
+  }
+
+  private updateLabels() {
+    if (this.phase === "loading") return;
+    if (this.phoneWrap) {
+      this.projectLabel($<HTMLElement>('[data-testid="level-label"]'), this.phoneWrap.position.add(new Vector3(0, -0.58, 0)));
+    }
+    if (this.lv2) {
+      this.projectLabel($<HTMLElement>('[data-testid="level-2-label"]'), this.lv2.position.add(new Vector3(0, -0.32, 0)));
+    }
+    if (this.lv3) {
+      this.projectLabel($<HTMLElement>('[data-testid="level-3-label"]'), this.lv3.position.add(new Vector3(0, -0.32, 0)));
+    }
+  }
+
   private tick() {
     const dt = Math.min(0.05, this.scene.getEngine().getDeltaTime() / 1000 || 0.016);
-    if (this.phase === "god") {
-      this.godCam.alpha += dt * 0.05;
-    }
+    if (this.worldReady) this.orbitLevels(dt);
     this.applyExplode(dt);
-    if (this.phase === "entering") {
-      const t = Math.min(1, (performance.now() - this.enterStartedAt) / 1050);
-      this.godCam.radius = this.enterFrom + (this.enterTo - this.enterFrom) * easeInOut(t);
-      this.godCam.beta = 1.05 + (1.35 - 1.05) * t;
-      if (t >= 1) this.finishEnter();
-    }
     if (this.riding) {
       this.riding.t += dt / 0.75;
       const t = easeInOut(Math.min(1, this.riding.t));
       Vector3.LerpToRef(this.riding.from, this.riding.to, t, this.fpsCam.position);
+      this.clampPlayer();
       if (this.riding.t >= 1) {
         this.riding = null;
         this.phase = "observe";
@@ -569,10 +680,20 @@ export class Game {
     else if (this.handState === "reeling") this.tickReel(dt);
     this.updateHookRope();
     this.applyLook();
+    this.updateLabels();
+  }
+
+  private clampPlayer() {
+    const p = this.fpsCam.position;
+    p.x = clamp(p.x, this.skyMin.x, this.skyMax.x);
+    p.y = clamp(p.y, this.skyMin.y, this.skyMax.y);
+    p.z = clamp(p.z, this.skyMin.z, this.skyMax.z);
+    const len = p.length();
+    if (len > this.skyLimit) p.scaleInPlace(this.skyLimit / len);
   }
 
   private moveFps(dt: number) {
-    const sprint = this.keys.has("ShiftLeft") || this.keys.has("ShiftRight") ? 2.1 : 1;
+    const sprint = this.keys.has("ShiftLeft") || this.keys.has("ShiftRight") ? 1.85 : 1;
     const speed = this.moveSpeed * sprint;
     let x = this.joy.x;
     let z = -this.joy.y;
@@ -588,6 +709,7 @@ export class Game {
     this.fpsCam.position.addInPlace(fwd.scale(z * speed * dt));
     this.fpsCam.position.addInPlace(right.scale(x * speed * dt));
     this.fpsCam.position.addInPlace(Vector3.Up().scale(y * speed * dt));
+    this.clampPlayer();
   }
 
   private moveObserve(dt: number) {
@@ -604,6 +726,7 @@ export class Game {
       this.fpsCam.position.x = this.observePivot.x + nx;
       this.fpsCam.position.z = this.observePivot.z + nz;
     }
+    this.clampPlayer();
   }
 
   private tickHand(dt: number) {
@@ -618,14 +741,14 @@ export class Game {
     if (dist > 0.0001) {
       const hit = this.scene.pickWithRay(
         new Ray(prev, delta.normalize(), dist + 0.2),
-        (m) => m.isPickable && m.isEnabled() && m.name !== "floor" && !isAvatarMesh(m.name),
+        (m) => m.isPickable && m.isEnabled() && this.isPhonePart(m) && !isAvatarMesh(m),
       );
       if (hit?.hit && hit.pickedMesh && hit.pickedPoint) {
         this.catchPart(hit);
         return;
       }
     }
-    if (this.handFlight > Math.max(18, this.phoneSize.length() * 0.35)) {
+    if (this.handFlight > 14) {
       toast("钩索没有勾住");
       this.recallHand();
     }
@@ -641,7 +764,7 @@ export class Game {
     this.handState = "stuck";
     this.observePivot.copyFrom(hit.pickedPoint);
     const normal = (hit.getNormal(true) ?? Vector3.Up()).normalize();
-    const stand = hit.pickedPoint.add(normal.scale(1.15));
+    const stand = hit.pickedPoint.add(normal.scale(0.55));
     this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand };
     $<HTMLElement>("#play-status").textContent = `钩住 ${infoFor(this.resolveName(hit.pickedMesh)).name}`;
     this.syncHandButtons();
@@ -656,7 +779,7 @@ export class Game {
     const pos = hook.getAbsolutePosition();
     const to = target.subtract(pos);
     const dist = to.length();
-    const step = Math.max(this.moveSpeed * 4.5, 28) * dt;
+    const step = Math.max(this.moveSpeed * 4.5, 18) * dt;
     if (dist <= step + 0.08) {
       holsterHook(this.arms);
       this.handState = "holstered";
@@ -677,18 +800,24 @@ export class Game {
   }
 
   private publish() {
+    const p = this.fpsCam.position;
     window.__XXR__ = {
       phase: this.phase,
       fps: this.fps,
       ready: this.worldReady,
       exploded: this.exploded,
       size: [this.phoneSize.x, this.phoneSize.y, this.phoneSize.z],
-      radius: this.godCam.radius,
       meshes: this.scene.meshes.length,
+      pos: [p.x, p.y, p.z],
+      skyLimit: this.skyLimit,
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       explode: () => this.toggleExplode(),
-      enter: () => this.enterInside(),
+      tryMove: (x, y, z) => {
+        this.fpsCam.position.set(x, y, z);
+        this.clampPlayer();
+        return [this.fpsCam.position.x, this.fpsCam.position.y, this.fpsCam.position.z];
+      },
     };
   }
 }
@@ -701,12 +830,13 @@ declare global {
       ready: boolean;
       exploded: boolean;
       size?: number[];
-      radius?: number;
       meshes?: number;
+      pos?: number[];
+      skyLimit?: number;
       identify: () => void;
       fire: () => void;
       explode: () => void;
-      enter: () => void;
+      tryMove: (x: number, y: number, z: number) => number[];
     };
   }
 }
