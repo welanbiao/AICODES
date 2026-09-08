@@ -588,9 +588,6 @@ export class Game {
 
   private applyExplode(dt: number) {
     const diff = this.explodeGoal - this.explodeT;
-    if (Math.abs(diff) < 0.0005 && (this.explodeT === 0 || this.explodeT === 1)) {
-      // still apply if mid-orbit so local rest stays valid
-    }
     this.explodeT += diff * Math.min(1, dt / EXPLODE_SEC);
     if (Math.abs(this.explodeGoal - this.explodeT) < 0.002) this.explodeT = this.explodeGoal;
     const ease = this.explodeT * this.explodeT * (3 - 2 * this.explodeT);
