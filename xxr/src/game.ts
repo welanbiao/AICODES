@@ -561,7 +561,7 @@ export class Game {
         this.phase = "observe";
         setPhase("observe");
         this.syncHandButtons();
-        toast("抓住了，360° 观察");
+        toast("钩住了，360° 观察");
       }
     } else if (this.phase === "fps") this.moveFps(dt);
     if (this.phase === "observe") this.moveObserve(dt);

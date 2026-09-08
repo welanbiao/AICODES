@@ -244,9 +244,13 @@ export function updateRope(arms: Arms, from: Vector3, to: Vector3) {
 }
 
 export function aimHook(hook: TransformNode, dir: Vector3) {
-  if (dir.lengthSquared() < 1e-8) return;
-  const n = dir.normalizeToNew();
-  hook.rotationQuaternion = Quaternion.FromLookDirectionLH(n.scale(-1), Vector3.Up());
+  const n = dir.clone();
+  if (n.lengthSquared() < 1e-8) return;
+  n.normalize();
+  n.scaleInPlace(-1);
+  const yaw = Math.atan2(n.x, n.z);
+  const pitch = Math.asin(Math.max(-1, Math.min(1, -n.y)));
+  hook.rotationQuaternion = Quaternion.FromEulerAngles(pitch, yaw, 0);
 }
 
 export const setRightHandOnWrist = holsterHook;
