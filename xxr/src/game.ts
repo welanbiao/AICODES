@@ -517,8 +517,9 @@ export class Game {
   private tick() {
     const dt = Math.min(0.05, this.scene.getEngine().getDeltaTime() / 1000 || 0.016);
     if (this.phase === "god") {
-      this.godCam.alpha += dt * 0.08;
+      this.godCam.alpha += dt * 0.05;
     }
+    this.applyExplode(dt);
     if (this.phase === "entering") {
       this.entering += dt;
       const t = Math.min(1, this.entering / 1.05);
