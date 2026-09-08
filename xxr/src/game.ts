@@ -845,6 +845,8 @@ declare global {
       meshes?: number;
       pos?: number[];
       skyLimit?: number;
+      armsOn?: boolean;
+      armMeshes?: number;
       identify: () => void;
       fire: () => void;
       explode: () => void;
