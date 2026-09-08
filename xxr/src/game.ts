@@ -424,11 +424,11 @@ export class Game {
   }
 
   private resolveName(mesh: AbstractMesh): string {
-    let n: TransformNode | AbstractMesh | null = mesh;
+    let n: Node | null = mesh;
     while (n) {
       const raw = n.name.split("_$Assimp")[0].replace(/_node$/i, "");
       if (raw && raw !== "__root__" && raw !== "phoneWrap" && !raw.startsWith("primitive")) return raw;
-      n = n.parent as AbstractMesh | null;
+      n = n.parent;
     }
     return mesh.name;
   }
