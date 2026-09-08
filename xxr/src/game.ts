@@ -346,9 +346,12 @@ export class Game {
       if (!mat) continue;
       mat.backFaceCulling = false;
       if (mat instanceof PBRMaterial) {
-        mat.unlit = true;
+        mat.directIntensity = 0;
+        mat.environmentIntensity = 0;
         mat.emissiveColor = Color3.White();
+        mat.emissiveIntensity = 1.05;
         if (mat.albedoTexture) mat.emissiveTexture = mat.albedoTexture;
+        (mat as PBRMaterial & { unlit?: boolean }).unlit = true;
       }
       if (mat instanceof StandardMaterial) {
         mat.disableLighting = true;
