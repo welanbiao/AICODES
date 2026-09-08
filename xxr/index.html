@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0b0d12" />
+    <title>小小人</title>
+  </head>
+  <body>
+    <div id="app" data-phase="menu">
+      <canvas id="view" tabindex="0" aria-label="小小人游戏画面"></canvas>
+      <div id="hud">
+        <section id="screen-menu" class="screen" data-testid="screen-menu">
+          <div class="menu-card">
+            <p class="eyebrow">第一人称 · 缩进模型</p>
+            <h1 data-testid="title">小小人</h1>
+            <p class="lead">上帝视角看清整机，再迅速缩小钻进内部。左手鉴定，右手发射抓住零件。</p>
+            <div class="levels">
+              <button type="button" class="level open" data-testid="level-phone" data-level="phone">
+                <span class="lv">第一关</span>
+                <strong>我的手机</strong>
+                <em>iPhone 12 拆机模型</em>
+              </button>
+              <button type="button" class="level locked" data-testid="level-laptop" data-level="laptop" disabled>
+                <span class="lv">第二关</span>
+                <strong>笔记本电脑</strong>
+                <em>即将开放</em>
+              </button>
+              <button type="button" class="level locked" data-testid="level-earbuds" data-level="earbuds" disabled>
+                <span class="lv">第三关</span>
+                <strong>无线耳机</strong>
+                <em>即将开放</em>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-load" class="screen" data-testid="loading" hidden>
+          <div class="load-card">
+            <p>正在把世界放大，把你缩小…</p>
+            <div class="bar" data-testid="load-bar"><i id="load-bar"></i></div>
+            <span id="load-pct" data-testid="load-pct">0%</span>
+          </div>
+        </section>
+
+        <section id="screen-god" class="screen overlay" data-testid="screen-god" hidden>
+          <div class="top-bar">
+            <span data-testid="level-title">第一关 · 我的手机</span>
+            <span class="hint">拖动环视 · 滚轮远近</span>
+          </div>
+          <div class="god-actions">
+            <button type="button" data-testid="btn-explode">爆炸图</button>
+            <button type="button" class="primary" data-testid="btn-enter">进入内部</button>
+            <button type="button" class="ghost" data-testid="btn-menu">关卡</button>
+          </div>
+        </section>
+
+        <section id="screen-play" class="screen overlay" data-testid="screen-play" hidden>
+          <div class="top-bar">
+            <span id="play-status">内部穿梭</span>
+            <span class="hint kbd">WASD 移动 · 空格上升 · C 下降 · 鼠标环视</span>
+          </div>
+          <div class="crosshair" data-testid="crosshair"></div>
+          <aside id="identify-card" class="card" data-testid="identify-card" hidden></aside>
+          <div class="play-actions">
+            <button type="button" data-testid="btn-identify">鉴定</button>
+            <button type="button" class="primary" data-testid="btn-fire">发射</button>
+            <button type="button" data-testid="btn-recall" hidden>收回</button>
+            <button type="button" data-testid="btn-dismount" hidden>下来</button>
+            <button type="button" data-testid="btn-explode-fps">爆炸图</button>
+          </div>
+          <div id="joystick" class="joystick" data-testid="joystick" hidden>
+            <div class="joy-base"><div id="joy-knob" class="joy-knob"></div></div>
+          </div>
+        </section>
+
+        <div id="toast" data-testid="toast" hidden></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
