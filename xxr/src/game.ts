@@ -304,11 +304,11 @@ export class Game {
     const s = 18 / thick;
     wrap.scaling.setAll(s);
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
-    const b2 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !!m.getTotalVertices());
+    const b2 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !isAvatarMesh(m.name) && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
     wrap.position.subtractInPlace(center);
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
-    const b3 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !!m.getTotalVertices());
+    const b3 = this.scene.getWorldExtends((m) => m !== this.floor && m.name !== "floor" && !isAvatarMesh(m.name) && !!m.getTotalVertices());
     this.phoneSize = b3.max.subtract(b3.min);
 
     for (const mesh of this.scene.meshes) {
