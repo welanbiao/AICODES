@@ -130,11 +130,11 @@ export class Game {
     this.scene.autoClear = true;
     this.scene.animationsEnabled = true;
 
-    const hemi = new HemisphericLight("hemi", new Vector3(0.15, 1, 0.2), this.scene);
-    hemi.intensity = 0.32;
-    hemi.groundColor = new Color3(0.04, 0.05, 0.08);
-    const sun = new DirectionalLight("sun", new Vector3(-0.25, -1, 0.2), this.scene);
-    sun.intensity = 0.18;
+    const hemi = new HemisphericLight("hemi", new Vector3(0.2, 1, 0.35), this.scene);
+    hemi.intensity = 0.95;
+    hemi.groundColor = new Color3(0.08, 0.09, 0.12);
+    const sun = new DirectionalLight("sun", new Vector3(-0.35, -1, 0.15), this.scene);
+    sun.intensity = 0.55;
 
     this.fpsCam = new UniversalCamera("fps", new Vector3(0, 0, 0), this.scene);
     this.fpsCam.minZ = 0.04;

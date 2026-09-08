@@ -270,15 +270,16 @@ function fitFirstPerson(model: TransformNode) {
   model.scaling.setAll(1);
   model.rotation.setAll(0);
   model.rotationQuaternion = null;
+  model.rotation.y = Math.PI;
   model.computeWorldMatrix(true);
   const b = model.getHierarchyBoundingVectors(true);
   const size = b.max.subtract(b.min);
   const longest = Math.max(size.x, size.y, size.z, 0.0001);
-  model.scaling.setAll(0.58 / longest);
+  model.scaling.setAll(0.92 / longest);
   model.computeWorldMatrix(true);
   const b2 = model.getHierarchyBoundingVectors(true);
   const center = b2.min.add(b2.max).scale(0.5);
-  model.position.addInPlace(new Vector3(0, -0.22, 0.36).subtract(center));
+  model.position.addInPlace(new Vector3(0, -0.28, 0.48).subtract(center));
 }
 
 function createGrapple(scene: Scene, wrist: TransformNode, leftWrist: TransformNode) {
