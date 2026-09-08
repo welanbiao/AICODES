@@ -468,12 +468,16 @@ export class Game {
 
   private resolveName(mesh: AbstractMesh): string {
     let n: Node | null = mesh;
+    let fallback = mesh.name;
     while (n) {
-      const raw = n.name.split("_$Assimp")[0].replace(/_node$/i, "");
-      if (raw && raw !== "__root__" && raw !== "phoneWrap" && !raw.startsWith("primitive")) return raw;
+      const raw = partKeyFromName(n.name);
+      if (raw && raw !== "__root__" && raw !== "phoneWrap") {
+        fallback = raw;
+        if (raw in CATALOG || raw === "__screw__") return n.name;
+      }
       n = n.parent;
     }
-    return mesh.name;
+    return fallback;
   }
 
   private pulseScanner() {
