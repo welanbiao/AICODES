@@ -406,7 +406,10 @@ export class Game {
     spin.computeWorldMatrix(true);
     const b2 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
-    if (glbRoot) glbRoot.position.subtractInPlace(center);
+    if (glbRoot) {
+      const inv = spin.getWorldMatrix().clone().invert();
+      glbRoot.position.subtractInPlace(Vector3.TransformCoordinates(center, inv));
+    }
     spin.computeWorldMatrix(true);
     const b3 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     this.phoneSize = b3.max.subtract(b3.min);
