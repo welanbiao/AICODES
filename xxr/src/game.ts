@@ -436,6 +436,12 @@ export class Game {
       mesh.isPickable = true;
       this.phoneMeshes.push(mesh);
       if (!this.isAnimDriven(mesh)) this.restLocal.set(mesh.uniqueId, mesh.position.clone());
+      const mat = mesh.material;
+      if (mat instanceof PBRMaterial) {
+        mat.directIntensity = 1.7;
+        mat.environmentIntensity = 1.15;
+        mat.emissiveColor = mat.emissiveColor.add(new Color3(0.04, 0.04, 0.045));
+      }
     }
 
     this.explodeT = 0;
