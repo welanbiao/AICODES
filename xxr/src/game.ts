@@ -613,7 +613,7 @@ export class Game {
     if (dist > 0.0001) {
       const hit = this.scene.pickWithRay(
         new Ray(prev, delta.normalize(), dist + 0.2),
-        (m) => m.isPickable && m.isEnabled() && m.name !== "floor",
+        (m) => m.isPickable && m.isEnabled() && m.name !== "floor" && !isAvatarMesh(m.name),
       );
       if (hit?.hit && hit.pickedMesh && hit.pickedPoint) {
         this.catchPart(hit);
