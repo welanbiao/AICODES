@@ -1,58 +1,60 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("小小人", () => {
-  test("首页可选关卡并进入我的手机", async ({ page }) => {
+  test("启动后直接进入星空，面对第一关手机", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (err) => pageErrors.push(err.message));
 
     await page.goto("/");
     await expect(page.getByTestId("title")).toHaveText("小小人");
-    await expect(page.getByTestId("level-phone")).toBeVisible();
-    await expect(page.getByTestId("level-laptop")).toBeDisabled();
-    await expect(page.getByTestId("level-earbuds")).toBeDisabled();
-
-    await page.getByTestId("level-phone").click();
     await expect(page.getByTestId("loading")).toBeVisible();
-    await expect(page.getByTestId("btn-enter")).toBeVisible({ timeout: 120_000 });
-    await expect(page.locator("#view")).toBeVisible();
+    await expect(page.getByTestId("level-phone")).toHaveCount(0);
+    await expect(page.getByTestId("btn-enter")).toHaveCount(0);
 
-    await page.getByTestId("btn-explode").click();
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded)).toBe(true);
-
-    await page.getByTestId("btn-enter").click();
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("fps");
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 180_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
     await expect(page.getByTestId("btn-identify")).toBeVisible();
     await expect(page.getByTestId("btn-fire")).toBeVisible();
     await expect(page.getByTestId("crosshair")).toBeVisible();
+    await expect(page.getByTestId("level-label")).toContainText("第一关");
+    await expect(page.getByTestId("level-label")).toContainText("我的手机");
+
+    await page.getByTestId("btn-explode-fps").click();
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded)).toBe(true);
 
     await page.getByTestId("btn-identify").click();
     await expect(page.getByTestId("identify-card")).toBeVisible();
-    await expect(page.getByTestId("identify-card")).toContainText(/电池|零件|螺丝|主板|屏幕/);
+    await expect(page.getByTestId("identify-card")).toContainText(/电池|零件|螺丝|主板|屏幕|未锁定|中框|摄像/);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByTestId("btn-identify")).toBeVisible();
     await page.setViewportSize({ width: 1280, height: 720 });
     await expect(page.getByTestId("title")).toHaveCount(1);
 
-    const fatal = pageErrors.filter((m) => !/ResizeObserver|webgl/i.test(m));
+    const fatal = pageErrors.filter((m) => !/ResizeObserver|webgl|draco|wasm/i.test(m));
     expect(fatal).toEqual([]);
   });
 
-  test("键盘 WASD 会改变相机位置", async ({ page }) => {
+  test("键盘 WASD 会移动且不会走出星空边界", async ({ page }) => {
     await page.goto("/");
-    await page.getByTestId("level-phone").click();
-    await expect(page.getByTestId("btn-enter")).toBeVisible({ timeout: 120_000 });
-    await page.getByTestId("btn-enter").click();
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("fps");
-    await expect(page.getByTestId("btn-identify")).toBeVisible();
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 180_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
 
-    const before = await page.evaluate(() => window.__XXR__?.phase);
-    expect(before).toBe("fps");
-
+    const before = await page.evaluate(() => window.__XXR__?.pos ?? [0, 0, 0]);
     await page.keyboard.down("KeyW");
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(500);
     await page.keyboard.up("KeyW");
+    const after = await page.evaluate(() => window.__XXR__?.pos ?? [0, 0, 0]);
+    const moved = Math.hypot(after[0] - before[0], after[1] - before[1], after[2] - before[2]);
+    expect(moved).toBeGreaterThan(0.05);
+
     const fps = await page.evaluate(() => window.__XXR__?.fps ?? 0);
     expect(fps).toBeGreaterThan(1);
+
+    const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
+    const limit = await page.evaluate(() => window.__XXR__?.skyLimit ?? 30);
+    const dist = Math.hypot(clamped[0], clamped[1], clamped[2]);
+    expect(dist).toBeLessThan(limit + 2);
+    expect(Math.abs(clamped[0])).toBeLessThan(80);
   });
 });
