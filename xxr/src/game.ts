@@ -85,6 +85,9 @@ export class Game {
   private enterTo = 0;
   private floor!: Mesh;
   private riding: { t: number; from: Vector3; to: Vector3 } | null = null;
+  private restAbs = new Map<number, Vector3>();
+  private explodeT = 0;
+  private explodeGoal = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
