@@ -234,7 +234,6 @@ export function holsterHook(arms: Arms) {
   arms.rightHand.position = new Vector3(0, -0.01, -0.04);
   arms.rightHand.rotation = Vector3.Zero();
   arms.rightHand.rotationQuaternion = null;
-  arms.rightHand.scaling = Vector3.One();
   setClaws(arms.claws, 0.16);
   arms.rope.isVisible = false;
 }
