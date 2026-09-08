@@ -691,8 +691,6 @@ export class Game {
     p.x = clamp(p.x, this.skyMin.x, this.skyMax.x);
     p.y = clamp(p.y, this.skyMin.y, this.skyMax.y);
     p.z = clamp(p.z, this.skyMin.z, this.skyMax.z);
-    const len = p.length();
-    if (len > this.skyLimit) p.scaleInPlace(this.skyLimit / len);
   }
 
   private moveFps(dt: number) {
