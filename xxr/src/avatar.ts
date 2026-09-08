@@ -2,6 +2,7 @@ import {
   Color3,
   Mesh,
   MeshBuilder,
+  Node,
   Scene,
   StandardMaterial,
   TransformNode,
