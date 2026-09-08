@@ -108,12 +108,9 @@ export class Game {
     this.godCam.upperBetaLimit = Math.PI / 2 - 0.04;
     this.godCam.wheelDeltaPercentage = 0.01;
     this.godCam.minZ = 0.05;
-    this.godCam.maxZ = 800;
-    this.scene.activeCamera = this.godCam;
-
-    this.fpsCam = new UniversalCamera("fps", new Vector3(0, 0, 0), this.scene);
+    this.godCam.maxZ = 20000;
     this.fpsCam.minZ = 0.03;
-    this.fpsCam.maxZ = 800;
+    this.fpsCam.maxZ = 20000;
     this.fpsCam.inertia = 0;
     this.fpsCam.speed = 0;
     this.fpsCam.applyGravity = false;
