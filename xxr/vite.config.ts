@@ -16,6 +16,7 @@ function modelFile(name: string) {
 function xxrModels(): Plugin {
   return {
     name: "xxr-models",
+    apply: "build",
     buildStart() {
       mkdirSync(resolve(root, "public/models"), { recursive: true });
       for (const name of MX_FILES) {
@@ -25,6 +26,13 @@ function xxrModels(): Plugin {
         }
       }
     },
+  };
+}
+
+function xxrModelsDev(): Plugin {
+  return {
+    name: "xxr-models-dev",
+    apply: "serve",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split("?")[0] ?? "";
