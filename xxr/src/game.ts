@@ -836,6 +836,7 @@ export class Game {
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       explode: () => this.toggleExplode(),
+      lookAtPhone: () => this.lookAtPhone(),
       tryMove: (x, y, z) => {
         this.fpsCam.position.set(x, y, z);
         this.clampPlayer();
