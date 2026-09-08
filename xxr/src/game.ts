@@ -87,7 +87,7 @@ export class Game {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.engine = new Engine(canvas, true, { adaptToDeviceRatio: false, stencil: true }, true);
+    this.engine = new Engine(canvas, true, { adaptToDeviceRatio: false, stencil: true, preserveDrawingBuffer: true }, true);
     const cap = Math.min(window.devicePixelRatio || 1, 1.6);
     this.engine.setHardwareScalingLevel(1 / cap);
     this.scene = new Scene(this.engine);
