@@ -511,11 +511,15 @@ export class Game {
     for (const mesh of this.scene.meshes) {
       const rest = this.restAbs.get(mesh.uniqueId);
       if (!rest) continue;
-      const dir = rest.clone();
+      const key = partKeyFromName(mesh.name);
+      let dir = rest.clone();
       const len = dir.length();
-      if (len < 0.05) continue;
-      dir.scaleInPlace(1 / len);
-      const extra = 8 + Math.min(28, len * 0.22);
+      if (len < 0.05) dir = new Vector3(0, 1, 0);
+      else dir.scaleInPlace(1 / len);
+      if (key === "front_panel") dir = new Vector3(rest.x >= 0 ? 1 : -1, 0, 0);
+      if (key === "back_cover" || key === "backplate") dir = new Vector3(rest.x >= 0 ? -1 : 1, 0, 0);
+      if (key === "battery") dir = new Vector3(0, 0, rest.z >= 0 ? 1 : -1);
+      const extra = key === "front_panel" || key === "back_cover" ? 26 : 8 + Math.min(28, Math.max(len, 1) * 0.22);
       mesh.setAbsolutePosition(rest.add(dir.scale(extra * ease)));
     }
   }
