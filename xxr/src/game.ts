@@ -455,7 +455,7 @@ export class Game {
   }
 
   private syncHandButtons() {
-    $<HTMLButtonElement>('[data-testid="btn-recall"]').hidden = this.handState === "holstered";
+    $<HTMLButtonElement>('[data-testid="btn-recall"]').hidden = this.handState === "holstered" || this.handState === "reeling";
     $<HTMLButtonElement>('[data-testid="btn-fire"]').hidden = this.handState !== "holstered" || this.phase === "observe";
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "observe";
   }
