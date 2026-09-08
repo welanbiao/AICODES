@@ -628,17 +628,47 @@ export class Game {
 
   private catchPart(hit: PickingInfo) {
     if (!this.arms || !hit.pickedPoint || !hit.pickedMesh) return;
-    this.arms.rightHand.position.copyFrom(hit.pickedPoint);
-    this.arms.rightHand.setParent(hit.pickedMesh);
+    const hook = this.arms.rightHand;
+    hook.position.copyFrom(hit.pickedPoint);
+    aimHook(hook, hit.pickedPoint.subtract(this.arms.wristAnchor.getAbsolutePosition()));
+    setClaws(this.arms.claws, 1.15);
+    hook.setParent(hit.pickedMesh);
     this.handState = "stuck";
     this.observePivot.copyFrom(hit.pickedPoint);
     const normal = (hit.getNormal(true) ?? Vector3.Up()).normalize();
     const stand = hit.pickedPoint.add(normal.scale(1.15));
     this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand };
-    $<HTMLElement>("#play-status").textContent = `站在 ${infoFor(this.resolveName(hit.pickedMesh)).name} 上`;
+    $<HTMLElement>("#play-status").textContent = `钩住 ${infoFor(this.resolveName(hit.pickedMesh)).name}`;
     this.syncHandButtons();
     this.identify();
-    toast("抓住零件，飞过去");
+    toast("钩索抓住，沿绳飞过去");
+  }
+
+  private tickReel(dt: number) {
+    if (!this.arms) return;
+    const hook = this.arms.rightHand;
+    const target = this.arms.wristAnchor.getAbsolutePosition();
+    const pos = hook.getAbsolutePosition();
+    const to = target.subtract(pos);
+    const dist = to.length();
+    const step = Math.max(this.moveSpeed * 4.5, 28) * dt;
+    if (dist <= step + 0.08) {
+      holsterHook(this.arms);
+      this.handState = "holstered";
+      this.syncHandButtons();
+      return;
+    }
+    hook.setParent(null);
+    hook.position.copyFrom(pos.add(to.scale(step / dist)));
+    aimHook(hook, to.scale(-1));
+  }
+
+  private updateHookRope() {
+    if (!this.arms || this.handState === "holstered") {
+      if (this.arms) this.arms.rope.isVisible = false;
+      return;
+    }
+    updateRope(this.arms, this.arms.wristAnchor.getAbsolutePosition(), this.arms.rightHand.getAbsolutePosition());
   }
 
   private publish() {
