@@ -80,7 +80,6 @@ export class Game {
   private highlight: AbstractMesh | null = null;
   private observePivot = Vector3.Zero();
   private worldReady = false;
-  private entering = 0;
   private enterFrom = 0;
   private enterTo = 0;
   private enterStartedAt = 0;
