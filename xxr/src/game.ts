@@ -386,10 +386,12 @@ export class Game {
   private preparePhone(loaded: ISceneLoaderAsyncResult) {
     this.explodeGroup = loaded.animationGroups.find((g) => /teardown/i.test(g.name)) ?? loaded.animationGroups[0] ?? null;
     if (this.explodeGroup) {
-      this.explodeGroup.stop();
-      this.explodeGroup.reset();
-      this.explodeGroup.loopAnimation = false;
-      this.explodeGroup.goToFrame(this.explodeGroup.from);
+      const g = this.explodeGroup;
+      g.stop();
+      g.reset();
+      g.loopAnimation = false;
+      g.goToFrame(g.from);
+      g.pause();
     }
 
     const wrap = new TransformNode("phoneWrap", this.scene);
