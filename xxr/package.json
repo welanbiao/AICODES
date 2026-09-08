@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5173 --host --strictPort",
     "convert": "node scripts/convert-fbx.mjs",
+    "compress-models": "node scripts/compress-models.mjs",
     "test": "playwright test",
     "test:headed": "playwright test --headed"
   },
