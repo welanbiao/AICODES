@@ -170,7 +170,6 @@ h1 {
   }
 }
 
-.god-actions,
 .play-actions {
   position: absolute;
   left: 50%;
@@ -181,6 +180,38 @@ h1 {
   justify-content: center;
   gap: 8px;
   width: min(560px, calc(100% - 24px));
+}
+
+.float-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, 0);
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: calc(14px * var(--ui));
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 10px #000;
+  opacity: 0;
+}
+
+.float-label.muted {
+  font-size: calc(12px * var(--ui));
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.credit {
+  pointer-events: none;
+  position: absolute;
+  right: calc(12px * var(--ui));
+  bottom: calc(64px * var(--ui) + env(safe-area-inset-bottom));
+  margin: 0;
+  color: var(--muted);
+  font-size: calc(11px * var(--ui));
+  text-shadow: 0 1px 8px #000;
+  opacity: 0.75;
 }
 
 button {
