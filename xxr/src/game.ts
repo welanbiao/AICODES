@@ -385,13 +385,6 @@ export class Game {
   toggleExplode() {
     this.exploded = !this.exploded;
     this.explodeGoal = this.exploded ? 1 : 0;
-    const g = this.explodeGroup;
-    if (g && g.targetedAnimations.length > 0) {
-      const dur = Math.max(0.05, g.to - g.from);
-      const speed = dur / 2.6;
-      if (this.exploded) g.start(false, speed, g.from, g.to);
-      else g.start(false, speed, g.to, g.from);
-    }
     toast(this.exploded ? "爆炸图展开" : "零件合拢");
   }
 
