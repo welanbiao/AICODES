@@ -386,6 +386,9 @@ export class Game {
     this.enterFrom = this.godCam.radius;
     this.enterStartedAt = performance.now();
     toast("缩小进入…");
+    window.setTimeout(() => {
+      if (this.phase === "entering") this.finishEnter();
+    }, 1100);
   }
 
   toggleExplode() {
