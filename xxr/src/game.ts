@@ -435,7 +435,7 @@ export class Game {
       if (!this.isPhonePart(mesh) || !mesh.getTotalVertices()) continue;
       mesh.isPickable = true;
       this.phoneMeshes.push(mesh);
-      if (!this.isAnimDriven(mesh)) this.restLocal.set(mesh.uniqueId, mesh.position.clone());
+      this.restLocal.set(mesh.uniqueId, mesh.position.clone());
       const mat = mesh.material;
       if (mat instanceof PBRMaterial) {
         mat.directIntensity = 1.7;
