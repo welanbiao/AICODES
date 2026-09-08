@@ -9,12 +9,11 @@ const layout = () => {
   pinToViewport(app);
 };
 
+const game = new Game(canvas);
 layout();
 onViewportChange(() => {
   layout();
   game.resize();
 });
-
-const game = new Game(canvas);
 window.addEventListener("orientationchange", () => game.resize());
 window.addEventListener("resize", () => game.resize());
