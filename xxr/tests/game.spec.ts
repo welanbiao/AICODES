@@ -22,6 +22,8 @@ test.describe("小小人", () => {
     await page.getByTestId("btn-explode-fps").click();
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded)).toBe(true);
 
+    await page.evaluate(() => window.__XXR__?.lookAtPhone?.());
+    await page.waitForTimeout(200);
     await page.getByTestId("btn-identify").click();
     await expect(page.getByTestId("identify-card")).toBeVisible();
     await expect(page.getByTestId("identify-card")).toContainText(/电池|零件|螺丝|主板|屏幕|未锁定|中框|摄像/);
