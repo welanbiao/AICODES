@@ -490,8 +490,9 @@ export class Game {
     this.godCam.detachControl();
     const pos = this.godCam.position.clone();
     this.fpsCam.position.copyFrom(pos);
-    this.look.yaw = this.godCam.alpha + Math.PI;
-    this.look.pitch = this.godCam.beta - Math.PI / 2;
+    this.look.yaw = Math.atan2(pos.x, pos.z);
+    this.look.pitch = 0.08;
+    this.fpsCam.position.set(0, 0, 0);
     this.applyLook();
     this.scene.activeCamera = this.fpsCam;
     this.arms?.root.setEnabled(true);
