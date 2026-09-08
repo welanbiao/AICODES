@@ -6,7 +6,7 @@ export default defineConfig({
   base: './',
   server: {
     host: true,
-    port: 5173,
+    port: 5174,
     allowedHosts: ['welanbiao.gnway.cc', '.gnway.cc'],
     proxy: {
       '/v1': { target: 'http://127.0.0.1:8788', changeOrigin: true },

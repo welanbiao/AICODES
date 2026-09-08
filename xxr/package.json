@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 5180 --host --strictPort",
+    "preview": "vite preview --port 5173 --host --strictPort",
     "convert": "node scripts/convert-fbx.mjs",
     "test": "playwright test",
     "test:headed": "playwright test --headed"
