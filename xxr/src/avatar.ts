@@ -265,3 +265,113 @@ export function aimHook(hook: TransformNode, dir: Vector3) {
 }
 
 export const setRightHandOnWrist = holsterHook;
+
+function fitFirstPerson(model: TransformNode) {
+  model.position.setAll(0);
+  model.scaling.setAll(1);
+  model.rotation.setAll(0);
+  model.rotationQuaternion = null;
+  model.computeWorldMatrix(true);
+  const b = model.getHierarchyBoundingVectors(true);
+  const size = b.max.subtract(b.min);
+  const longest = Math.max(size.x, size.y, size.z, 0.0001);
+  model.scaling.setAll(0.58 / longest);
+  model.computeWorldMatrix(true);
+  const b2 = model.getHierarchyBoundingVectors(true);
+  const center = b2.min.add(b2.max).scale(0.5);
+  model.position.addInPlace(new Vector3(0, -0.22, 0.36).subtract(center));
+}
+
+function createGrapple(scene: Scene, wrist: TransformNode, leftWrist: TransformNode) {
+  const chassis = mat(scene, "xxrHookChassis", new Color3(0.11, 0.13, 0.16), 0.45, 0.04);
+  const blade = mat(scene, "xxrHookBlade", new Color3(0.55, 0.58, 0.62), 0.85, 0.08);
+  const cyan = glowMat(scene, "xxrScanCyan", new Color3(0.18, 0.92, 0.82));
+  const amber = glowMat(scene, "xxrHookAmber", new Color3(0.98, 0.48, 0.16));
+  const cable = glowMat(scene, "xxrHookCable", new Color3(0.75, 0.42, 0.18));
+
+  const scanner = box("xxrScanner", { width: 0.09, height: 0.038, depth: 0.12 }, scene, mat(scene, "xxrScanDark", new Color3(0.06, 0.07, 0.09), 0.2, 0.02), leftWrist, new Vector3(0, 0.02, -0.02));
+  const scannerGlow = box("xxrScannerScreen", { width: 0.07, height: 0.005, depth: 0.078 }, scene, cyan, scanner, new Vector3(0, 0.02, 0));
+
+  const hook = new TransformNode("xxrHook", scene);
+  hook.parent = wrist;
+  box("xxrHookBody", { width: 0.034, height: 0.034, depth: 0.13 }, scene, chassis, hook, new Vector3(0, 0, -0.02));
+  cyl("xxrHookSpike", { height: 0.09, diameterTop: 0.005, diameterBottom: 0.024 }, scene, blade, hook, new Vector3(0, 0, -0.1)).rotation.x = Math.PI / 2;
+  box("xxrHookCore", { width: 0.022, height: 0.022, depth: 0.048 }, scene, amber, hook, new Vector3(0, 0, -0.01));
+
+  const claws: TransformNode[] = [];
+  for (let i = 0; i < 3; i++) {
+    const pivot = new TransformNode(`xxrClawP${i}`, scene);
+    pivot.parent = hook;
+    const ang = (i / 3) * Math.PI * 2;
+    pivot.position = new Vector3(Math.cos(ang) * 0.014, Math.sin(ang) * 0.014, -0.045);
+    pivot.rotation.z = ang;
+    const claw = box(`xxrClaw${i}`, { width: 0.012, height: 0.007, depth: 0.085 }, scene, blade, pivot, new Vector3(0.022, 0, -0.032));
+    claw.rotation.y = 0.35;
+    claws.push(pivot);
+  }
+
+  const rope = MeshBuilder.CreateCylinder("xxrRope", { height: 1, diameter: 0.012, tessellation: 7 }, scene);
+  rope.material = cable;
+  tag(rope);
+  rope.isVisible = false;
+  rope.parent = null;
+
+  wrist.computeWorldMatrix(true);
+  const sx = Math.max(1e-5, Math.abs(wrist.absoluteScaling.x));
+  hook.scaling.setAll(1 / sx);
+  leftWrist.computeWorldMatrix(true);
+  const lx = Math.max(1e-5, Math.abs(leftWrist.absoluteScaling.x));
+  scanner.scaling.setAll(1 / lx);
+
+  setClaws(claws, 0.18);
+  return { hook, scannerGlow, rope, claws };
+}
+
+export async function loadFpsArms(
+  scene: Scene,
+  parent: Node,
+  onProgress?: (evt: ISceneLoaderProgressEvent) => void,
+): Promise<Arms> {
+  scene.setRenderingAutoClearDepthStencil(ARM_GROUP, false);
+  const root = new TransformNode("xxrArms", scene);
+  root.parent = parent;
+
+  const loaded = await SceneLoader.ImportMeshAsync("", "/models/", "fps_arms.glb", scene, onProgress);
+  const glbRoot = loaded.meshes[0] ?? new TransformNode("xxrArmModel", scene);
+  glbRoot.parent = root;
+  glbRoot.name = "xxrArmModel";
+  for (const mesh of loaded.meshes) {
+    mesh.isPickable = false;
+    mesh.renderingGroupId = ARM_GROUP;
+    mesh.alwaysSelectAsActiveMesh = true;
+  }
+
+  fitFirstPerson(glbRoot);
+
+  const findBone = (name: string) =>
+    scene.getTransformNodeByName(name) ??
+    (scene.getNodeByName(name) as TransformNode | null) ??
+    loaded.transformNodes.find((n) => n.name === name) ??
+    null;
+
+  const rightWrist = findBone("R_wrist_025");
+  const leftWrist = findBone("L_wrist_03");
+  if (!rightWrist || !leftWrist) {
+    root.dispose();
+    throw new Error("fps_arms.glb missing wrist bones");
+  }
+
+  const kit = createGrapple(scene, rightWrist, leftWrist);
+  const arms: Arms = {
+    root,
+    leftHand: leftWrist,
+    rightWrist,
+    rightHand: kit.hook,
+    scannerGlow: kit.scannerGlow,
+    rope: kit.rope,
+    claws: kit.claws,
+    wristAnchor: rightWrist,
+  };
+  holsterHook(arms);
+  return arms;
+}
