@@ -296,8 +296,7 @@ export class Game {
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
     const extents = this.scene.getWorldExtends((m) => {
       if (m === this.floor) return false;
-      if (m.name === "floor") return false;
-      if (m.name.startsWith("left") || m.name.startsWith("right") || m.name.startsWith("scanner") || m.name === "arms") return false;
+      if (m.name === "floor" || isAvatarMesh(m.name)) return false;
       return m.isEnabled() && !!m.getTotalVertices();
     });
     const size = extents.max.subtract(extents.min);
