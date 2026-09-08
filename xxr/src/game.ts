@@ -350,7 +350,7 @@ export class Game {
     this.restAbs.clear();
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
     for (const mesh of this.scene.meshes) {
-      if (mesh === this.floor || !mesh.getTotalVertices()) continue;
+      if (mesh === this.floor || isAvatarMesh(mesh.name) || !mesh.getTotalVertices()) continue;
       this.restAbs.set(mesh.uniqueId, mesh.getAbsolutePosition().clone());
     }
     this.explodeT = 0;
