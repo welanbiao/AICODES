@@ -1069,13 +1069,11 @@ export class Game {
       wrist: this.arms ? this.arms.wristAnchor.getAbsolutePosition().asArray() : [0, 0, 0],
       handState: this.handState,
       identify: () => this.identify(),
+      fire: () => this.fireHand(),
       grabPhone: () => {
         if (!this.phoneWrap || this.phase !== "fps") return;
         this.lookAtPhone();
-        const saved = this.aimLevel;
-        this.aimLevel = () => (this.phoneWrap ? { id: "phone" as const, wrap: this.phoneWrap } : null);
-        this.fireHand();
-        this.aimLevel = saved;
+        this.launchAt({ id: "phone", wrap: this.phoneWrap });
       },
       explode: () => this.toggleExplode(),
       finishExplode: () => this.finishExplodeNow(),
