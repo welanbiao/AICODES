@@ -851,10 +851,12 @@ export class Game {
       armsOn: !!this.arms?.root.isEnabled(),
       armMeshes: this.arms?.root.getChildMeshes().length ?? 0,
       wrist: this.arms ? this.arms.wristAnchor.getAbsolutePosition().asArray() : [0, 0, 0],
+      handState: this.handState,
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       explode: () => this.toggleExplode(),
       lookAtPhone: () => this.lookAtPhone(),
+      home: () => this.returnToCenter(),
       tryMove: (x, y, z) => {
         this.fpsCam.position.set(x, y, z);
         this.clampPlayer();
