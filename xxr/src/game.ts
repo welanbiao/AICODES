@@ -221,7 +221,7 @@ export class Game {
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
 
     this.canvas.addEventListener("pointerdown", (e) => {
-      if (this.phase !== "fps" && this.phase !== "observe") return;
+      if (!playable(this.phase)) return;
       this.dragging = true;
       this.lastPtr = { x: e.clientX, y: e.clientY };
       unlockAudio();
