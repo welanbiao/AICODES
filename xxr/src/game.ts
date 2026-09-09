@@ -1553,6 +1553,15 @@ export class Game {
     this.syncHandButtons();
   }
 
+  private finishFoldNow() {
+    this.exploded = false;
+    this.explodeGoal = 0;
+    this.explodeT = 0;
+    this.explodeDone = false;
+    this.applyExplode(0);
+    this.syncHandButtons();
+  }
+
   private tickHand(dt: number) {
     if (!this.arms) return;
     const hand = this.arms.rightHand;

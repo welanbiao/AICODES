@@ -82,7 +82,7 @@ test.describe("小小人", () => {
     const entered = await page.evaluate(() => {
       const x = window.__XXR__;
       if (!x) return { ok: false as const, reason: "missing" };
-      x.explode();
+      x.finishFold?.();
       const closed = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
       x.finishExplode?.();
       const opened = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
