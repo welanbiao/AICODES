@@ -527,15 +527,16 @@ export class Game {
   returnToCenter() {
     if (!this.worldReady) return;
     this.riding = null;
+    this.pendingLevel = null;
+    this.docked = null;
     if (this.arms && this.handState !== "holstered") this.recallHand(true);
+    this.exitInterior(true);
     this.fpsCam.position.set(0, 0, 0);
     this.look.yaw = 0;
     this.look.pitch = -0.08;
     this.applyLook();
-    if (this.phase === "observe") {
-      this.phase = "fps";
-      setPhase("fps");
-    }
+    this.phase = "fps";
+    setPhase("fps");
     $<HTMLElement>("#play-status").textContent = "星空枢纽";
     this.syncHandButtons();
     toast("已返回星空中心");
@@ -543,8 +544,15 @@ export class Game {
 
   toggleExplode() {
     if (!this.worldReady) return;
+    const onPhone = this.phase === "interior" || this.docked?.id === "phone";
+    if (!onPhone) {
+      toast("先用钩爪锁定我的手机");
+      return;
+    }
     this.exploded = !this.exploded;
     this.explodeGoal = this.exploded ? 1 : 0;
+    if (!this.exploded) this.explodeDone = false;
+    this.syncHandButtons();
     toast(this.exploded ? "爆炸图展开" : "零件合拢");
   }
 
@@ -555,7 +563,7 @@ export class Game {
   }
 
   identify() {
-    if (this.phase !== "fps" && this.phase !== "observe") return;
+    if (!playable(this.phase)) return;
     const hit = this.pickPart();
     const card = $<HTMLElement>("#identify-card");
     if (this.highlight) {
@@ -564,7 +572,7 @@ export class Game {
     }
     if (!hit?.pickedMesh) {
       card.hidden = false;
-      card.innerHTML = `<h2>未锁定</h2><p>准星没有对准可鉴定零件，再靠近一些。</p>`;
+      card.innerHTML = `<h2>未锁定</h2><p>准星没有对准关卡模型或零件。</p>`;
       return;
     }
     const mesh = hit.pickedMesh;
@@ -572,7 +580,13 @@ export class Game {
     mesh.renderOverlay = true;
     mesh.overlayColor = new Color3(0.24, 0.88, 0.78);
     mesh.overlayAlpha = 0.35;
-    const info = infoFor(this.resolveName(mesh));
+    const level = this.levelRootOf(mesh);
+    const info =
+      level?.id === "laptop"
+        ? { name: "我的电脑", role: "第二关场景", material: "铝合金机身", note: "即将开放。" }
+        : level?.id === "earbuds"
+          ? { name: "无线耳机", role: "第三关场景", material: "塑料 + 金属", note: "即将开放。" }
+          : infoFor(this.resolveName(mesh));
     card.hidden = false;
     card.innerHTML = `<h2>${info.name}</h2>
       <p><strong>作用</strong>　${info.role}</p>
@@ -584,15 +598,28 @@ export class Game {
   fireHand() {
     if (this.phase !== "fps" || !this.arms) return;
     if (this.handState !== "holstered") return;
+    const hit = this.pickPart();
+    const level = hit?.pickedMesh ? this.levelRootOf(hit.pickedMesh) : null;
+    if (!level) {
+      toast("未锁定关卡，钩爪不能发射");
+      return;
+    }
     const hook = this.arms.rightHand;
-    const origin = hook.getAbsolutePosition();
+    setHookVisible(this.arms, true);
+    const origin = this.arms.wristAnchor.getAbsolutePosition();
     hook.setParent(null);
     hook.position.copyFrom(origin);
-    this.handVel = this.fpsCam.getForwardRay(1).direction.scale(Math.max(14, this.moveSpeed * 2.4));
+    this.clampToSky(hook.position);
+    const target = level.wrap.position.clone();
+    const dir = target.subtract(origin);
+    if (dir.lengthSquared() < 1e-6) dir.set(0, 0, 1);
+    this.handVel = dir.normalize().scale(22);
     aimHook(hook, this.handVel);
     setClaws(this.arms.claws, 0.92);
     this.handFlight = 0;
     this.handState = "flying";
+    this.pendingLevel = level;
+    this.docked = level;
     this.syncHandButtons();
     playSfx("fire");
   }
