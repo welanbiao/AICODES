@@ -673,30 +673,48 @@ export class Game {
     const ray = this.fpsCam.getForwardRay(22);
     const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
     if (hit?.hit && hit.pickedMesh) return hit;
-    return this.pickLevelBounds(ray);
+    const aimed = this.aimLevel();
+    if (!aimed) return null;
+    const mesh = this.scene.meshes.find((m) => this.levelRootOf(m)?.id === aimed.id && !!m.getTotalVertices());
+    if (!mesh) return null;
+    const info = new PickingInfo();
+    info.hit = true;
+    info.pickedMesh = mesh;
+    info.distance = Vector3.Distance(this.fpsCam.position, aimed.wrap.position);
+    return info;
   }
 
-  private pickLevelBounds(ray: Ray): PickingInfo | null {
+  private eachLevel(): LevelRef[] {
     const levels: LevelRef[] = [];
     if (this.phoneWrap) levels.push({ id: "phone", wrap: this.phoneWrap });
     if (this.lv2) levels.push({ id: "laptop", wrap: this.lv2 });
     if (this.lv3) levels.push({ id: "earbuds", wrap: this.lv3 });
-    let best: { mesh: AbstractMesh; dist: number } | null = null;
-    for (const level of levels) {
+    return levels;
+  }
+
+  private aimLevel(): LevelRef | null {
+    this.fpsCam.computeWorldMatrix(true);
+    const ray = this.fpsCam.getForwardRay(22);
+    const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
+    if (hit?.hit && hit.pickedMesh) return this.levelRootOf(hit.pickedMesh);
+
+    let best: { level: LevelRef; score: number } | null = null;
+    const fwd = ray.direction;
+    for (const level of this.eachLevel()) {
       level.wrap.computeWorldMatrix(true);
       const box = level.wrap.getHierarchyBoundingVectors(true);
-      if (!ray.intersectsBoxMinMax(box.min, box.max)) continue;
-      const mesh = this.scene.meshes.find((m) => this.levelRootOf(m)?.id === level.id && !!m.getTotalVertices());
-      if (!mesh) continue;
-      const dist = Vector3.Distance(ray.origin, level.wrap.position);
-      if (!best || dist < best.dist) best = { mesh, dist };
+      const center = box.min.add(box.max).scale(0.5);
+      const to = center.subtract(ray.origin);
+      const dist = to.length();
+      if (dist < 0.15 || dist > 20) continue;
+      const dir = to.scale(1 / dist);
+      const dot = Vector3.Dot(fwd, dir);
+      const hitsBox = ray.intersectsBoxMinMax(box.min, box.max);
+      if (!hitsBox && dot < 0.78) continue;
+      const score = (hitsBox ? 2 : 1) * dot / Math.max(dist, 0.4);
+      if (!best || score > best.score) best = { level, score };
     }
-    if (!best) return null;
-    const info = new PickingInfo();
-    info.hit = true;
-    info.pickedMesh = best.mesh;
-    info.distance = best.dist;
-    return info;
+    return best?.level ?? null;
   }
 
   private resolveName(mesh: AbstractMesh): string {
