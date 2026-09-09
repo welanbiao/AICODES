@@ -407,7 +407,11 @@ button.ghost {
 
 @media (max-width: 720px) {
   .play-actions {
-    width: min(560px, calc(100% - 24px));
+    left: auto;
+    right: 8px;
+    transform: none;
+    width: min(360px, calc(100% - 168px));
+    justify-content: flex-end;
   }
   .play-actions button {
     min-height: 42px;
