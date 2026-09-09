@@ -456,6 +456,7 @@ export class Game {
     for (const mesh of this.scene.meshes) {
       if (!this.isPhonePart(mesh) || !mesh.getTotalVertices()) continue;
       mesh.isPickable = true;
+      mesh.metadata = { ...(mesh.metadata ?? {}), xxr: "level" };
       this.phoneMeshes.push(mesh);
       this.restLocal.set(mesh.uniqueId, mesh.position.clone());
       const mat = mesh.material;
