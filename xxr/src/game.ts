@@ -1090,16 +1090,19 @@ export class Game {
     return p;
   }
 
-  private clampPlayer() {
-    this.clampToSky(this.fpsCam.position);
-    if (this.phase !== "interior" || !this.phoneWrap) return;
+  private clampPlayerDest(p: Vector3) {
+    this.clampToSky(p);
+    if (this.phase !== "interior" || !this.phoneWrap) return p;
     const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const pad = 0.45;
-    const p = this.fpsCam.position;
     p.x = clamp(p.x, extents.min.x + pad, extents.max.x - pad);
     p.y = clamp(p.y, extents.min.y + pad, extents.max.y - pad);
     p.z = clamp(p.z, extents.min.z + pad, extents.max.z - pad);
-    this.clampToSky(p);
+    return this.clampToSky(p);
+  }
+
+  private clampPlayer() {
+    this.clampPlayerDest(this.fpsCam.position);
   }
 
   private moveFps(dt: number) {
