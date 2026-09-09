@@ -907,7 +907,6 @@ export class Game {
     const center = after.min.add(after.max).scale(0.5);
     this.lv2?.setEnabled(false);
     this.lv3?.setEnabled(false);
-    this.interior = true;
     this.phase = "interior";
     setPhase("interior");
     this.fpsCam.position.copyFrom(center);
