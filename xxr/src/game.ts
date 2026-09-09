@@ -1063,7 +1063,10 @@ export class Game {
   }
 
   private orbitLevels(dt: number) {
-    if (this.phase === "interior") return;
+    if (this.phase === "interior") {
+      this.setSideLevelsVisible(false);
+      return;
+    }
     this.phoneAngle += dt * ORBIT_SPEED;
     const cam = this.fpsCam.position;
     const frozen = this.docked?.id;
