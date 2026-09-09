@@ -1223,10 +1223,12 @@ export class Game {
     if (!this.arms) return;
     const hand = this.arms.rightHand;
     const prev = hand.getAbsolutePosition();
+    const part = this.pendingPart;
     const level = this.pendingLevel ?? this.docked;
-    if (level) {
-      const to = level.wrap.getAbsolutePosition().subtract(prev);
-      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(28);
+    const dest = part ? this.partCenter(part) : level?.wrap.getAbsolutePosition() ?? null;
+    if (dest) {
+      const to = dest.subtract(prev);
+      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(part ? 32 : 28);
     }
     const next = prev.add(this.handVel.scale(dt));
     this.clampToSky(next);
@@ -1234,10 +1236,25 @@ export class Game {
     hand.setAbsolutePosition(next);
     aimHook(hand, this.handVel);
     this.handFlight += Vector3.Distance(prev, next);
-    if (level && Vector3.Distance(next, level.wrap.getAbsolutePosition()) < 0.55) {
-      hand.setAbsolutePosition(level.wrap.getAbsolutePosition());
+    const reach = part
+      ? clamp(part.getBoundingInfo().boundingBox.extendSizeWorld.length() * 2.2, 0.35, 1.4)
+      : 0.55;
+    if (dest && Vector3.Distance(next, dest) < reach) {
+      hand.setAbsolutePosition(dest);
       this.handState = "stuck";
       playSfx("hit");
+      if (part) {
+        const pose = this.standInFrontOfMesh(part);
+        this.fpsCam.position.copyFrom(this.clampToSky(this.fpsCam.position));
+        pose.stand.copyFrom(this.clampPlayerDest(pose.stand));
+        this.riding = {
+          t: 0,
+          from: this.fpsCam.position.clone(),
+          to: pose.stand,
+          lookYaw: pose.lookYaw,
+          lookPitch: pose.lookPitch,
+        };
+      }
     }
   }
 
