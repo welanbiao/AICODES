@@ -1242,8 +1242,7 @@ export class Game {
     this.phoneWrap.computeWorldMatrix(true);
     const after = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const center = after.min.add(after.max).scale(0.5);
-    this.lv2?.setEnabled(false);
-    this.lv3?.setEnabled(false);
+    this.setSideLevelsVisible(false);
     this.phase = "interior";
     setPhase("interior");
     this.fpsCam.position.copyFrom(center);
