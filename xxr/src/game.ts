@@ -1,6 +1,7 @@
 import {
   AbstractMesh,
   AnimationGroup,
+  Camera,
   Color3,
   Color4,
   DirectionalLight,
