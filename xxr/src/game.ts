@@ -667,8 +667,12 @@ export class Game {
 
   lookAtPhone() {
     if (!this.phoneWrap) return;
-    this.phoneWrap.computeWorldMatrix(true);
-    const dir = this.phoneWrap.getAbsolutePosition().subtract(this.fpsCam.position);
+    this.lookAtNode(this.phoneWrap);
+  }
+
+  private lookAtNode(node: TransformNode) {
+    node.computeWorldMatrix(true);
+    const dir = node.getAbsolutePosition().subtract(this.fpsCam.position);
     const horiz = Math.max(0.001, Math.hypot(dir.x, dir.z));
     this.look.yaw = Math.atan2(dir.x, dir.z);
     this.look.pitch = clamp(-Math.atan2(dir.y, horiz), -1.2, 1.2);
