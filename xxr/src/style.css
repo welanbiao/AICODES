@@ -24,6 +24,8 @@ body,
   background: var(--bg);
   color: var(--ink);
   font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 #view {
