@@ -181,6 +181,8 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("about-body")).toContainText("叩君芯");
     await expect(page.getByTestId("about")).toContainText("Lumen 64 Spark");
     await expect(page.getByTestId("about")).toContainText("iPhone 12 Teardown");
+    await expect(page.getByTestId("about")).toContainText("Connor RK900");
+    await expect(page.getByTestId("about")).toContainText("North");
     await page.getByTestId("btn-about-close").click();
     await expect(page.getByTestId("about")).toBeHidden();
     const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
