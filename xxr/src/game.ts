@@ -1149,11 +1149,11 @@ export class Game {
   private syncHandButtons() {
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
     const explodeBtn = $<HTMLButtonElement>('[data-testid="btn-explode-fps"]');
-    const onPhone = this.phase === "interior" || this.docked?.id === "phone";
-    const canFold = onPhone && (this.exploded || this.explodeT > 0.02);
+    const pack = this.activePack();
+    const canFold = !!pack && (pack.exploded || pack.explodeT > 0.02);
     explodeBtn.textContent = "合拢";
     explodeBtn.hidden = !canFold;
-    const canEnter = this.explodeDone && this.docked?.id === "phone" && this.phase === "docked";
+    const canEnter = !!pack && pack.explodeDone && this.phase === "docked";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
     const joy = $<HTMLElement>("#joystick");
     if (joy) joy.hidden = !playable(this.phase);
