@@ -1010,10 +1010,11 @@ export class Game {
     const info = this.phase === "fps" && level
       ? {
           name: LEVEL_META[level.id].title,
-          role: "新时代电脑主机",
-          material: "承载电脑所有核心运算和硬件调度的“核心箱体”。包含CPU、主板、内存条、硬盘、电源、显卡、散热系统等关键组件。",
-          note: "靠近后会自动播放动画，看完可进入内部。",
+          role: LEVEL_META[level.id].role,
+          material: LEVEL_META[level.id].material,
+          note: LEVEL_META[level.id].note,
         }
+      : infoFor(this.resolveName(mesh));
       : infoFor(this.resolveName(mesh));
     card.hidden = false;
     card.innerHTML = `<h2>${info.name}</h2>
