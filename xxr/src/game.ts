@@ -7,8 +7,6 @@ import {
   Engine,
   HemisphericLight,
   Matrix,
-  Mesh,
-  MeshBuilder,
   Node,
   PBRMaterial,
   PickingInfo,
