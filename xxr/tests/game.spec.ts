@@ -53,6 +53,7 @@ test.describe("小小人", () => {
     const fps = await page.evaluate(() => window.__XXR__?.fps ?? 0);
     expect(fps).toBeGreaterThan(1);
 
+    await expect(page.getByTestId("btn-home")).toBeVisible();
     const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
     const limit = await page.evaluate(() => window.__XXR__?.skyLimit ?? 30);
     expect(Math.abs(clamped[0])).toBeLessThanOrEqual(limit + 2);
