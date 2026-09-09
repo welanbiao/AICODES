@@ -41,7 +41,7 @@ import { initAudio, unlockAudio, playSfx, stopAudio } from "./audio";
 export type Phase = "loading" | "fps" | "docked" | "interior";
 
 type HandState = "holstered" | "flying" | "stuck" | "reeling";
-type LevelId = "phone" | "laptop" | "earbuds";
+type LevelId = "phone" | "laptop" | "earbuds" | "connor" | "north";
 type LevelRef = { id: LevelId; wrap: TransformNode };
 
 type LevelPack = {
