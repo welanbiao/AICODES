@@ -765,7 +765,7 @@ export class Game {
     return {
       size: [s.x, s.y, s.z],
       longest: Math.max(s.x, s.y, s.z),
-      parts: this.explodeNodes.length,
+      parts: this.packs.get("phone")?.explodeNodes.length ?? 0,
     };
   }
 
