@@ -28,8 +28,8 @@ test.describe("小小人", () => {
 
     await page.evaluate(() => window.__XXR__?.explode());
     await page.evaluate(() => window.__XXR__?.finishExplode?.());
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded)).toBe(true);
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.explodeDone)).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.().exploded ?? window.__XXR__?.exploded)).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.().explodeDone ?? window.__XXR__?.explodeDone)).toBe(true);
     await expect(page.getByTestId("btn-enter")).toBeVisible();
 
     await page.getByTestId("btn-enter").click();
