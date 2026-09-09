@@ -1336,8 +1336,6 @@ export class Game {
     const active = this.activePack();
     if (active) {
       this.exploded = active.exploded;
-      this.explodeT = active.explodeT;
-      this.explodeGoal = active.explodeGoal;
       this.explodeDone = active.explodeDone;
     } else {
       this.exploded = false;
