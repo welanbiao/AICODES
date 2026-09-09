@@ -79,10 +79,14 @@ function loadProgress(ev: { loaded: number; total: number; lengthComputable?: bo
 function setPhase(phase: Phase) {
   $("#app").dataset.phase = phase;
   $<HTMLElement>("#screen-load").hidden = phase !== "loading";
-  $<HTMLElement>("#screen-play").hidden = phase !== "fps" && phase !== "observe";
+  $<HTMLElement>("#screen-play").hidden = phase === "loading";
   const joy = $<HTMLElement>("#joystick");
   const coarse = window.matchMedia("(pointer: coarse)").matches;
-  joy.hidden = !(coarse && (phase === "fps" || phase === "observe"));
+  joy.hidden = !(coarse && (phase === "fps" || phase === "interior"));
+}
+
+function playable(phase: Phase) {
+  return phase === "fps" || phase === "docked" || phase === "interior";
 }
 
 export class Game {
