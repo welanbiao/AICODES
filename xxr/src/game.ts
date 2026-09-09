@@ -1732,6 +1732,8 @@ declare global {
         gen: number;
       };
       explode: () => void;
+      fold?: () => void;
+      finishFold?: () => void;
       yankPart?: () => boolean;
       phoneSpan?: () => { size: number[]; longest: number; parts: number };
       finishExplode?: () => void;
