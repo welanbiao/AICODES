@@ -166,7 +166,7 @@ def cosmic_stroll() -> None:
         e5, g5, a5, g5, f5, d5, e5, c5,
         c6, a5, g5, e5, f5, a5, g5, e5,
         d5, e5, g5, e5, c5, e5, g5, c6,
-    ]
+    ] * 2
     # one melody note per eighth-note; rest every 8th slot for air
     for i, note in enumerate(melody):
         if i % 8 == 7:
