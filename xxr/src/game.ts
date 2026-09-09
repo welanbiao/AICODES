@@ -1322,6 +1322,15 @@ export class Game {
         gen: this.gen,
       }),
       explode: () => this.toggleExplode(),
+      yankPart: () => {
+        if (this.phase !== "interior") return false;
+        const mesh = [...this.phoneMeshes]
+          .filter((m) => m.isEnabled() && !!m.getTotalVertices())
+          .sort((a, b) => b.getBoundingInfo().boundingSphere.radius - a.getBoundingInfo().boundingSphere.radius)[0];
+        if (!mesh) return false;
+        this.lookAtNode(mesh);
+        return this.fireAtPart(mesh);
+      },
       phoneSpan: () => this.phoneWorldSpan(),
       finishExplode: () => this.finishExplodeNow(),
       enter: () => this.enterPhone(),
