@@ -49,6 +49,7 @@ const ORBIT_SPEED = 0.035;
 const SPIN_SPEED = 0.125;
 const EXPLODE_SEC = 12;
 const STAND_DIST = 1.38;
+const AUTO_EXPLODE_DIST = 2.05;
 const INTERIOR_SPAN = 22;
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
