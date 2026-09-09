@@ -859,6 +859,11 @@ export class Game {
       explode: () => this.toggleExplode(),
       lookAtPhone: () => this.lookAtPhone(),
       home: () => this.returnToCenter(),
+      setLook: (yaw, pitch) => {
+        this.look.yaw = yaw;
+        this.look.pitch = pitch;
+        this.applyLook();
+      },
       tryMove: (x, y, z) => {
         this.fpsCam.position.set(x, y, z);
         this.clampPlayer();
