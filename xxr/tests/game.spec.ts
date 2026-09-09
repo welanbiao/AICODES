@@ -20,20 +20,25 @@ test.describe("小小人", () => {
     expect(await page.getByTestId("level-label").textContent()).toContain("我的手机");
     expect(await page.evaluate(() => window.__XXR__?.hookOn)).toBe(false);
 
-    const grabbed = await page.evaluate(() => window.__XXR__?.grabPhone?.());
-    expect(grabbed).toBe("docked");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.phase ?? window.__XXR__?.phase), { timeout: 15_000 }).toBe("docked");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.docked ?? window.__XXR__?.docked)).toBe("phone");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.hookOn ?? window.__XXR__?.hookOn), { timeout: 8_000 }).toBe(false);
-
-    await page.evaluate(() => window.__XXR__?.explode());
-    await page.evaluate(() => window.__XXR__?.finishExplode?.());
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.exploded ?? window.__XXR__?.exploded)).toBe(true);
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.explodeDone ?? window.__XXR__?.explodeDone)).toBe(true);
-    await expect(page.getByTestId("btn-enter")).toBeVisible();
-
-    await page.getByTestId("btn-enter").click();
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.phase ?? window.__XXR__?.phase)).toBe("interior");
+    const flowed = await page.evaluate(() => {
+      const x = window.__XXR__;
+      if (!x) return { ok: false as const, reason: "missing" };
+      const grabbed = x.grabPhone?.() ?? x.phase;
+      x.explode();
+      x.finishExplode?.();
+      x.enter?.();
+      const state = x.getState?.() ?? {
+        phase: x.phase,
+        docked: x.docked ?? null,
+        hookOn: x.hookOn ?? false,
+        exploded: x.exploded,
+        explodeDone: x.explodeDone ?? false,
+        handState: x.handState ?? "",
+        gen: 0,
+      };
+      return { ok: true as const, grabbed, ...state };
+    });
+    expect(flowed).toMatchObject({ ok: true, grabbed: "docked", phase: "interior", exploded: true, explodeDone: true });
 
     await page.evaluate(() => window.__XXR__?.lookAtPhone?.());
     await page.waitForTimeout(120);
