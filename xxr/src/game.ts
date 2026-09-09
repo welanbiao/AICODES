@@ -597,55 +597,83 @@ export class Game {
     this.refreshSkyBounds();
   }
 
-  private preparePhone(loaded: ISceneLoaderAsyncResult) {
-    this.explodeGroup = loaded.animationGroups.find((g) => /teardown/i.test(g.name)) ?? loaded.animationGroups[0] ?? null;
-    if (this.explodeGroup) {
-      const g = this.explodeGroup;
-      g.stop();
-      g.reset();
-      g.loopAnimation = false;
-      g.start(false, 0, g.from, g.to);
-      g.pause();
-      g.goToFrame(g.from);
+  private prepareLevelGlb(loaded: ISceneLoaderAsyncResult, id: LevelId): LevelPack {
+    const meta = LEVEL_META[id];
+    for (const group of loaded.animationGroups) {
+      group.stop();
+      group.reset();
+      group.loopAnimation = false;
+      group.pause();
+    }
+    const explodeGroup =
+      loaded.animationGroups.find((g) => /teardown/i.test(g.name)) ?? loaded.animationGroups[0] ?? null;
+    if (explodeGroup) {
+      explodeGroup.start(false, 0, explodeGroup.from, explodeGroup.to);
+      explodeGroup.pause();
+      explodeGroup.goToFrame(explodeGroup.from);
     }
 
-    const wrap = new TransformNode("phoneWrap", this.scene);
-    const spin = new TransformNode("phoneSpin", this.scene);
+    const wrap = new TransformNode(meta.wrap, this.scene);
+    const spin = new TransformNode(meta.spin, this.scene);
     spin.parent = wrap;
     const glbRoot = loaded.meshes[0];
     if (glbRoot) {
       glbRoot.parent = spin;
-      glbRoot.name = "phoneModel";
+      glbRoot.name = meta.model;
     }
-    this.phoneWrap = wrap;
-    this.phoneSpin = spin;
+
+    const isMine = (mesh: AbstractMesh) => {
+      let n: Node | null = mesh;
+      while (n) {
+        if (n === wrap) return true;
+        n = n.parent;
+      }
+      return false;
+    };
 
     spin.computeWorldMatrix(true);
-    const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const extents = this.scene.getWorldExtends((m) => isMine(m) && !!m.getTotalVertices());
     const size = extents.max.subtract(extents.min);
     const longest = Math.max(size.x, size.y, size.z, 0.001);
     spin.scaling.setAll(PHONE_SPAN / longest);
-    spin.rotation.y = Math.PI / 2;
+    if (id === "phone") spin.rotation.y = Math.PI / 2;
     spin.computeWorldMatrix(true);
-    const b2 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const b2 = this.scene.getWorldExtends((m) => isMine(m) && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
     if (glbRoot) {
       const inv = spin.getWorldMatrix().clone().invert();
       glbRoot.position.subtractInPlace(Vector3.TransformCoordinates(center, inv));
     }
     spin.computeWorldMatrix(true);
-    const b3 = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
-    this.phoneSize = b3.max.subtract(b3.min);
+    if (id === "phone") {
+      const b3 = this.scene.getWorldExtends((m) => isMine(m) && !!m.getTotalVertices());
+      this.phoneSize = b3.max.subtract(b3.min);
+    }
 
-    this.phoneMeshes = [];
-    this.restLocal.clear();
+    const pack: LevelPack = {
+      id,
+      wrap,
+      spin,
+      meshes: [],
+      explodeGroup,
+      explodeNodes: [],
+      explodeRest: new Map(),
+      explodePose: new Map(),
+      restLocal: new Map(),
+      hubScale: new Vector3(1, 1, 1),
+      explodeT: 0,
+      explodeGoal: 0,
+      exploded: false,
+      explodeDone: false,
+    };
+
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
     for (const mesh of this.scene.meshes) {
-      if (!this.isPhonePart(mesh) || !mesh.getTotalVertices()) continue;
+      if (!isMine(mesh) || !mesh.getTotalVertices()) continue;
       mesh.isPickable = true;
       mesh.metadata = { ...(mesh.metadata ?? {}), xxr: "level" };
-      this.phoneMeshes.push(mesh);
-      this.restLocal.set(mesh.uniqueId, mesh.position.clone());
+      pack.meshes.push(mesh);
+      pack.restLocal.set(mesh.uniqueId, mesh.position.clone());
       const mat = mesh.material;
       if (mat instanceof PBRMaterial) {
         mat.directIntensity = 1.7;
@@ -658,14 +686,12 @@ export class Game {
       }
     }
 
-    if (this.explodeGroup) this.captureExplodePoses(this.explodeGroup);
-
-    this.explodeT = 0;
-    this.explodeGoal = 0;
-    this.explodeDone = false;
-    wrap.position.set(0, 0.16, ORBIT_RADIUS);
-    this.phoneHubScale.copyFrom(wrap.scaling);
+    if (explodeGroup) this.captureExplodePoses(explodeGroup, pack);
+    wrap.position.set(0, meta.y, ORBIT_RADIUS);
+    pack.hubScale.copyFrom(wrap.scaling);
     this.captureNativeScale(wrap);
+    this.packs.set(id, pack);
+    return pack;
   }
 
   private capturingExplode = false;
