@@ -475,11 +475,58 @@ export class Game {
       }
     }
 
+    if (this.explodeGroup) this.captureExplodePoses(this.explodeGroup);
+
     this.explodeT = 0;
     this.explodeGoal = 0;
     this.explodeDone = false;
     wrap.position.set(0, 0.16, ORBIT_RADIUS);
     this.phoneHubScale.copyFrom(wrap.scaling);
+  }
+
+  private captureExplodePoses(g: AnimationGroup) {
+    this.explodeNodes = [];
+    this.explodeRest.clear();
+    this.explodePose.clear();
+    const seen = new Set<number>();
+    for (const ta of g.targetedAnimations) {
+      const node = ta.target as TransformNode | null;
+      if (!node?.position || seen.has(node.uniqueId)) continue;
+      seen.add(node.uniqueId);
+      this.explodeNodes.push(node);
+      this.explodeRest.set(node.uniqueId, node.position.clone());
+    }
+    if (!this.explodeNodes.length) return;
+
+    const span = g.to - g.from;
+    const cap = g.from + span * 0.92;
+    let peakFrame = g.from;
+    let peakScore = -1;
+    const steps = 48;
+    for (let i = 0; i <= steps; i++) {
+      const frame = Math.min(cap, g.from + span * (i / steps));
+      g.goToFrame(frame);
+      let score = 0;
+      for (const node of this.explodeNodes) {
+        const rest = this.explodeRest.get(node.uniqueId);
+        if (rest) score += Vector3.Distance(node.position, rest);
+      }
+      if (score > peakScore) {
+        peakScore = score;
+        peakFrame = frame;
+      }
+    }
+
+    g.goToFrame(peakFrame);
+    for (const node of this.explodeNodes) {
+      this.explodePose.set(node.uniqueId, node.position.clone());
+    }
+    g.goToFrame(g.from);
+    g.pause();
+    for (const node of this.explodeNodes) {
+      const rest = this.explodeRest.get(node.uniqueId);
+      if (rest) node.position.copyFrom(rest);
+    }
   }
 
   private isSkyMesh(mesh: AbstractMesh) {
