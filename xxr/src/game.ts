@@ -233,28 +233,61 @@ export class Game {
       this.keys.clear();
       this.dragging = false;
       this.lookPtr = null;
+      this.ptrs.clear();
+      this.pinching = false;
     });
 
     this.canvas.addEventListener("pointerdown", (e) => {
       if (!playable(this.phase)) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
       e.preventDefault();
+      this.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      unlockAudio();
+      if (this.ptrs.size >= 2) {
+        this.pinching = true;
+        this.dragging = false;
+        this.lookPtr = null;
+        this.pinchDist = this.pointerSpan();
+        return;
+      }
       this.dragging = true;
       this.lookPtr = e.pointerId;
       this.lastPtr = { x: e.clientX, y: e.clientY };
-      this.canvas.setPointerCapture(e.pointerId);
-      unlockAudio();
     });
     const endLook = (e: PointerEvent) => {
-      if (e.pointerId !== this.lookPtr) return;
-      this.dragging = false;
-      this.lookPtr = null;
+      this.ptrs.delete(e.pointerId);
+      if (this.ptrs.size < 2) this.pinching = false;
+      if (e.pointerId === this.lookPtr) {
+        this.dragging = false;
+        this.lookPtr = null;
+      }
+      if (this.ptrs.size === 1 && !this.pinching) {
+        const [id, p] = [...this.ptrs.entries()][0];
+        this.dragging = true;
+        this.lookPtr = id;
+        this.lastPtr = { x: p.x, y: p.y };
+      }
+      if (this.ptrs.size === 0) {
+        this.dragging = false;
+        this.lookPtr = null;
+      }
     };
     this.canvas.addEventListener("pointerup", endLook);
     this.canvas.addEventListener("pointercancel", endLook);
-    this.canvas.addEventListener("lostpointercapture", endLook);
     this.canvas.addEventListener("pointermove", (e) => {
-      if (!playable(this.phase) || !this.dragging || e.pointerId !== this.lookPtr) return;
+      if (!playable(this.phase)) return;
+      const tracked = this.ptrs.get(e.pointerId);
+      if (tracked) {
+        tracked.x = e.clientX;
+        tracked.y = e.clientY;
+      }
+      if (this.pinching && this.ptrs.size >= 2) {
+        const dist = this.pointerSpan();
+        if (this.pinchDist > 12 && dist > 12) this.zoomInspect(dist / this.pinchDist);
+        this.pinchDist = dist;
+        return;
+      }
+      if (!this.dragging || e.pointerId !== this.lookPtr) return;
       const dx = e.clientX - this.lastPtr.x;
       const dy = e.clientY - this.lastPtr.y;
       this.lastPtr = { x: e.clientX, y: e.clientY };
@@ -262,6 +295,15 @@ export class Game {
       this.look.yaw += dx * sens;
       this.look.pitch = Math.max(-1.2, Math.min(1.2, this.look.pitch + dy * sens));
     });
+    this.canvas.addEventListener(
+      "wheel",
+      (e) => {
+        if (!playable(this.phase)) return;
+        e.preventDefault();
+        this.zoomInspect(e.deltaY < 0 ? 1.08 : 0.92);
+      },
+      { passive: false },
+    );
 
     this.bindJoystick();
   }
