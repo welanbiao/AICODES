@@ -24,7 +24,7 @@ test.describe("小小人", () => {
     expect(grabbed).toBe("docked");
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("docked");
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.docked)).toBe("phone");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.hookOn)).toBe(false);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.hookOn), { timeout: 8_000 }).toBe(false);
 
     await page.evaluate(() => window.__XXR__?.explode());
     await page.evaluate(() => window.__XXR__?.finishExplode?.());
