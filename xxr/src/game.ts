@@ -230,6 +230,8 @@ export class Game {
   private phoneSpin: TransformNode | null = null;
   private lv2: TransformNode | null = null;
   private lv3: TransformNode | null = null;
+  private lv4: TransformNode | null = null;
+  private lv5: TransformNode | null = null;
   private phoneAngle = 0;
   private skyRoot: TransformNode | null = null;
   private skyMin = new Vector3(-30, -30, -30);
