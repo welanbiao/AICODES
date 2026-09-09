@@ -850,17 +850,20 @@ export class Game {
 
   toggleExplode() {
     if (!this.worldReady) return;
-    const onPhone = this.phase === "interior" || this.docked?.id === "phone";
-    if (!onPhone) {
-      toast("先用钩爪锁定我的手机");
+    const pack = this.activePack();
+    if (!pack) {
+      toast("先用钩爪锁定关卡");
       return;
     }
-    if (this.exploded) this.foldTogether();
+    if (pack.exploded) this.foldTogether();
     else this.startExplode();
   }
 
   private startExplode() {
-    if (this.exploded) return;
+    const pack = this.activePack();
+    if (!pack || pack.exploded) return;
+    pack.exploded = true;
+    pack.explodeGoal = 1;
     this.exploded = true;
     this.explodeGoal = 1;
     this.syncHandButtons();
@@ -869,14 +872,43 @@ export class Game {
 
   foldTogether() {
     if (!this.worldReady) return;
-    const onPhone = this.phase === "interior" || this.docked?.id === "phone";
-    if (!onPhone) return;
-    if (!this.exploded && this.explodeT <= 0.02) return;
+    const pack = this.activePack();
+    if (!pack) return;
+    if (!pack.exploded && pack.explodeT <= 0.02) return;
+    pack.exploded = false;
+    pack.explodeGoal = 0;
+    pack.explodeDone = false;
     this.exploded = false;
     this.explodeGoal = 0;
     this.explodeDone = false;
     this.syncHandButtons();
     toast("零件合拢");
+  }
+
+  private aboutOpen() {
+    const el = document.querySelector("#screen-about") as HTMLElement | null;
+    return !!el && !el.hidden;
+  }
+
+  private fillAbout() {
+    const title = document.querySelector("#about-title") as HTMLElement | null;
+    const body = document.querySelector("#about-body") as HTMLElement | null;
+    const lines = CREDITS_TEXT.split("\n");
+    const head = lines[0]?.trim() || "小小人";
+    if (title) title.textContent = head;
+    if (body) body.textContent = lines.slice(1).join("\n").trim();
+  }
+
+  private openAbout() {
+    const el = document.querySelector("#screen-about") as HTMLElement | null;
+    if (!el) return;
+    el.hidden = false;
+  }
+
+  private closeAbout() {
+    const el = document.querySelector("#screen-about") as HTMLElement | null;
+    if (!el) return;
+    el.hidden = true;
   }
 
   lookAtPhone() {
