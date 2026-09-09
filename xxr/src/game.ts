@@ -295,6 +295,8 @@ export class Game {
       knob.style.top = `calc(29% + ${ny * 0.4}px)`;
     };
     base.addEventListener("pointerdown", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       pid = e.pointerId;
       unlockAudio();
       base.setPointerCapture(e.pointerId);
