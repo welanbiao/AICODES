@@ -20,6 +20,7 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("crosshair")).toBeVisible();
     expect(await page.getByTestId("level-label").textContent()).toContain("第一关");
     expect(await page.getByTestId("level-label").textContent()).toContain("我的手机");
+    expect(await page.locator(".credit").count()).toBe(0);
     expect(await page.evaluate(() => window.__XXR__?.hookOn)).toBe(false);
 
     const flowed = await page.evaluate(() => {
