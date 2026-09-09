@@ -1504,11 +1504,7 @@ export class Game {
   private zoomTargets() {
     const nodes: TransformNode[] = [];
     if (this.skyRoot) nodes.push(this.skyRoot);
-    if (this.phoneWrap) nodes.push(this.phoneWrap);
-    if (this.phase !== "interior") {
-      if (this.lv2) nodes.push(this.lv2);
-      if (this.lv3) nodes.push(this.lv3);
-    }
+    for (const pack of this.packs.values()) nodes.push(pack.wrap);
     return nodes;
   }
 
