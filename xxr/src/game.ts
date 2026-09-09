@@ -872,7 +872,6 @@ export class Game {
     pack.explodeGoal = 0;
     pack.explodeDone = false;
     this.exploded = false;
-    this.explodeGoal = 0;
     this.explodeDone = false;
     this.syncHandButtons();
     toast("零件合拢");
