@@ -880,10 +880,12 @@ declare global {
       armsOn?: boolean;
       armMeshes?: number;
       wrist?: number[];
+      handState?: string;
       identify: () => void;
       fire: () => void;
       explode: () => void;
       lookAtPhone: () => void;
+      home: () => void;
       tryMove: (x: number, y: number, z: number) => number[];
     };
   }

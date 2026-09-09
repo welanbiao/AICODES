@@ -60,5 +60,9 @@ test.describe("小小人", () => {
     expect(Math.abs(clamped[1])).toBeLessThanOrEqual(limit + 2);
     expect(Math.abs(clamped[2])).toBeLessThanOrEqual(limit + 2);
     expect(Math.abs(clamped[0])).toBeLessThan(80);
+
+    await page.getByTestId("btn-home").click();
+    const home = await page.evaluate(() => window.__XXR__?.pos ?? [1, 1, 1]);
+    expect(Math.hypot(home[0], home[1], home[2])).toBeLessThan(0.05);
   });
 });
