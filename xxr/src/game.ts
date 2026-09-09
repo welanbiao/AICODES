@@ -633,6 +633,15 @@ export class Game {
     $<HTMLElement>("#play-status").textContent = `锁定 ${{ phone: "我的手机", laptop: "我的电脑", earbuds: "无线耳机" }[level.id]}`;
     this.syncHandButtons();
     playSfx("fire");
+    window.setTimeout(() => {
+      if (this.riding) {
+        this.fpsCam.position.copyFrom(this.riding.to);
+        this.look.yaw = this.riding.lookYaw;
+        this.clampPlayer();
+        this.riding = null;
+      }
+      if (this.phase === "docked") this.finishDock();
+    }, 850);
   }
 
   recallHand(silent = false) {
