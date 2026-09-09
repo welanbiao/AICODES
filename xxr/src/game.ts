@@ -174,6 +174,7 @@ export class Game {
   }
 
   dispose() {
+    stopAudio();
     this.engine.dispose();
   }
 
