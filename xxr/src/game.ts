@@ -1453,6 +1453,8 @@ export class Game {
     this.phoneWrap.scaling.scaleInPlace(INTERIOR_SPAN / longest);
     this.phoneWrap.computeWorldMatrix(true);
     this.setZoomBase(this.phoneWrap);
+    this.viewZoom = 1;
+    this.applyViewFov();
     const after = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const center = after.min.add(after.max).scale(0.5);
     this.setSideLevelsVisible(false);
