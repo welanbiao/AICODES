@@ -1570,7 +1570,15 @@ export class Game {
     this.updateHookRope();
     this.applyLook();
     this.updateLabels();
+    this.syncHeadlamp();
     if (this.phase !== "interior") this.clampPlayer();
+  }
+
+  private syncHeadlamp() {
+    const id = this.activePack()?.id;
+    const close = this.phase === "docked" || this.phase === "interior";
+    this.headlamp.intensity = close && id && id !== "phone" ? 1.25 : 5.4;
+    this.headlamp.range = close && id && id !== "phone" ? 14 : 28;
   }
 
   private clampToSky(p: Vector3) {
