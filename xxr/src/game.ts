@@ -483,14 +483,24 @@ export class Game {
       let skyP = 0;
       let armsP = 0;
       let phoneP = 0;
-      const bump = () => this.setLoad(skyP * 0.16 + armsP * 0.22 + phoneP * 0.6);
+      let laptopP = 0;
+      let pcP = 0;
+      const bump = () => this.setLoad(skyP * 0.1 + armsP * 0.12 + phoneP * 0.34 + laptopP * 0.28 + pcP * 0.16);
 
       const skyJob = SceneLoader.ImportMeshAsync("", "/models/", "skybox.glb", this.scene, (ev) => {
         skyP = loadProgress(ev);
         bump();
       });
-      const phoneJob = SceneLoader.ImportMeshAsync("", "/models/", "iphone_12_teardown.glb", this.scene, (ev) => {
+      const phoneJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.phone.file, this.scene, (ev) => {
         phoneP = loadProgress(ev);
+        bump();
+      });
+      const laptopJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.laptop.file, this.scene, (ev) => {
+        laptopP = loadProgress(ev);
+        bump();
+      });
+      const pcJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.earbuds.file, this.scene, (ev) => {
+        pcP = loadProgress(ev);
         bump();
       });
       const armsJob = loadFpsArms(this.scene, this.fpsCam, (ev) => {
@@ -501,11 +511,13 @@ export class Game {
         return createArms(this.scene, this.fpsCam);
       });
 
-      const [skyRes, phoneRes, arms] = await Promise.all([skyJob, phoneJob, armsJob]);
+      const [skyRes, phoneRes, laptopRes, pcRes, arms] = await Promise.all([skyJob, phoneJob, laptopJob, pcJob, armsJob]);
       this.arms = arms;
       this.prepareSkybox(skyRes);
-      this.preparePhone(phoneRes);
-      this.makeLevelOrbs();
+      this.phoneWrap = this.prepareLevelGlb(phoneRes, "phone").wrap;
+      this.phoneSpin = this.packs.get("phone")?.spin ?? null;
+      this.lv2 = this.prepareLevelGlb(laptopRes, "laptop").wrap;
+      this.lv3 = this.prepareLevelGlb(pcRes, "earbuds").wrap;
       this.look.yaw = 0;
       this.look.pitch = -0.08;
       this.fpsCam.position.set(0, 0, 0);
