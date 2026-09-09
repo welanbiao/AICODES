@@ -1160,21 +1160,22 @@ export class Game {
   }
 
   private tryAutoExplode() {
-    if (this.phase !== "docked" || this.docked?.id !== "phone" || !this.phoneWrap) {
+    const pack = this.phase === "docked" ? this.activePack() : null;
+    if (!pack) {
       this.nearExplode = false;
       return;
     }
-    const dist = Vector3.Distance(this.fpsCam.position, this.phoneWrap.getAbsolutePosition());
+    const dist = Vector3.Distance(this.fpsCam.position, pack.wrap.getAbsolutePosition());
     const near = dist < AUTO_EXPLODE_DIST;
-    if (near && !this.nearExplode && !this.exploded) this.startExplode();
+    if (near && !this.nearExplode && !pack.exploded) this.startExplode();
     this.nearExplode = near;
   }
 
-  private setSideLevelsVisible(on: boolean) {
-    for (const node of [this.lv2, this.lv3]) {
-      if (!node) continue;
-      node.setEnabled(on);
-      for (const mesh of node.getChildMeshes(false)) mesh.isVisible = on;
+  private setSideLevelsVisible(on: boolean, keep?: LevelId) {
+    for (const pack of this.packs.values()) {
+      if (keep && pack.id === keep) continue;
+      pack.wrap.setEnabled(on);
+      for (const mesh of pack.meshes) mesh.isVisible = on;
     }
   }
 
