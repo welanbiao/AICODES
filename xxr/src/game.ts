@@ -176,6 +176,8 @@ export class Game {
   private explodeGoal = 0;
   private explodeDone = false;
   private nearExplode = false;
+  private packs = new Map<LevelId, LevelPack>();
+  private interiorId: LevelId | null = null;
   private phoneWrap: TransformNode | null = null;
   private phoneSpin: TransformNode | null = null;
   private phoneMeshes: AbstractMesh[] = [];
