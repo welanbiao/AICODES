@@ -107,5 +107,4 @@ export const PC_CATALOG: Record<string, PartInfo> = {
   lampu: p("指示灯", "显示电源与工作状态", "LED", "机箱里的小灯。"),
   BezierCurve: p("电源线 / 数据线", "模块之间走线", "铜线 + 绝缘皮", "弯曲的线缆网格。"),
   NurbsPath: p("线束", "成组走线", "电缆束", "另一组弯曲线缆。"),
-  Cylinder_pc: p("圆柱支架", "支撑或充当轴", "金属柱", "机箱里的圆柱体。"),
 };
