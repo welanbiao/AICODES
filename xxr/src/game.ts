@@ -1019,12 +1019,26 @@ export class Game {
 
   private syncHandButtons() {
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
-    const canExplode = this.phase === "interior" || this.docked?.id === "phone";
-    $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').hidden = !canExplode;
+    const explodeBtn = $<HTMLButtonElement>('[data-testid="btn-explode-fps"]');
+    const onPhone = this.phase === "interior" || this.docked?.id === "phone";
+    const canFold = onPhone && (this.exploded || this.explodeT > 0.02);
+    explodeBtn.textContent = "合拢";
+    explodeBtn.hidden = !canFold;
     const canEnter = this.explodeDone && this.docked?.id === "phone" && this.phase === "docked";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
     const joy = $<HTMLElement>("#joystick");
     if (joy) joy.hidden = !playable(this.phase);
+  }
+
+  private tryAutoExplode() {
+    if (this.phase !== "docked" || this.docked?.id !== "phone" || !this.phoneWrap) {
+      this.nearExplode = false;
+      return;
+    }
+    const dist = Vector3.Distance(this.fpsCam.position, this.phoneWrap.getAbsolutePosition());
+    const near = dist < AUTO_EXPLODE_DIST;
+    if (near && !this.nearExplode && !this.exploded) this.startExplode();
+    this.nearExplode = near;
   }
 
   private setSideLevelsVisible(on: boolean) {
