@@ -279,6 +279,8 @@ button {
   cursor: pointer;
   pointer-events: auto;
 }
+
+button.primary {
   background: linear-gradient(180deg, #3ee0c8, #1aa894);
   color: #06221d;
   border-color: transparent;
