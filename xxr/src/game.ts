@@ -473,7 +473,9 @@ export class Game {
 
     this.explodeT = 0;
     this.explodeGoal = 0;
+    this.explodeDone = false;
     wrap.position.set(0, 0.16, ORBIT_RADIUS);
+    this.phoneHubScale.copyFrom(wrap.scaling);
   }
 
   private isSkyMesh(mesh: AbstractMesh) {
@@ -486,10 +488,15 @@ export class Game {
     return false;
   }
 
-  private canLatch(mesh: AbstractMesh) {
+  private isLevelMesh(mesh: AbstractMesh) {
     if (!mesh.isPickable || !mesh.isEnabled()) return false;
     if (this.isSkyMesh(mesh) || isAvatarMesh(mesh)) return false;
-    return this.isPhonePart(mesh);
+    if (mesh.metadata?.xxr === "level") return true;
+    return !!this.levelRootOf(mesh);
+  }
+
+  private canLatch(mesh: AbstractMesh) {
+    return this.isLevelMesh(mesh);
   }
 
   private isPhonePart(mesh: AbstractMesh) {
@@ -499,6 +506,17 @@ export class Game {
       n = n.parent;
     }
     return false;
+  }
+
+  private levelRootOf(mesh: AbstractMesh | Node | null): LevelRef | null {
+    let n: Node | null = mesh;
+    while (n) {
+      if (n.name === "phoneWrap" && this.phoneWrap) return { id: "phone", wrap: this.phoneWrap };
+      if (n.name === "level-laptop" && this.lv2) return { id: "laptop", wrap: this.lv2 };
+      if (n.name === "level-earbuds" && this.lv3) return { id: "earbuds", wrap: this.lv3 };
+      n = n.parent;
+    }
+    return null;
   }
 
   private makeLevelOrbs() {
