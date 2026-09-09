@@ -875,8 +875,7 @@ export class Game {
   private syncHandButtons() {
     const holstered = this.handState === "holstered";
     const moving = this.phase === "fps" || this.phase === "interior";
-    $<HTMLButtonElement>('[data-testid="btn-recall"]').hidden = holstered || this.handState === "reeling";
-    $<HTMLButtonElement>('[data-testid="btn-fire"]').hidden = false;
+    void holstered;
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
     const canExplode = this.phase === "interior" || this.docked?.id === "phone";
     $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').hidden = !canExplode;
