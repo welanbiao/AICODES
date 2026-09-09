@@ -946,7 +946,8 @@ export class Game {
   }
 
   private syncHandButtons() {
-    const moving = this.phase === "fps" || this.phase === "interior";
+    const moving = playable(this.phase);
+    void moving;
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
     const canExplode = this.phase === "interior" || this.docked?.id === "phone";
     $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').hidden = !canExplode;
