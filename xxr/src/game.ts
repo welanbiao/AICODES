@@ -1591,9 +1591,9 @@ export class Game {
       const a = this.phoneAngle + offset;
       node.position.set(cam.x + Math.sin(a) * ORBIT_RADIUS, cam.y + y, cam.z + Math.cos(a) * ORBIT_RADIUS);
     };
-    place(this.phoneWrap, 0, LEVEL_META.phone.y);
-    place(this.lv2, (Math.PI * 2) / 3, LEVEL_META.laptop.y);
-    place(this.lv3, (Math.PI * 4) / 3, LEVEL_META.earbuds.y);
+    for (const pack of this.packs.values()) {
+      place(pack.wrap, LEVEL_META[pack.id].orbit, LEVEL_META[pack.id].y);
+    }
     for (const pack of this.packs.values()) pack.spin.rotation.y += dt * SPIN_SPEED;
   }
 
