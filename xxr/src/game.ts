@@ -532,6 +532,11 @@ export class Game {
         const rest = this.explodeRest.get(node.uniqueId);
         if (rest) node.position.copyFrom(rest);
       }
+      g.stop();
+      for (const node of this.explodeNodes) {
+        const rest = this.explodeRest.get(node.uniqueId);
+        if (rest) node.position.copyFrom(rest);
+      }
     } finally {
       this.capturingExplode = false;
     }
