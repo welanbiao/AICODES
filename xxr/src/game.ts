@@ -885,6 +885,43 @@ export class Game {
     if (joy) joy.hidden = !moving;
   }
 
+  private setSideLevelsVisible(on: boolean) {
+    for (const node of [this.lv2, this.lv3]) {
+      if (!node) continue;
+      node.setEnabled(on);
+      for (const mesh of node.getChildMeshes(false)) mesh.isVisible = on;
+    }
+  }
+
+  private nearestAimedPart(): AbstractMesh | null {
+    this.fpsCam.getViewMatrix();
+    const fwd = this.fpsCam.getForwardRay(1).direction;
+    const origin = this.fpsCam.position;
+    let best: AbstractMesh | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+    let fallback: AbstractMesh | null = null;
+    let fallbackDist = Number.POSITIVE_INFINITY;
+    for (const mesh of this.phoneMeshes) {
+      if (!mesh.isEnabled() || !mesh.isVisible || mesh.getTotalVertices() < 3) continue;
+      const center = this.partCenter(mesh);
+      const to = center.subtract(origin);
+      const dist = to.length();
+      if (dist < 0.05) continue;
+      const dot = Vector3.Dot(fwd, to.scale(1 / dist));
+      if (dot > 0.22) {
+        const score = dot * 6 - dist * 0.015;
+        if (score > bestScore) {
+          bestScore = score;
+          best = mesh;
+        }
+      } else if (dist < fallbackDist) {
+        fallback = mesh;
+        fallbackDist = dist;
+      }
+    }
+    return best ?? fallback;
+  }
+
   private pickPart(): PickingInfo | null {
     const reach = this.phase === "interior" ? 80 : 28;
     const ray = this.fpsCam.getForwardRay(reach);
@@ -894,7 +931,15 @@ export class Game {
     const cy = this.canvas.clientHeight * 0.5;
     const screenHit = this.scene.pick(cx, cy, (m) => this.canLatch(m));
     if (screenHit?.hit && screenHit.pickedMesh) return screenHit;
-    if (this.phase === "interior") return null;
+    if (this.phase === "interior") {
+      const part = this.nearestAimedPart();
+      if (!part) return null;
+      const info = new PickingInfo();
+      info.hit = true;
+      info.pickedMesh = part;
+      info.distance = Vector3.Distance(this.fpsCam.position, this.partCenter(part));
+      return info;
+    }
     const aimed = this.aimLevel();
     if (!aimed) return null;
     const mesh = this.scene.meshes.find((m) => this.levelRootOf(m)?.id === aimed.id && !!m.getTotalVertices());
