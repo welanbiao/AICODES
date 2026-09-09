@@ -1699,15 +1699,29 @@ export class Game {
   }
 
   private finishExplodeNow() {
+    const pack = this.activePack();
+    if (pack) {
+      pack.exploded = true;
+      pack.explodeGoal = 1;
+      pack.explodeT = 1;
+      pack.explodeDone = true;
+    }
     this.exploded = true;
     this.explodeGoal = 1;
     this.explodeT = 1;
-    this.applyExplode(0);
     this.explodeDone = true;
+    this.applyExplode(0);
     this.syncHandButtons();
   }
 
   private finishFoldNow() {
+    const pack = this.activePack();
+    if (pack) {
+      pack.exploded = false;
+      pack.explodeGoal = 0;
+      pack.explodeT = 0;
+      pack.explodeDone = false;
+    }
     this.exploded = false;
     this.explodeGoal = 0;
     this.explodeT = 0;
