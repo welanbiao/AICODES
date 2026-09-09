@@ -555,9 +555,7 @@ export class Game {
   lookAtPhone() {
     if (!this.phoneWrap) return;
     this.phoneWrap.computeWorldMatrix(true);
-    const box = this.phoneWrap.getHierarchyBoundingVectors(true);
-    const center = box.min.add(box.max).scale(0.5);
-    const dir = center.subtract(this.fpsCam.position);
+    const dir = this.phoneWrap.getAbsolutePosition().subtract(this.fpsCam.position);
     const horiz = Math.max(0.001, Math.hypot(dir.x, dir.z));
     this.look.yaw = Math.atan2(dir.x, dir.z);
     this.look.pitch = clamp(-Math.atan2(dir.y, horiz), -1.2, 1.2);
