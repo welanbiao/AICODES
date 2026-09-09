@@ -522,6 +522,13 @@ export class Game {
         }
       }
 
+      if (peakScore < 0.05) {
+        this.explodeNodes = [];
+        this.explodeRest.clear();
+        this.explodePose.clear();
+        return;
+      }
+
       g.goToFrame(peakFrame);
       for (const node of this.explodeNodes) {
         this.explodePose.set(node.uniqueId, node.position.clone());
