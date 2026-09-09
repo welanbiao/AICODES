@@ -321,18 +321,21 @@ async function attachBatmanHook(scene: Scene, hook: TransformNode) {
       mesh.renderingGroupId = ARM_GROUP;
       if (mesh.material) mesh.material.backFaceCulling = false;
     }
+    glbRoot.parent = null;
     glbRoot.rotationQuaternion = null;
     glbRoot.rotation.setAll(0);
+    glbRoot.scaling.setAll(1);
     glbRoot.computeWorldMatrix(true);
     const b = glbRoot.getHierarchyBoundingVectors(true);
     const size = b.max.subtract(b.min);
     const longest = Math.max(size.x, size.y, size.z, 0.0001);
-    glbRoot.scaling.setAll(0.13 / longest);
+    glbRoot.scaling.setAll(0.1 / longest);
     glbRoot.computeWorldMatrix(true);
     const b2 = glbRoot.getHierarchyBoundingVectors(true);
     const center = b2.min.add(b2.max).scale(0.5);
-    glbRoot.position.copyFrom(new Vector3(0, 0, -0.04).subtract(center));
+    glbRoot.position.copyFrom(new Vector3(0, 0, -0.03).subtract(center));
     if (size.z >= size.x && size.z >= size.y) glbRoot.rotation.x = Math.PI;
+    glbRoot.parent = hook;
   } catch (err) {
     console.warn("batman_hook.glb failed", err);
     const blade = mat(scene, "xxrHookBlade", new Color3(0.55, 0.58, 0.62), 0.85, 0.08);
