@@ -164,15 +164,12 @@ h1 {
 }
 
 .play-actions {
+  pointer-events: none;
   position: absolute;
-  left: 50%;
-  bottom: calc(16px * var(--ui) + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  width: min(560px, calc(100% - 24px));
+  right: calc(10px * var(--ui) + env(safe-area-inset-right));
+  bottom: calc(12px * var(--ui) + env(safe-area-inset-bottom));
+  width: calc(248px * var(--ui));
+  height: calc(248px * var(--ui));
 }
 
 .float-label {
