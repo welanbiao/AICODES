@@ -1332,15 +1332,18 @@ export class Game {
   private resolveName(mesh: AbstractMesh): string {
     let n: Node | null = mesh;
     let fallback = mesh.name;
+    let generic: string | null = null;
+    const genericKeys = new Set(["Object", "Cube", "Cylinder", "Plane", "Circle"]);
     while (n) {
       const raw = partKeyFromName(n.name);
       if (raw && raw !== "__root__" && !Object.values(LEVEL_META).some((m) => m.wrap === raw || m.spin === raw || m.model === raw)) {
-        fallback = raw;
-        if (raw in CATALOG || raw === "__screw__") return n.name;
+        fallback = n.name;
+        if (raw === "__screw__" || (raw in CATALOG && !genericKeys.has(raw))) return n.name;
+        if (raw in CATALOG) generic ??= n.name;
       }
       n = n.parent;
     }
-    return fallback;
+    return generic ?? fallback;
   }
 
   private pulseScanner() {
