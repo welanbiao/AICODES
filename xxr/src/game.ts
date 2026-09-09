@@ -941,12 +941,7 @@ export class Game {
       holsterHook(this.arms);
       this.handState = "holstered";
     }
-    if (!level) {
-      this.phase = "fps";
-      setPhase("fps");
-      this.syncHandButtons();
-      return;
-    }
+    if (!level) return;
     this.docked = level;
     this.phase = "docked";
     setPhase("docked");
