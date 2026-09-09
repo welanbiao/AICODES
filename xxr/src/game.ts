@@ -231,7 +231,7 @@ export class Game {
       this.dragging = false;
     });
     window.addEventListener("pointermove", (e) => {
-      if (this.phase !== "fps" && this.phase !== "observe") return;
+      if (!playable(this.phase)) return;
       let dx = 0;
       let dy = 0;
       if (document.pointerLockElement === this.canvas) {
