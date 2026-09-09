@@ -702,17 +702,19 @@ export class Game {
 
     let best: { level: LevelRef; score: number } | null = null;
     const fwd = ray.direction;
+    if (fwd.lengthSquared() < 1e-8) return null;
     for (const level of this.eachLevel()) {
       level.wrap.computeWorldMatrix(true);
-      const box = level.wrap.getHierarchyBoundingVectors(true);
-      const center = box.min.add(box.max).scale(0.5);
+      const center = level.wrap.getAbsolutePosition();
       const to = center.subtract(ray.origin);
       const dist = to.length();
       if (dist < 0.15 || dist > 20) continue;
       const dir = to.scale(1 / dist);
       const dot = Vector3.Dot(fwd, dir);
-      const hitsBox = ray.intersectsBoxMinMax(box.min, box.max);
-      if (!hitsBox && dot < 0.78) continue;
+      const box = level.wrap.getHierarchyBoundingVectors(true);
+      const boxOk = Number.isFinite(box.min.x) && Number.isFinite(box.max.x) && box.max.x >= box.min.x;
+      const hitsBox = boxOk && ray.intersectsBoxMinMax(box.min, box.max);
+      if (!hitsBox && dot < 0.72) continue;
       const score = (hitsBox ? 2 : 1) * dot / Math.max(dist, 0.4);
       if (!best || score > best.score) best = { level, score };
     }
