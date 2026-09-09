@@ -788,6 +788,11 @@ export class Game {
 
   private catchPart(hit: PickingInfo) {
     if (!this.arms || !hit.pickedPoint || !hit.pickedMesh) return;
+    if (this.isSkyMesh(hit.pickedMesh) || !this.canLatch(hit.pickedMesh)) {
+      playSfx("miss");
+      this.recallHand(true);
+      return;
+    }
     const hook = this.arms.rightHand;
     hook.position.copyFrom(hit.pickedPoint);
     aimHook(hook, hit.pickedPoint.subtract(this.arms.wristAnchor.getAbsolutePosition()));
