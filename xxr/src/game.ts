@@ -140,6 +140,8 @@ export class Game {
   private ptrs = new Map<number, { x: number; y: number }>();
   private pinchDist = 0;
   private pinching = false;
+  private viewZoom = 1;
+  private readonly baseFov = 1.22;
 
   constructor(canvas: HTMLCanvasElement) {
     this.gen = ++gameGen;
