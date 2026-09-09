@@ -772,7 +772,12 @@ export class Game {
   }
 
   private updateLabels() {
-    if (this.phase === "loading") return;
+    if (this.phase === "loading" || this.phase === "interior") {
+      $<HTMLElement>('[data-testid="level-label"]').style.opacity = "0";
+      $<HTMLElement>('[data-testid="level-2-label"]').style.opacity = "0";
+      $<HTMLElement>('[data-testid="level-3-label"]').style.opacity = "0";
+      return;
+    }
     if (this.phoneWrap) {
       this.projectLabel($<HTMLElement>('[data-testid="level-label"]'), this.phoneWrap.position.add(new Vector3(0, -0.58, 0)));
     }
