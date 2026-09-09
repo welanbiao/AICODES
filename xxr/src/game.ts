@@ -921,12 +921,15 @@ export class Game {
   }
 
   private standInFront(wrap: TransformNode) {
-    const dir = wrap.position.subtract(this.fpsCam.position);
+    wrap.computeWorldMatrix(true);
+    const box = wrap.getHierarchyBoundingVectors(true);
+    const center = box.min.add(box.max).scale(0.5);
+    const dir = center.subtract(this.fpsCam.position);
     dir.y = 0;
     if (dir.lengthSquared() < 1e-6) dir.set(0, 0, 1);
     dir.normalize();
-    const stand = this.clampToSky(wrap.position.subtract(dir.scale(STAND_DIST)));
-    stand.y = wrap.position.y + 0.08;
+    const stand = this.clampToSky(center.subtract(dir.scale(STAND_DIST)));
+    stand.y = center.y + 0.08;
     this.clampToSky(stand);
     return { stand, yaw: Math.atan2(dir.x, dir.z) };
   }
