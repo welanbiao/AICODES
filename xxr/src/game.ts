@@ -1682,8 +1682,6 @@ export class Game {
     this.setSideLevelsVisible(true);
     if (resetExplode) {
       this.exploded = false;
-      this.explodeGoal = 0;
-      this.explodeT = 0;
       this.explodeDone = false;
     }
   }
