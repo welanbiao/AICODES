@@ -283,9 +283,15 @@ export class Game {
       if (e.code === "KeyF") this.fireHand();
       if (e.code === "KeyR") this.recallHand();
       if (e.code === "KeyX") this.foldTogether();
-      if (e.code === "KeyG") this.enterPhone();
+      if (e.code === "KeyG") this.enterInterior();
       if (e.code === "KeyH" || e.code === "Home") this.returnToCenter();
-      if (e.code === "Escape" && this.phase === "docked") this.dismount();
+      if (e.code === "Escape") {
+        if (this.aboutOpen()) {
+          this.closeAbout();
+          return;
+        }
+        if (this.phase === "docked") this.dismount();
+      }
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
     window.addEventListener("blur", () => {
