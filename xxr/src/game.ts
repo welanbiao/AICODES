@@ -1614,21 +1614,24 @@ export class Game {
   }
 
   private updateLabels() {
+    const ids = ["level-label", "level-2-label", "level-3-label", "level-4-label", "level-5-label"] as const;
     if (this.phase === "loading" || this.phase === "interior") {
-      $<HTMLElement>('[data-testid="level-label"]').style.opacity = "0";
-      $<HTMLElement>('[data-testid="level-2-label"]').style.opacity = "0";
-      $<HTMLElement>('[data-testid="level-3-label"]').style.opacity = "0";
+      for (const id of ids) {
+        const el = document.querySelector(`[data-testid="${id}"]`) as HTMLElement | null;
+        if (el) el.style.opacity = "0";
+      }
       return;
     }
-    if (this.phoneWrap) {
-      this.projectLabel($<HTMLElement>('[data-testid="level-label"]'), this.phoneWrap.position.add(new Vector3(0, -0.58, 0)));
-    }
-    if (this.lv2) {
-      this.projectLabel($<HTMLElement>('[data-testid="level-2-label"]'), this.lv2.position.add(new Vector3(0, -0.32, 0)));
-    }
-    if (this.lv3) {
-      this.projectLabel($<HTMLElement>('[data-testid="level-3-label"]'), this.lv3.position.add(new Vector3(0, -0.32, 0)));
-    }
+    const show = (sel: string, node: TransformNode | null, dy: number) => {
+      const el = document.querySelector(sel) as HTMLElement | null;
+      if (!el || !node) return;
+      this.projectLabel(el, node.position.add(new Vector3(0, dy, 0)));
+    };
+    show('[data-testid="level-label"]', this.phoneWrap, -0.58);
+    show('[data-testid="level-2-label"]', this.lv2, -0.32);
+    show('[data-testid="level-3-label"]', this.lv3, -0.32);
+    show('[data-testid="level-4-label"]', this.lv4, -0.58);
+    show('[data-testid="level-5-label"]', this.lv5, -0.58);
   }
 
   private tick() {
