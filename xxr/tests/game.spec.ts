@@ -33,7 +33,7 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("btn-enter")).toBeVisible();
 
     await page.getByTestId("btn-enter").click();
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.().phase ?? window.__XXR__?.phase)).toBe("interior");
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.()?.phase ?? window.__XXR__?.phase)).toBe("interior");
 
     await page.evaluate(() => window.__XXR__?.lookAtPhone?.());
     await page.waitForTimeout(120);
