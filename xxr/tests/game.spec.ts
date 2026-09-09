@@ -87,14 +87,14 @@ test.describe("小小人", () => {
 
     const interiorZoom = await page.evaluate(() => {
       const x = window.__XXR__;
-      if (!x?.phoneSpan || !x.pinch) return { ok: false, before: 0, after: 0 };
-      const before = x.phoneSpan().longest;
-      const ok = x.pinch(1.35);
-      const after = x.phoneSpan().longest;
+      if (!x?.pinch) return { ok: false, before: 0, after: 0 };
+      const before = x.fov?.() ?? 0;
+      const ok = x.pinch(1.4);
+      const after = x.fov?.() ?? 0;
       return { ok, before, after };
     });
     expect(interiorZoom.ok).toBe(true);
-    expect(interiorZoom.after).toBeGreaterThan(interiorZoom.before * 1.15);
+    expect(interiorZoom.after).toBeLessThan(interiorZoom.before * 0.92);
 
     const yanked = await page.evaluate(() => {
       const x = window.__XXR__;
