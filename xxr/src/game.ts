@@ -364,11 +364,7 @@ export class Game {
     base.addEventListener("lostpointercapture", end);
   }
 
-  private setLoad(p: number) {
-    const pct = Math.round(clamp(p, 0, 1) * 100);
-    $<HTMLElement>("#load-bar").style.width = `${pct}%`;
-    $<HTMLElement>("#load-pct").textContent = `${pct}%`;
-  }
+  private setLoad(_p: number) {}
 
   private async boot() {
     this.phase = "loading";
