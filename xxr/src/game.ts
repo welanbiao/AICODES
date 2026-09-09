@@ -24,6 +24,7 @@ import "@babylonjs/loaders/glTF";
 import {
   createArms,
   holsterHook,
+  setHookVisible,
   updateRope,
   setClaws,
   aimHook,
