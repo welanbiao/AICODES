@@ -247,7 +247,7 @@ h1 {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  font-size: calc(11px * var(--ui) * 2 / 3);
+  font-size: calc(11px * var(--ui) * 8 / 9);
   user-select: none;
   touch-action: manipulation;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
