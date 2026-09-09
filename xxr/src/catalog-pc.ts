@@ -1,5 +1,9 @@
-import type { PartInfo } from "./catalog";
-// 仅类型导入，避免与 catalog.ts 循环取值。
+type PartInfo = {
+  name: string;
+  role: string;
+  material: string;
+  note: string;
+};
 
 const p = (name: string, role: string, material: string, note: string): PartInfo => ({
   name,
