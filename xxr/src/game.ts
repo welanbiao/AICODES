@@ -422,8 +422,9 @@ export class Game {
       g.stop();
       g.reset();
       g.loopAnimation = false;
-      g.goToFrame(g.from);
+      g.start(false, 0, g.from, g.to);
       g.pause();
+      g.goToFrame(g.from);
     }
 
     const wrap = new TransformNode("phoneWrap", this.scene);
