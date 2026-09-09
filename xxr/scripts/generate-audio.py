@@ -1,3 +1,4 @@
+from array import array
 import math
 import random
 import struct
