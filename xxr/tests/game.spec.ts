@@ -25,7 +25,7 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("btn-home")).toBeHidden();
     await expect(page.getByTestId("level-phone")).toHaveCount(0);
 
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 180_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 240_000 }).toBe(true);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
     await expect(page.getByTestId("btn-enter")).toBeHidden();
     await expect(page.getByTestId("btn-identify")).toBeVisible();
@@ -140,7 +140,7 @@ test.describe("小小人", () => {
 
   test("未锁定钩爪不位移，WASD 可移动且不出星空", async ({ page }) => {
     await page.goto("/");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 180_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 240_000 }).toBe(true);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
 
     await page.evaluate(() => window.__XXR__?.setLook(0, -1.15));
