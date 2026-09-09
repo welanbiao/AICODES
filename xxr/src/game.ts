@@ -1067,10 +1067,13 @@ export class Game {
       const t = easeInOut(Math.min(1, this.riding.t));
       Vector3.LerpToRef(this.riding.from, this.riding.to, t, this.fpsCam.position);
       this.look.yaw = this.riding.lookYaw;
+      if (this.riding.lookPitch != null) this.look.pitch = this.riding.lookPitch;
       this.clampPlayer();
       if (this.riding.t >= 1) {
+        const interiorYank = this.phase === "interior";
         this.riding = null;
-        this.finishDock();
+        if (interiorYank) this.finishPartYank();
+        else this.finishDock();
       }
     } else if (this.phase === "fps" || this.phase === "interior") this.moveFps(dt);
     if (this.handState === "flying") this.tickHand(dt);
