@@ -1709,8 +1709,6 @@ export class Game {
       pack.explodeDone = false;
     }
     this.exploded = false;
-    this.explodeGoal = 0;
-    this.explodeT = 0;
     this.explodeDone = false;
     this.applyExplode(0);
     this.syncHandButtons();
