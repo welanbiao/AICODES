@@ -1474,12 +1474,10 @@ export class Game {
       const a = this.phoneAngle + offset;
       node.position.set(cam.x + Math.sin(a) * ORBIT_RADIUS, cam.y + y, cam.z + Math.cos(a) * ORBIT_RADIUS);
     };
-    place(this.phoneWrap, 0, 0.16);
-    place(this.lv2, (Math.PI * 2) / 3, 0.02);
-    place(this.lv3, (Math.PI * 4) / 3, 0.02);
-    if (this.phoneSpin) this.phoneSpin.rotation.y += dt * SPIN_SPEED;
-    if (this.lv2) this.lv2.rotation.y += dt * 0.175;
-    if (this.lv3) this.lv3.rotation.y += dt * 0.175;
+    place(this.phoneWrap, 0, LEVEL_META.phone.y);
+    place(this.lv2, (Math.PI * 2) / 3, LEVEL_META.laptop.y);
+    place(this.lv3, (Math.PI * 4) / 3, LEVEL_META.earbuds.y);
+    for (const pack of this.packs.values()) pack.spin.rotation.y += dt * SPIN_SPEED;
   }
 
   private projectLabel(el: HTMLElement, world: Vector3) {
