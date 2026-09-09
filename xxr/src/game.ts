@@ -675,6 +675,7 @@ export class Game {
     node.computeWorldMatrix(true);
     const target = node.getAbsolutePosition();
     this.fpsCam.setTarget(target);
+    this.fpsCam.rotationQuaternion = null;
     this.look.yaw = this.fpsCam.rotation.y;
     this.look.pitch = clamp(this.fpsCam.rotation.x, -1.2, 1.2);
     this.applyLook();
