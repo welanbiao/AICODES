@@ -1,3 +1,4 @@
+import { HUMAN_ALIASES, HUMAN_CATALOG } from "./catalog-human";
 import { PC_CATALOG } from "./catalog-pc";
 
 export type PartInfo = {

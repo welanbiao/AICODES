@@ -10,6 +10,8 @@ const MX_FILES = [
   "iphone_12_teardown.glb",
   "lumen_64_spark__computer.glb",
   "computer.glb",
+  "connor_human.glb",
+  "north_human.glb",
 ] as const;
 
 function copyIfNeeded(src: string, dest: string) {
