@@ -229,6 +229,11 @@ export function setClaws(claws: TransformNode[], open: number) {
   });
 }
 
+export function setHookVisible(arms: Arms, on: boolean) {
+  arms.rightHand.setEnabled(on);
+  if (!on) arms.rope.isVisible = false;
+}
+
 export function holsterHook(arms: Arms) {
   arms.rightHand.setParent(arms.rightWrist);
   arms.rightHand.position = new Vector3(0, -0.01, -0.04);
@@ -236,6 +241,7 @@ export function holsterHook(arms: Arms) {
   arms.rightHand.rotationQuaternion = null;
   setClaws(arms.claws, 0.16);
   arms.rope.isVisible = false;
+  setHookVisible(arms, false);
 }
 
 export function updateRope(arms: Arms, from: Vector3, to: Vector3) {
