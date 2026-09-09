@@ -211,10 +211,11 @@ export class Game {
       if (e.code === "KeyF") this.fireHand();
       if (e.code === "KeyR") this.recallHand();
       if (e.code === "KeyX") this.toggleExplode();
+      if (e.code === "KeyG" || e.code === "Enter") this.enterPhone();
       if (e.code === "KeyH" || e.code === "Home") this.returnToCenter();
       if (e.code === "Escape") {
         document.exitPointerLock();
-        if (this.phase === "observe") this.dismount();
+        if (this.phase === "docked") this.dismount();
       }
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
