@@ -1351,8 +1351,8 @@ export class Game {
 
   private applyExplode(dt: number) {
     if (this.capturingExplode) return;
-    const step = dt / EXPLODE_SEC;
     for (const pack of this.packs.values()) {
+      const step = dt / Math.max(0.5, pack.explodeSec || EXPLODE_SEC);
       if (pack.explodeT < pack.explodeGoal) pack.explodeT = Math.min(pack.explodeGoal, pack.explodeT + step);
       else if (pack.explodeT > pack.explodeGoal) pack.explodeT = Math.max(pack.explodeGoal, pack.explodeT - step);
       const ease = pack.explodeT * pack.explodeT * (3 - 2 * pack.explodeT);
@@ -1365,7 +1365,7 @@ export class Game {
         }
       } else if (pack.explodeGroup) {
         const g = pack.explodeGroup;
-        g.goToFrame(g.from + (g.to - g.from) * 0.84 * ease);
+        g.goToFrame(g.from + (g.to - g.from) * ease);
         g.pause();
       }
       if (pack.exploded && pack.explodeT >= 0.995 && !pack.explodeDone) {
