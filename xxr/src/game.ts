@@ -1335,9 +1335,10 @@ export class Game {
       explode: () => this.toggleExplode(),
       yankPart: () => {
         if (this.phase !== "interior") return false;
+        const cam = this.fpsCam.position;
         const mesh = [...this.phoneMeshes]
-          .filter((m) => m.isEnabled() && !!m.getTotalVertices())
-          .sort((a, b) => b.getBoundingInfo().boundingSphere.radius - a.getBoundingInfo().boundingSphere.radius)[0];
+          .filter((m) => m.isEnabled() && m.getTotalVertices() > 8)
+          .sort((a, b) => Vector3.DistanceSquared(this.partCenter(b), cam) - Vector3.DistanceSquared(this.partCenter(a), cam))[0];
         if (!mesh) return false;
         this.lookAtNode(mesh);
         return this.fireAtPart(mesh);
