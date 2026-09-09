@@ -106,6 +106,7 @@ export class Game {
   private keys = new Set<string>();
   private look = { yaw: 0, pitch: -0.08 };
   private dragging = false;
+  private lookPtr: number | null = null;
   private lastPtr = { x: 0, y: 0 };
   private joy = { x: 0, y: 0 };
   private phoneSize = new Vector3(1, 1, 1);
