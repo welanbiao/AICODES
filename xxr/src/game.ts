@@ -698,8 +698,12 @@ export class Game {
   }
 
   fireHand() {
-    if (this.phase !== "fps" || !this.arms) return;
-    if (this.handState !== "holstered") return;
+    if (!this.arms || this.handState !== "holstered") return;
+    if (this.phase === "interior") {
+      this.fireAtPart();
+      return;
+    }
+    if (this.phase !== "fps") return;
     this.fpsCam.getViewMatrix();
     this.scene.updateTransformMatrix();
     const level = this.aimLevel();
@@ -709,6 +713,81 @@ export class Game {
     }
     this.lookAtNode(level.wrap);
     this.launchAt(level);
+  }
+
+  private fireAtPart(mesh?: AbstractMesh) {
+    if (this.phase !== "interior" || !this.arms || this.handState !== "holstered") return false;
+    this.fpsCam.getViewMatrix();
+    this.scene.updateTransformMatrix();
+    const target = mesh ?? this.pickPart()?.pickedMesh ?? null;
+    if (!target || !this.isPhonePart(target)) {
+      toast("未锁定零件，钩爪不能发射");
+      return false;
+    }
+    this.launchAtPart(target);
+    return true;
+  }
+
+  private launchAtPart(mesh: AbstractMesh) {
+    if (!this.arms || this.handState !== "holstered") return;
+    const hook = this.arms.rightHand;
+    const origin = this.arms.wristAnchor.getAbsolutePosition();
+    const dest = this.partCenter(mesh);
+    setHookVisible(this.arms, true);
+    hook.setParent(null);
+    hook.setAbsolutePosition(origin);
+    const dir = dest.subtract(origin);
+    if (dir.lengthSquared() < 1e-6) dir.copyFrom(this.fpsCam.getForwardRay(1).direction);
+    this.handVel = dir.normalize().scale(32);
+    aimHook(hook, this.handVel);
+    setClaws(this.arms.claws, 0.92);
+    this.handFlight = 0;
+    this.handState = "flying";
+    this.pendingPart = mesh;
+    if (this.highlight && this.highlight !== mesh) this.highlight.renderOverlay = false;
+    this.highlight = mesh;
+    mesh.renderOverlay = true;
+    mesh.overlayColor = new Color3(0.24, 0.88, 0.78);
+    mesh.overlayAlpha = 0.35;
+    this.syncHandButtons();
+    playSfx("fire");
+  }
+
+  private partCenter(mesh: AbstractMesh) {
+    mesh.computeWorldMatrix(true);
+    return mesh.getBoundingInfo().boundingBox.centerWorld.clone();
+  }
+
+  private standInFrontOfMesh(mesh: AbstractMesh) {
+    const center = this.partCenter(mesh);
+    let dir = center.subtract(this.fpsCam.position);
+    if (dir.lengthSquared() < 1e-8) dir = this.fpsCam.getForwardRay(1).direction.clone();
+    dir.normalize();
+    const ext = mesh.getBoundingInfo().boundingBox.extendSizeWorld;
+    const thick = Math.max(ext.x, ext.y, ext.z, 0.06) * 2;
+    const dist = clamp(thick * 1.55 + 0.42, 0.5, 3.2);
+    const stand = this.clampToSky(center.subtract(dir.scale(dist)));
+    const lookDir = center.subtract(stand);
+    const horiz = Math.max(0.001, Math.hypot(lookDir.x, lookDir.z));
+    return {
+      stand,
+      lookYaw: Math.atan2(lookDir.x, lookDir.z),
+      lookPitch: clamp(-Math.atan2(lookDir.y, horiz), -1.2, 1.2),
+    };
+  }
+
+  private finishPartYank() {
+    const mesh = this.pendingPart;
+    this.pendingPart = null;
+    if (this.arms) {
+      holsterHook(this.arms);
+      this.handState = "holstered";
+    }
+    this.syncHandButtons();
+    if (mesh) {
+      this.lookAtNode(mesh);
+      toast(`到达 ${infoFor(this.resolveName(mesh)).name} 前方`);
+    }
   }
 
   private launchAt(level: LevelRef) {
