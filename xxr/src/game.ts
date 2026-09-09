@@ -1549,6 +1549,8 @@ export class Game {
         this.clampPlayer();
         return [this.fpsCam.position.x, this.fpsCam.position.y, this.fpsCam.position.z];
       },
+      pinch: (factor: number) => this.zoomInspect(factor),
+      levelPose: () => this.levelPose(),
     };
   }
 }
