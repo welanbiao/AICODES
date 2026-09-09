@@ -368,7 +368,7 @@ async function attachBatmanHook(scene: Scene, hook: TransformNode) {
   } catch (err) {
     console.warn("batman_hook.glb failed", err);
     const blade = mat(scene, "xxrHookBlade", new Color3(0.55, 0.58, 0.62), 0.85, 0.08);
-    box("xxrHookBody", { width: 0.034, height: 0.034, depth: 0.13 }, scene, blade, hook, new Vector3(0, 0, -0.02));
+    box("xxrHookBody", { width: 0.012, height: 0.012, depth: 0.04 }, scene, blade, hook, new Vector3(0, 0, -0.01));
   }
 }
 
