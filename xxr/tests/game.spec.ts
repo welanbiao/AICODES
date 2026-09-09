@@ -48,6 +48,17 @@ test.describe("小小人", () => {
     expect(flowed.opened.parts).toBeGreaterThan(40);
     expect(flowed.opened.longest).toBeGreaterThan(flowed.closed.longest * 1.6);
 
+    const yanked = await page.evaluate(() => {
+      const x = window.__XXR__;
+      if (!x) return { ok: false, before: [0, 0, 0] };
+      return { ok: x.yankPart?.() ?? false, before: x.pos ?? [0, 0, 0] };
+    });
+    expect(yanked.ok).toBe(true);
+    await expect.poll(async () => {
+      const after = await page.evaluate(() => window.__XXR__?.pos ?? [0, 0, 0]);
+      return Math.hypot(after[0] - yanked.before[0], after[1] - yanked.before[1], after[2] - yanked.before[2]);
+    }, { timeout: 8_000 }).toBeGreaterThan(0.25);
+
     await page.evaluate(() => {
       window.__XXR__?.lookAtPhone?.();
       window.__XXR__?.identify();

@@ -651,8 +651,10 @@ export class Game {
   }
 
   private lookAtNode(node: TransformNode) {
-    node.computeWorldMatrix(true);
-    const target = node.getAbsolutePosition();
+    const target =
+      node instanceof AbstractMesh && node.getTotalVertices()
+        ? this.partCenter(node)
+        : (node.computeWorldMatrix(true), node.getAbsolutePosition());
     this.fpsCam.setTarget(target);
     this.fpsCam.rotationQuaternion = null;
     this.look.yaw = this.fpsCam.rotation.y;
