@@ -128,6 +128,7 @@ export class Game {
   private lv2: TransformNode | null = null;
   private lv3: TransformNode | null = null;
   private phoneAngle = 0;
+  private skyRoot: TransformNode | null = null;
   private skyMin = new Vector3(-30, -30, -30);
   private skyMax = new Vector3(30, 30, 30);
   private skyLimit = 30;
