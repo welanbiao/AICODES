@@ -307,6 +307,7 @@ export class Game {
       },
       { passive: false },
     );
+    this.bindTouchZoom();
 
     this.bindJoystick();
   }
