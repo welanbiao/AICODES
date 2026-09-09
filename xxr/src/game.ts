@@ -953,7 +953,7 @@ export class Game {
     const canEnter = this.explodeDone && this.docked?.id === "phone" && this.phase === "docked";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
     const joy = $<HTMLElement>("#joystick");
-    if (joy) joy.hidden = !moving;
+    if (joy) joy.hidden = !playable(this.phase);
   }
 
   private setSideLevelsVisible(on: boolean) {
