@@ -2063,6 +2063,8 @@ declare global {
         phone: { pos: [number, number, number]; rotY: number } | null;
         laptop: { pos: [number, number, number]; rotY: number } | null;
         earbuds: { pos: [number, number, number]; rotY: number } | null;
+        connor: { pos: [number, number, number]; rotY: number } | null;
+        north: { pos: [number, number, number]; rotY: number } | null;
         spinY: number;
       };
     };
