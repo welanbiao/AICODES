@@ -939,9 +939,9 @@ export class Game {
   private levelRootOf(mesh: AbstractMesh | Node | null): LevelRef | null {
     let n: Node | null = mesh;
     while (n) {
-      if (n.name === "phoneWrap" && this.phoneWrap) return { id: "phone", wrap: this.phoneWrap };
-      if (n.name === "level-laptop" && this.lv2) return { id: "laptop", wrap: this.lv2 };
-      if (n.name === "level-earbuds" && this.lv3) return { id: "earbuds", wrap: this.lv3 };
+      for (const pack of this.packs.values()) {
+        if (n === pack.wrap || n.name === LEVEL_META[pack.id].wrap) return { id: pack.id, wrap: pack.wrap };
+      }
       n = n.parent;
     }
     return null;
