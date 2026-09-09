@@ -864,16 +864,14 @@ export class Game {
     const holstered = this.handState === "holstered";
     const moving = this.phase === "fps" || this.phase === "interior";
     $<HTMLButtonElement>('[data-testid="btn-recall"]').hidden = holstered || this.handState === "reeling";
-    $<HTMLButtonElement>('[data-testid="btn-fire"]').hidden = !holstered || this.phase !== "fps";
+    $<HTMLButtonElement>('[data-testid="btn-fire"]').hidden = !holstered || (this.phase !== "fps" && this.phase !== "interior");
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
     const canExplode = this.phase === "interior" || this.docked?.id === "phone";
     $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').hidden = !canExplode;
     const canEnter = this.explodeDone && this.docked?.id === "phone" && this.phase === "docked";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
-    const pad = $<HTMLElement>('[data-testid="move-pad"]');
-    if (pad) pad.hidden = !moving;
     const joy = $<HTMLElement>("#joystick");
-    if (joy) joy.hidden = !(touchUi() && moving);
+    if (joy) joy.hidden = !moving;
   }
 
   private pickPart(): PickingInfo | null {
