@@ -133,6 +133,8 @@ export class Game {
   private phoneHubScale = new Vector3(1, 1, 1);
 
   constructor(canvas: HTMLCanvasElement) {
+    this.gen = ++gameGen;
+    (window as Window & { __XXR_GEN?: number }).__XXR_GEN = this.gen;
     this.canvas = canvas;
     this.engine = new Engine(canvas, true, { adaptToDeviceRatio: false, stencil: true, preserveDrawingBuffer: true }, true);
     const cap = Math.min(window.devicePixelRatio || 1, 1.5);
