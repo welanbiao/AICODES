@@ -125,6 +125,7 @@ export class Game {
   private explodeT = 0;
   private explodeGoal = 0;
   private explodeDone = false;
+  private nearExplode = false;
   private phoneWrap: TransformNode | null = null;
   private phoneSpin: TransformNode | null = null;
   private phoneMeshes: AbstractMesh[] = [];
