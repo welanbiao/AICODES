@@ -27,11 +27,9 @@ export function onViewportChange(fn: () => void) {
   window.addEventListener("resize", fn);
   window.addEventListener("orientationchange", fn);
   vv?.addEventListener("resize", fn);
-  vv?.addEventListener("scroll", fn);
   return () => {
     window.removeEventListener("resize", fn);
     window.removeEventListener("orientationchange", fn);
     vv?.removeEventListener("resize", fn);
-    vv?.removeEventListener("scroll", fn);
   };
 }
