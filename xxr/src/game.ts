@@ -718,7 +718,7 @@ export class Game {
     if (this.phase !== "interior" || !this.arms || this.handState !== "holstered") return false;
     this.fpsCam.getViewMatrix();
     this.scene.updateTransformMatrix();
-    const target = mesh ?? this.pickPart()?.pickedMesh ?? null;
+    const target = mesh ?? this.pickPart()?.pickedMesh ?? this.nearestAimedPart();
     if (!target || !this.isPhonePart(target)) {
       toast("未锁定零件，钩爪不能发射");
       return false;
@@ -737,7 +737,7 @@ export class Game {
     hook.setAbsolutePosition(origin);
     const dir = dest.subtract(origin);
     if (dir.lengthSquared() < 1e-6) dir.copyFrom(this.fpsCam.getForwardRay(1).direction);
-    this.handVel = dir.normalize().scale(32);
+    this.handVel = dir.normalize().scale(48);
     aimHook(hook, this.handVel);
     setClaws(this.arms.claws, 0.92);
     this.handFlight = 0;
@@ -748,6 +748,14 @@ export class Game {
     mesh.renderOverlay = true;
     mesh.overlayColor = new Color3(0.24, 0.88, 0.78);
     mesh.overlayAlpha = 0.35;
+    const pose = this.standInFrontOfMesh(mesh);
+    this.riding = {
+      t: 0,
+      from: this.fpsCam.position.clone(),
+      to: pose.stand,
+      lookYaw: pose.lookYaw,
+      lookPitch: pose.lookPitch,
+    };
     this.syncHandButtons();
     playSfx("fire");
   }
