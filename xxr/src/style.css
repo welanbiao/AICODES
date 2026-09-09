@@ -402,53 +402,14 @@ button.ghost {
 }
 
 .move-pad {
-  pointer-events: auto;
-  position: absolute;
-  left: calc(12px * var(--ui));
-  bottom: calc(86px * var(--ui) + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 2;
-}
-
-.dpad {
-  display: grid;
-  grid-template-columns: repeat(3, calc(48px * var(--ui)));
-  grid-template-rows: repeat(2, calc(48px * var(--ui)));
-  gap: 6px;
-}
-
-.dpad [data-hold="KeyW"] { grid-column: 2; grid-row: 1; }
-.dpad [data-hold="KeyA"] { grid-column: 1; grid-row: 2; }
-.dpad [data-hold="KeyS"] { grid-column: 2; grid-row: 2; }
-.dpad [data-hold="KeyD"] { grid-column: 3; grid-row: 2; }
-
-.move-extra {
-  display: flex;
-  gap: 6px;
-}
-
-.move-pad button {
-  min-width: calc(48px * var(--ui));
-  min-height: calc(48px * var(--ui));
-  padding: 0 8px;
-  font-size: calc(13px * var(--ui));
-  user-select: none;
-  touch-action: manipulation;
-}
-
-.move-extra button {
-  flex: 1;
-  min-width: 0;
-  font-size: calc(12px * var(--ui));
+  display: none;
 }
 
 .joystick {
   pointer-events: auto;
   position: absolute;
-  left: calc(18px * var(--ui));
-  bottom: calc(248px * var(--ui) + env(safe-area-inset-bottom));
+  left: calc(18px * var(--ui) + env(safe-area-inset-left));
+  bottom: calc(22px * var(--ui) + env(safe-area-inset-bottom));
   z-index: 2;
 }
 
