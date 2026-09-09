@@ -186,7 +186,6 @@ export class Game {
   private skyLimit = 30;
   private docked: LevelRef | null = null;
   private pendingLevel: LevelRef | null = null;
-  private phoneHubScale = new Vector3(1, 1, 1);
   private nativeScale = new Map<number, Vector3>();
   private zoomBase = new Map<number, Vector3>();
   private ptrs = new Map<number, { x: number; y: number }>();
