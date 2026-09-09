@@ -393,7 +393,7 @@ export async function loadFpsArms(
   leftWrist.computeWorldMatrix(true);
   rightWrist.computeWorldMatrix(true);
   const mid2 = leftWrist.getAbsolutePosition().add(rightWrist.getAbsolutePosition()).scale(0.5);
-  glbRoot.position.addInPlace(new Vector3(0, -0.12, 0.24).subtract(mid2));
+  glbRoot.position.addInPlace(new Vector3(0, -0.1, 0.2).subtract(mid2));
 
   const kit = createGrapple(scene, rightWrist, leftWrist);
   await attachBatmanHook(scene, kit.hook);
