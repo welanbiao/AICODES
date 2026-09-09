@@ -1187,7 +1187,8 @@ export class Game {
     let bestScore = Number.NEGATIVE_INFINITY;
     let fallback: AbstractMesh | null = null;
     let fallbackDist = Number.POSITIVE_INFINITY;
-    for (const mesh of this.phoneMeshes) {
+    const meshes = this.activePack()?.meshes ?? [];
+    for (const mesh of meshes) {
       if (!mesh.isEnabled() || !mesh.isVisible || mesh.getTotalVertices() < 3) continue;
       const center = this.partCenter(mesh);
       const to = center.subtract(origin);
