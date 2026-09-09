@@ -720,6 +720,7 @@ export class Game {
       (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
       mat.directIntensity = 0.82;
       mat.environmentIntensity = 0.22;
+      if (mat.emissiveTexture && !mat.albedoTexture) mat.albedoTexture = mat.emissiveTexture;
       mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.16);
       mat.emissiveColor = new Color3(mat.emissiveColor.r * 0.1, mat.emissiveColor.g * 0.1, mat.emissiveColor.b * 0.1);
       if (mat.emissiveTexture) mat.emissiveIntensity = 0.14;
