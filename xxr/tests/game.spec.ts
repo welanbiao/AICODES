@@ -25,7 +25,9 @@ test.describe("小小人", () => {
       if (!x) return { ok: false as const, reason: "missing" };
       const grabbed = x.grabPhone?.() ?? x.phase;
       x.explode();
+      const closed = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
       x.finishExplode?.();
+      const opened = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
       x.enter?.();
       const state = x.getState?.() ?? {
         phase: x.phase,
@@ -36,9 +38,11 @@ test.describe("小小人", () => {
         handState: x.handState ?? "",
         gen: 0,
       };
-      return { ok: true as const, grabbed, ...state };
+      return { ok: true as const, grabbed, ...state, closed, opened };
     });
     expect(flowed).toMatchObject({ ok: true, grabbed: "docked", phase: "interior", exploded: true, explodeDone: true });
+    expect(flowed.opened.parts).toBeGreaterThan(40);
+    expect(flowed.opened.longest).toBeGreaterThan(flowed.closed.longest * 1.6);
 
     await page.evaluate(() => {
       window.__XXR__?.lookAtPhone?.();
