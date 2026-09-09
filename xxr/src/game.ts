@@ -1295,7 +1295,7 @@ export class Game {
     let fallback = mesh.name;
     while (n) {
       const raw = partKeyFromName(n.name);
-      if (raw && raw !== "__root__" && raw !== "phoneWrap" && raw !== "phoneSpin" && raw !== "phoneModel") {
+      if (raw && raw !== "__root__" && !Object.values(LEVEL_META).some((m) => m.wrap === raw || m.spin === raw || m.model === raw)) {
         fallback = raw;
         if (raw in CATALOG || raw === "__screw__") return n.name;
       }
