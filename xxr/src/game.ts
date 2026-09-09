@@ -841,7 +841,7 @@ export class Game {
     this.scene.updateTransformMatrix();
     const w = this.engine.getRenderWidth();
     const h = this.engine.getRenderHeight();
-    const pick = this.scene.pick(w * 0.5, h * 0.5, (m) => this.canLatch(m));
+    const pick = this.scene.pick(this.canvas.clientWidth * 0.5, this.canvas.clientHeight * 0.5, (m) => this.canLatch(m));
     if (pick?.hit && pick.pickedMesh) {
       const locked = this.levelRootOf(pick.pickedMesh);
       if (locked) return locked;

@@ -15,6 +15,7 @@ test.describe("小小人", () => {
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
     await expect(page.getByTestId("btn-identify")).toBeVisible();
     await expect(page.getByTestId("btn-fire")).toBeVisible();
+    await expect(page.getByTestId("btn-move-w")).toBeVisible();
     await expect(page.getByTestId("crosshair")).toBeVisible();
     expect(await page.getByTestId("level-label").textContent()).toContain("第一关");
     expect(await page.getByTestId("level-label").textContent()).toContain("我的手机");
