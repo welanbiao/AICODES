@@ -149,6 +149,10 @@ test.describe("小小人", () => {
     expect(await page.evaluate(() => window.__XXR__?.partName?.("mB_0"))).toBe("主板");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("psu_2"))).toBe("电源单元");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("battery"))).toContain("电池");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Connor.013_mat_4-head_d.png_0"))).toBe("头部");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Connor.016_mat_7-led.png_0"))).toBe("太阳穴指示灯");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("LTBT44OJU70I6KCKJRCD1ZWUV_Modelpart1_hair_Material012_0"))).toBe("头发");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("LTBT44OJU70I6KCKJRCD1ZWUV.007_Modelpart1_top_Material007_0"))).toBe("上衣");
 
     await page.evaluate(() => window.__XXR__?.setLook(0, -1.15));
     const lockedPos = await page.evaluate(() => window.__XXR__?.pos ?? [0, 0, 0]);
