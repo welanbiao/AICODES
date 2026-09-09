@@ -1118,7 +1118,7 @@ declare global {
       handState?: string;
       identify: () => void;
       fire: () => void;
-      grabPhone?: () => void;
+      grabPhone?: () => string | void;
       explode: () => void;
       finishExplode?: () => void;
       enter?: () => void;
