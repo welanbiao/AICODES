@@ -860,7 +860,7 @@ export class Game {
     if (this.worldReady) this.orbitLevels(dt);
     this.applyExplode(dt);
     if (this.riding) {
-      this.riding.t += dt / 0.7;
+      this.riding.t += Math.max(dt, 0.016) / 0.7;
       const t = easeInOut(Math.min(1, this.riding.t));
       Vector3.LerpToRef(this.riding.from, this.riding.to, t, this.fpsCam.position);
       this.look.yaw = this.riding.lookYaw;
