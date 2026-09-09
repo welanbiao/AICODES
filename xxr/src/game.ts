@@ -860,7 +860,7 @@ export class Game {
     setPhase("fps");
     $<HTMLElement>("#play-status").textContent = "星空枢纽";
     this.syncHandButtons();
-    toast("已解除锁定");
+    toast("已离开");
   }
 
   private alignOrbitTo(level: LevelRef) {
