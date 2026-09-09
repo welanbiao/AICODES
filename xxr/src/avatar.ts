@@ -298,12 +298,12 @@ function fitByWrists(model: TransformNode, left: TransformNode, right: Transform
     mid = left.getAbsolutePosition().add(right.getAbsolutePosition()).scale(0.5);
   }
   const span = Math.max(0.0001, Vector3.Distance(left.getAbsolutePosition(), right.getAbsolutePosition()));
-  model.scaling.setAll(0.5 / span);
+  model.scaling.setAll(0.42 / span);
   model.computeWorldMatrix(true);
   left.computeWorldMatrix(true);
   right.computeWorldMatrix(true);
   const mid2 = left.getAbsolutePosition().add(right.getAbsolutePosition()).scale(0.5);
-  model.position.addInPlace(new Vector3(0, -0.24, 0.44).subtract(mid2));
+  model.position.addInPlace(new Vector3(0, -0.18, 0.4).subtract(mid2));
 }
 
 function createGrapple(scene: Scene, wrist: TransformNode, leftWrist: TransformNode) {
