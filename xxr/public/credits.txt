@@ -1,0 +1,15 @@
+关于《小小人》
+《小小人》是一款VR微观探索小游戏，化身寸许高的小人，在被放大的日常世界里自由闲逛，无强制任务，只管顺着好奇心发掘世界里藏着的细碎惊喜。
+
+出品方：杭州余杭叩君芯信息技术工作室
+
+Model credits：
+"Lumen VGS Pack" (https://skfb.ly/p8UDH) by dark_igorek is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"Lumen 64 Spark || Computer" (https://skfb.ly/oSuvn) by dark_igorek is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"Lumen 64 || Computer" (https://skfb.ly/oKoJD) by dark_igorek is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"Milky Way Skybox HDRI panorama" (https://skfb.ly/oKvUJ) by Aliaksandr.melas is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"Batman Grappler Hook" (https://skfb.ly/oBPPK) by Icefyre24 is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"cartoon FPS Arms" (https://skfb.ly/6ARwy) by DJMaesen is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"iPhone 12 Teardown" (https://skfb.ly/o7QrM) by Peter_D is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"Dream Computer Setup" (https://skfb.ly/6QW96) by Daniel Cardona is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+"Computer" (https://skfb.ly/6Cs9Q) by JohanKL is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).

@@ -477,7 +477,7 @@ export class Game {
       this.worldReady = true;
       this.phase = "fps";
       setPhase("fps");
-      $<HTMLElement>("#play-status").textContent = "星空枢纽";
+      $<HTMLElement>("#play-status").textContent = "小小人";
       this.syncHandButtons();
       toast("瞄准关卡后发射钩爪");
     } catch (err) {
@@ -740,7 +740,7 @@ export class Game {
     this.applyLook();
     this.phase = "fps";
     setPhase("fps");
-    $<HTMLElement>("#play-status").textContent = "星空枢纽";
+    $<HTMLElement>("#play-status").textContent = "小小人";
     this.syncHandButtons();
     toast("已返回星空中心");
   }
@@ -994,7 +994,7 @@ export class Game {
     this.nearExplode = false;
     this.phase = "fps";
     setPhase("fps");
-    $<HTMLElement>("#play-status").textContent = "星空枢纽";
+    $<HTMLElement>("#play-status").textContent = "小小人";
     this.syncHandButtons();
     toast("已离开");
   }
