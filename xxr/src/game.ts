@@ -1258,6 +1258,7 @@ export class Game {
     }
     this.lv2?.setEnabled(true);
     this.lv3?.setEnabled(true);
+    this.setSideLevelsVisible(true);
     if (resetExplode) {
       this.exploded = false;
       this.explodeGoal = 0;
