@@ -1572,6 +1572,8 @@ export class Game {
       phone: pack(this.phoneWrap),
       laptop: pack(this.lv2),
       earbuds: pack(this.lv3),
+      connor: pack(this.lv4),
+      north: pack(this.lv5),
       spinY: this.phoneSpin?.rotation.y ?? 0,
     };
   }
