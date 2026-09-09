@@ -1556,8 +1556,10 @@ export class Game {
   }
 
   private clampPlayerDest(p: Vector3) {
-    if (this.phase === "interior" && this.phoneWrap) {
-      const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    if (this.phase === "interior") {
+      const pack = this.activePack();
+      if (!pack) return p;
+      const extents = this.scene.getWorldExtends((m) => this.isPackPart(m, pack) && !!m.getTotalVertices());
       const pad = 0.35;
       const axis = (v: number, lo: number, hi: number) => (hi - lo > pad * 2 ? clamp(v, lo + pad, hi - pad) : v);
       p.x = axis(p.x, extents.min.x, extents.max.x);
