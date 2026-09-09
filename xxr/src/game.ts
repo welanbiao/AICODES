@@ -60,6 +60,8 @@ type LevelPack = {
   exploded: boolean;
   explodeDone: boolean;
   explodeSec: number;
+  animGroups: AnimationGroup[];
+  looping: boolean;
 };
 
 const LEVEL_META: Record<
