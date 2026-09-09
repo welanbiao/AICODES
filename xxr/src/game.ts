@@ -1488,14 +1488,16 @@ export class Game {
   }
 
   private restoreNativeScales() {
-    for (const node of [this.skyRoot, this.phoneWrap, this.lv2, this.lv3]) {
-      if (!node) continue;
+    const nodes: TransformNode[] = [];
+    if (this.skyRoot) nodes.push(this.skyRoot);
+    for (const pack of this.packs.values()) nodes.push(pack.wrap);
+    for (const node of nodes) {
       const s = this.nativeScale.get(node.uniqueId);
       if (!s) continue;
       node.scaling.copyFrom(s);
       this.zoomBase.set(node.uniqueId, s.clone());
     }
-    if (this.phoneWrap) this.packs.get("phone")?.hubScale.copyFrom(this.phoneWrap.scaling);
+    for (const pack of this.packs.values()) pack.hubScale.copyFrom(pack.wrap.scaling);
     this.refreshSkyBounds();
   }
 
