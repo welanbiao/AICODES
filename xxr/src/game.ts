@@ -809,10 +809,6 @@ export class Game {
     return this.isPackPart(mesh, this.activePack());
   }
 
-  private isPhonePart(mesh: AbstractMesh) {
-    return this.isPackPart(mesh, this.packs.get("phone"));
-  }
-
   private levelRootOf(mesh: AbstractMesh | Node | null): LevelRef | null {
     let n: Node | null = mesh;
     while (n) {
