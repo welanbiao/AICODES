@@ -671,7 +671,32 @@ export class Game {
 
   private pickPart(): PickingInfo | null {
     const ray = this.fpsCam.getForwardRay(22);
-    return this.scene.pickWithRay(ray, (m) => this.canLatch(m));
+    const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
+    if (hit?.hit && hit.pickedMesh) return hit;
+    return this.pickLevelBounds(ray);
+  }
+
+  private pickLevelBounds(ray: Ray): PickingInfo | null {
+    const levels: LevelRef[] = [];
+    if (this.phoneWrap) levels.push({ id: "phone", wrap: this.phoneWrap });
+    if (this.lv2) levels.push({ id: "laptop", wrap: this.lv2 });
+    if (this.lv3) levels.push({ id: "earbuds", wrap: this.lv3 });
+    let best: { mesh: AbstractMesh; dist: number } | null = null;
+    for (const level of levels) {
+      level.wrap.computeWorldMatrix(true);
+      const box = level.wrap.getHierarchyBoundingVectors(true);
+      if (!ray.intersectsBoxMinMax(box.min, box.max)) continue;
+      const mesh = this.scene.meshes.find((m) => this.levelRootOf(m)?.id === level.id && !!m.getTotalVertices());
+      if (!mesh) continue;
+      const dist = Vector3.Distance(ray.origin, level.wrap.position);
+      if (!best || dist < best.dist) best = { mesh, dist };
+    }
+    if (!best) return null;
+    const info = new PickingInfo();
+    info.hit = true;
+    info.pickedMesh = best.mesh;
+    info.distance = best.dist;
+    return info;
   }
 
   private resolveName(mesh: AbstractMesh): string {
