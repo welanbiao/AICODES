@@ -179,6 +179,7 @@ export class Game {
   }
 
   private bindUi() {
+    $<HTMLButtonElement>('[data-testid="btn-home"]').onclick = () => this.returnToCenter();
     $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').onclick = () => this.toggleExplode();
     $<HTMLButtonElement>('[data-testid="btn-identify"]').onclick = () => this.identify();
     $<HTMLButtonElement>('[data-testid="btn-fire"]').onclick = () => this.fireHand();
