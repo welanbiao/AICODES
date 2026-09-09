@@ -200,7 +200,7 @@ export class Game {
   resize() {
     this.engine.resize();
     this.fpsCam.fovMode = Camera.FOVMODE_HORIZONTAL_FIXED;
-    this.fpsCam.fov = 1.22;
+    this.applyViewFov();
   }
 
   dispose() {
