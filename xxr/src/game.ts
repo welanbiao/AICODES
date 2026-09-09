@@ -676,19 +676,16 @@ export class Game {
       mesh.metadata = { ...(mesh.metadata ?? {}), xxr: "level" };
       pack.meshes.push(mesh);
       pack.restLocal.set(mesh.uniqueId, mesh.position.clone());
-      const mat = mesh.material;
-      if (mat instanceof PBRMaterial) {
-        mat.directIntensity = 1.7;
-        mat.environmentIntensity = 1.15;
-        mat.emissiveColor = mat.emissiveColor.add(new Color3(0.04, 0.04, 0.045));
-        if (mat.subSurface) {
-          mat.subSurface.isRefractionEnabled = false;
-          mat.subSurface.isTranslucencyEnabled = false;
-        }
-      }
+      this.tuneLevelMaterial(mesh.material, id);
     }
 
-    if (explodeGroup) this.captureExplodePoses(explodeGroup, pack);
+    if (explodeGroup) {
+      if (id === "phone") this.captureExplodePoses(explodeGroup, pack);
+      else {
+        explodeGroup.goToFrame(explodeGroup.from);
+        explodeGroup.pause();
+      }
+    }
     wrap.position.set(0, meta.y, ORBIT_RADIUS);
     pack.hubScale.copyFrom(wrap.scaling);
     this.captureNativeScale(wrap);
