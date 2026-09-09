@@ -36,15 +36,20 @@
           <div class="float-label" data-testid="level-label">第一关 · 我的手机</div>
           <div class="float-label muted" data-testid="level-2-label">第二关 · 我的电脑</div>
           <div class="float-label muted" data-testid="level-3-label">第三关 · 无线耳机</div>
-          <p class="credit">iPhone 12 Teardown · Peter_D（CC BY）· BGM Celestial Drift</p>
           <div class="play-actions">
-            <button type="button" data-testid="btn-home">返回</button>
-            <button type="button" data-testid="btn-identify">鉴定</button>
-            <button type="button" data-testid="btn-dismount" hidden>下来</button>
-            <button type="button" data-testid="btn-explode-fps" hidden>爆炸</button>
-            <button type="button" data-testid="btn-enter" hidden>进入</button>
-            <button type="button" data-testid="btn-recall" hidden>收回</button>
-            <button type="button" class="primary" data-testid="btn-fire">发射<br />钩爪</button>
+            <div class="hook-orb" data-testid="hook-orb">
+              <button type="button" class="half-left" data-testid="btn-identify">鉴定</button>
+              <div class="half-right">
+                <button type="button" class="primary" data-testid="btn-fire">发射</button>
+                <button type="button" class="primary" data-testid="btn-enter" hidden>进入</button>
+                <button type="button" data-testid="btn-dismount" hidden>下来</button>
+              </div>
+            </div>
+            <div class="act-stack">
+              <button type="button" data-testid="btn-home">返回</button>
+              <button type="button" data-testid="btn-explode-fps" hidden>爆炸</button>
+              <button type="button" data-testid="btn-recall" hidden>收回</button>
+            </div>
           </div>
           <div id="joystick" class="joystick" data-testid="joystick" hidden>
             <div class="joy-base"><div id="joy-knob" class="joy-knob"></div></div>
