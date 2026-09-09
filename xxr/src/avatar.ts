@@ -316,7 +316,7 @@ function createGrapple(scene: Scene, wrist: TransformNode, leftWrist: TransformN
   const hook = new TransformNode("xxrHook", scene);
   hook.parent = wrist;
 
-  const rope = MeshBuilder.CreateCylinder("xxrRope", { height: 1, diameter: 0.012, tessellation: 7 }, scene);
+  const rope = MeshBuilder.CreateCylinder("xxrRope", { height: 1, diameter: 0.006, tessellation: 7 }, scene);
   rope.material = cable;
   tag(rope);
   rope.isVisible = false;
