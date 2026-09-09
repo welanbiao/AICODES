@@ -1394,6 +1394,7 @@ export class Game {
         else this.finishDock();
       }
     } else if (playable(this.phase)) this.moveFps(dt);
+    this.tryAutoExplode();
     if (this.handState === "flying") this.tickHand(dt);
     else if (this.handState === "reeling") this.tickReel(dt);
     this.updateHookRope();
