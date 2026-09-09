@@ -853,8 +853,7 @@ export class Game {
     else this.startExplode();
   }
 
-  private startExplode() {
-    const pack = this.activePack();
+  private startExplode(pack: LevelPack | null = this.activePack()) {
     if (!pack || pack.exploded) return;
     pack.exploded = true;
     pack.explodeGoal = 1;
