@@ -1089,6 +1089,15 @@ export class Game {
         this.launchAt({ id: "phone", wrap: this.phoneWrap });
         return this.phase;
       },
+      getState: () => ({
+        phase: this.phase,
+        docked: this.docked?.id ?? null,
+        hookOn: !!this.arms?.rightHand.isEnabled(),
+        exploded: this.exploded,
+        explodeDone: this.explodeDone,
+        handState: this.handState,
+        gen: this.gen,
+      }),
       explode: () => this.toggleExplode(),
       finishExplode: () => this.finishExplodeNow(),
       enter: () => this.enterPhone(),
