@@ -26,7 +26,7 @@ test.describe("小小人", () => {
       if (!x) return { ok: false as const, reason: "missing" };
       x.lookAtPhone?.();
       x.fire();
-      const grabbed = x.phase;
+      const grabbed = x.getState?.()?.phase ?? x.phase;
       x.explode();
       const closed = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
       x.finishExplode?.();

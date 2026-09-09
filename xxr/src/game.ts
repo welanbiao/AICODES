@@ -673,10 +673,10 @@ export class Game {
 
   private lookAtNode(node: TransformNode) {
     node.computeWorldMatrix(true);
-    const dir = node.getAbsolutePosition().subtract(this.fpsCam.position);
-    const horiz = Math.max(0.001, Math.hypot(dir.x, dir.z));
-    this.look.yaw = Math.atan2(dir.x, dir.z);
-    this.look.pitch = clamp(-Math.atan2(dir.y, horiz), -1.2, 1.2);
+    const target = node.getAbsolutePosition();
+    this.fpsCam.setTarget(target);
+    this.look.yaw = this.fpsCam.rotation.y;
+    this.look.pitch = clamp(this.fpsCam.rotation.x, -1.2, 1.2);
     this.applyLook();
     this.fpsCam.getViewMatrix();
   }
