@@ -1321,6 +1321,9 @@ export class Game {
           lookPitch: pose.lookPitch,
         };
       }
+    } else if (this.handFlight > 42) {
+      playSfx("miss");
+      this.recallHand(true);
     }
   }
 
