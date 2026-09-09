@@ -1243,24 +1243,23 @@ export class Game {
     return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
   }
 
+  private applyViewFov() {
+    this.fpsCam.fovMode = Camera.FOVMODE_HORIZONTAL_FIXED;
+    this.fpsCam.fov = clamp(this.baseFov / this.viewZoom, 0.36, 1.85);
+  }
+
   private zoomInspect(factor: number) {
     if (!Number.isFinite(factor) || factor <= 0) return false;
-    let centerBefore: Vector3 | null = null;
-    if (this.phase === "interior" && this.phoneWrap) {
-      this.phoneWrap.computeWorldMatrix(true);
-      const e = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
-      centerBefore = e.min.add(e.max).scale(0.5);
+    if (this.phase === "interior") {
+      this.viewZoom = clamp(this.viewZoom * factor, 0.45, 3.4);
+      this.applyViewFov();
+      if (this.skyRoot) this.scaleNode(this.skyRoot, factor);
+      this.refreshSkyBounds();
+      return true;
     }
     let ok = false;
     for (const node of this.zoomTargets()) ok = this.scaleNode(node, factor) || ok;
     this.refreshSkyBounds();
-    if (ok && centerBefore && this.phoneWrap) {
-      this.phoneWrap.computeWorldMatrix(true);
-      const e = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
-      const centerAfter = e.min.add(e.max).scale(0.5);
-      this.fpsCam.position.addInPlace(centerAfter.subtract(centerBefore));
-      this.clampPlayer();
-    }
     return ok;
   }
 
