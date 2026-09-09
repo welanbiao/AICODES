@@ -21,7 +21,7 @@ function makeAudio(src: string, loop = false, volume = 1) {
 
 export function initAudio() {
   if (bgm) return;
-  bgm = makeAudio("/audio/bgm.wav", true, 0.28);
+  bgm = makeAudio("/audio/celestial-drift.wav", true, 0.32);
   (Object.keys(files) as SfxName[]).forEach((key) => {
     sfxPool.set(key, makeAudio(files[key], false, 0.55));
   });
