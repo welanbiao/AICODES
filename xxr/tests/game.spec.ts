@@ -1,6 +1,19 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("小小人", () => {
+  test("第一次打开即居中显示正在进入星空", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("loading")).toBeVisible();
+    await expect(page.getByText("正在进入星空…")).toBeVisible();
+    await expect(page.getByTestId("load-bar")).toBeVisible();
+    await expect(page.getByTestId("btn-identify")).toBeHidden();
+    const vp = page.viewportSize();
+    const card = await page.locator("#screen-load .load-card").boundingBox();
+    expect(vp && card).toBeTruthy();
+    expect(Math.abs(card!.x + card!.width / 2 - vp!.width / 2)).toBeLessThan(48);
+    expect(Math.abs(card!.y + card!.height / 2 - vp!.height / 2)).toBeLessThan(80);
+  });
+
   test("瞄准手机发射钩爪后可爆炸并进入内部", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (err) => pageErrors.push(err.message));
