@@ -166,7 +166,7 @@ export class Game {
     this.fpsCam.minZ = 0.02;
     this.fpsCam.maxZ = 400;
     this.fpsCam.fovMode = Camera.FOVMODE_HORIZONTAL_FIXED;
-    this.fpsCam.fov = 1.22;
+    this.fpsCam.fov = this.baseFov;
     this.fpsCam.inertia = 0;
     this.fpsCam.speed = 0;
     this.fpsCam.applyGravity = false;
