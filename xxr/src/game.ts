@@ -923,6 +923,7 @@ export class Game {
   dismount() {
     if (this.phase !== "docked" || !this.docked) return;
     this.alignOrbitTo(this.docked);
+    this.restoreNativeScales();
     this.docked = null;
     this.pendingLevel = null;
     this.phase = "fps";
