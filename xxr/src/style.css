@@ -233,6 +233,7 @@ h1 {
 }
 
 .act-stack button {
+  pointer-events: auto;
   position: static;
   width: calc(48px * var(--ui));
   height: calc(48px * var(--ui));
