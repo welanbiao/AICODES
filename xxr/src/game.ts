@@ -557,6 +557,7 @@ export class Game {
     this.handFlight = 0;
     this.handState = "flying";
     this.syncHandButtons();
+    playSfx("fire");
   }
 
   recallHand() {
