@@ -160,14 +160,8 @@ h1 {
   text-align: right;
 }
 
-.kbd {
-  display: none;
-}
-
-@media (min-width: 800px) {
-  .kbd {
-    display: inline;
-  }
+.hint {
+  max-width: 58%;
 }
 
 .play-actions {
