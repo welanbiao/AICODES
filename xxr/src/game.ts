@@ -830,6 +830,7 @@ export class Game {
     if (!this.arms || this.handState === "holstered" || this.handState === "reeling") return;
     this.riding = null;
     this.pendingLevel = null;
+    this.pendingPart = null;
     if (this.phase === "fps") this.docked = null;
     this.arms.rightHand.setParent(null);
     setClaws(this.arms.claws, 0.35);
