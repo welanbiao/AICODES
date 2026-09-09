@@ -378,7 +378,7 @@ export async function loadFpsArms(
   glbRoot.name = "xxrArmModel";
   for (const mesh of loaded.meshes) {
     mesh.isPickable = false;
-    mesh.renderingGroupId = 0;
+    mesh.renderingGroupId = ARM_GROUP;
     mesh.alwaysSelectAsActiveMesh = true;
     mesh.isVisible = true;
     mesh.visibility = 1;
