@@ -153,6 +153,7 @@ export class Game {
     this.fpsCam = new UniversalCamera("fps", new Vector3(0, 0, 0), this.scene);
     this.fpsCam.minZ = 0.04;
     this.fpsCam.maxZ = 400;
+    this.fpsCam.fov = 0.98;
     this.fpsCam.inertia = 0;
     this.fpsCam.speed = 0;
     this.fpsCam.applyGravity = false;
