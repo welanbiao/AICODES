@@ -414,11 +414,11 @@ button.ghost {
 }
 
 .joy-base {
-  width: calc(96px * var(--ui));
-  height: calc(96px * var(--ui));
+  width: calc(128px * var(--ui));
+  height: calc(128px * var(--ui));
   border-radius: 50%;
-  border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.28);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.22);
   position: relative;
 }
 
