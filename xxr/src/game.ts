@@ -73,6 +73,7 @@ const LEVEL_META: Record<
     model: string;
     file: string;
     y: number;
+    orbit: number;
     interior: string;
     role: string;
     material: string;
@@ -86,6 +87,7 @@ const LEVEL_META: Record<
     model: "phoneModel",
     file: "iphone_12_teardown.glb",
     y: 0.16,
+    orbit: 0,
     interior: "手机内部",
     role: "口袋里的微型计算机",
     material: "铝合金中框 + 玻璃盖板。内部叠着电池、主板、摄像头和天线，把整台电脑缩进掌心。",
@@ -98,6 +100,7 @@ const LEVEL_META: Record<
     model: "laptopModel",
     file: "lumen_64_spark__computer.glb",
     y: 0.1,
+    orbit: (Math.PI * 2) / 5,
     interior: "旧电脑内部",
     role: "蒸汽齿轮实验主机",
     material: "外露齿轮、灯管和机械锁扣的金属箱体。运算靠可见的传动机构完成，像一台会动的机械电脑。",
@@ -110,10 +113,37 @@ const LEVEL_META: Record<
     model: "earbudsModel",
     file: "computer.glb",
     y: 0.1,
+    orbit: (Math.PI * 4) / 5,
     interior: "新电脑内部",
     role: "新时代电脑主机",
     material: "承载电脑所有核心运算和硬件调度的“核心箱体”。包含CPU、主板、内存条、硬盘、电源、显卡、散热系统等关键组件。",
     note: "靠近后会自动播放动画，看完可进入内部。",
+  },
+  connor: {
+    title: "康纳",
+    wrap: "level-connor",
+    spin: "connorSpin",
+    model: "connorModel",
+    file: "connor_human.glb",
+    y: 0.08,
+    orbit: (Math.PI * 6) / 5,
+    interior: "康纳内部",
+    role: "CyberLife 派来的仿生人侦探",
+    material: "仿生皮肤、液态聚合物肌肉与精密骨架。太阳穴有一枚状态 LED。",
+    note: "靠近后会自动播放待机动画，看完可进入内部。",
+  },
+  north: {
+    title: "诺斯",
+    wrap: "level-north",
+    spin: "northSpin",
+    model: "northModel",
+    file: "north_human.glb",
+    y: 0.08,
+    orbit: (Math.PI * 8) / 5,
+    interior: "诺斯内部",
+    role: "耶利哥的仿生人革命者",
+    material: "仿生皮肤与强化纤维组织。短发、作战上衣与赤手。",
+    note: "靠近后会自动播放待机动画，看完可进入内部。",
   },
 };
 
