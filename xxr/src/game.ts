@@ -1395,9 +1395,16 @@ export class Game {
   }
 
   private clampToSky(p: Vector3) {
-    p.x = clamp(p.x, this.skyMin.x, this.skyMax.x);
-    p.y = clamp(p.y, this.skyMin.y, this.skyMax.y);
-    p.z = clamp(p.z, this.skyMin.z, this.skyMax.z);
+    const dx = p.x - this.skyCenter.x;
+    const dy = p.y - this.skyCenter.y;
+    const dz = p.z - this.skyCenter.z;
+    const dist = Math.hypot(dx, dy, dz);
+    if (dist > this.skyRadius && dist > 1e-8) {
+      const k = this.skyRadius / dist;
+      p.x = this.skyCenter.x + dx * k;
+      p.y = this.skyCenter.y + dy * k;
+      p.z = this.skyCenter.z + dz * k;
+    }
     return p;
   }
 
