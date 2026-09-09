@@ -1378,7 +1378,7 @@ export class Game {
       node.scaling.copyFrom(s);
       this.zoomBase.set(node.uniqueId, s.clone());
     }
-    if (this.phoneWrap) this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
+    if (this.phoneWrap) this.packs.get("phone")?.hubScale.copyFrom(this.phoneWrap.scaling);
     this.refreshSkyBounds();
   }
 
