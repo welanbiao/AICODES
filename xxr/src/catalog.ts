@@ -345,6 +345,7 @@ export const CATALOG: Record<string, PartInfo> = {
     note: "与闪光灯透镜对齐。",
   },
   ...PC_CATALOG,
+  ...HUMAN_CATALOG,
 };
 
 function cleanedPartName(name: string) {
