@@ -1,7 +1,5 @@
-import { readFileSync } from "node:fs";
-
+﻿import { readFileSync } from "node:fs";
 const j = JSON.parse(readFileSync("tmp-mesh-names.json", "utf8"));
-
 function norm(name) {
   return name
     .split("_$Assimp")[0]
@@ -12,7 +10,6 @@ function norm(name) {
     .replace(/\s+/g, "_")
     .trim();
 }
-
 function uniq(arr) {
   const skip = /^(Sketchfab|root|GLTF|Lamp|Point|Spot|__root__|Root)$/i;
   const m = new Map();
@@ -23,8 +20,7 @@ function uniq(arr) {
   }
   return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 }
-
 console.log("=== SPARK KEYS ===");
-for (const [k, c] of uniq(j.spark.nodes)) console.log(`${c}\t${k}`);
+for (const [k, c] of uniq(j.spark.nodes)) console.log(c + "\t" + k);
 console.log("=== PC KEYS ===");
-for (const [k, c] of uniq([...j.pc.nodes, ...j.pc.meshes])) console.log(`${c}\t${k}`);
+for (const [k, c] of uniq([...j.pc.nodes, ...j.pc.meshes])) console.log(c + "\t" + k);
