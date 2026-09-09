@@ -68,11 +68,8 @@ body,
   display: none !important;
 }
 
-#screen-load {
-  pointer-events: auto;
-  display: grid;
-  place-items: center;
-  background: #0b0d12;
+#app[data-phase="loading"] #screen-play {
+  display: none !important;
 }
 
 .menu-card,
