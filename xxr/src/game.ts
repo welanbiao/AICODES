@@ -901,8 +901,7 @@ export class Game {
 
   private standInFront(wrap: TransformNode) {
     wrap.computeWorldMatrix(true);
-    const box = wrap.getHierarchyBoundingVectors(true);
-    const center = box.min.add(box.max).scale(0.5);
+    const center = wrap.getAbsolutePosition();
     const dir = center.subtract(this.fpsCam.position);
     dir.y = 0;
     if (dir.lengthSquared() < 1e-6) dir.set(0, 0, 1);
