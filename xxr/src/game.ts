@@ -761,11 +761,28 @@ export class Game {
       toast("先用钩爪锁定我的手机");
       return;
     }
-    this.exploded = !this.exploded;
-    this.explodeGoal = this.exploded ? 1 : 0;
-    if (!this.exploded) this.explodeDone = false;
+    if (this.exploded) this.foldTogether();
+    else this.startExplode();
+  }
+
+  private startExplode() {
+    if (this.exploded) return;
+    this.exploded = true;
+    this.explodeGoal = 1;
     this.syncHandButtons();
-    toast(this.exploded ? "爆炸图展开" : "零件合拢");
+    toast("靠近模型，爆炸图展开");
+  }
+
+  foldTogether() {
+    if (!this.worldReady) return;
+    const onPhone = this.phase === "interior" || this.docked?.id === "phone";
+    if (!onPhone) return;
+    if (!this.exploded && this.explodeT <= 0.02) return;
+    this.exploded = false;
+    this.explodeGoal = 0;
+    this.explodeDone = false;
+    this.syncHandButtons();
+    toast("零件合拢");
   }
 
   lookAtPhone() {
