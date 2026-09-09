@@ -1036,10 +1036,10 @@ export class Game {
     const speed = (this.phase === "interior" ? 3.2 : this.moveSpeed) * sprint;
     let x = this.joy.x;
     let z = -this.joy.y;
-    if (this.keys.has("KeyA")) x -= 1;
-    if (this.keys.has("KeyD")) x += 1;
-    if (this.keys.has("KeyW")) z += 1;
-    if (this.keys.has("KeyS")) z -= 1;
+    if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) x -= 1;
+    if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) x += 1;
+    if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) z += 1;
+    if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) z -= 1;
     let y = 0;
     if (this.keys.has("Space")) y += 1;
     if (this.keys.has("KeyC") || this.keys.has("ControlLeft")) y -= 1;
