@@ -66,7 +66,18 @@ type LevelPack = {
 
 const LEVEL_META: Record<
   LevelId,
-  { title: string; wrap: string; spin: string; model: string; file: string; y: number; interior: string }
+  {
+    title: string;
+    wrap: string;
+    spin: string;
+    model: string;
+    file: string;
+    y: number;
+    interior: string;
+    role: string;
+    material: string;
+    note: string;
+  }
 > = {
   phone: {
     title: "手机",
@@ -76,6 +87,9 @@ const LEVEL_META: Record<
     file: "iphone_12_teardown.glb",
     y: 0.16,
     interior: "手机内部",
+    role: "口袋里的微型计算机",
+    material: "铝合金中框 + 玻璃盖板。内部叠着电池、主板、摄像头和天线，把整台电脑缩进掌心。",
+    note: "靠近后会自动展开爆炸图，看完可进入内部。",
   },
   laptop: {
     title: "旧电脑",
@@ -85,6 +99,9 @@ const LEVEL_META: Record<
     file: "lumen_64_spark__computer.glb",
     y: 0.1,
     interior: "旧电脑内部",
+    role: "蒸汽齿轮实验主机",
+    material: "外露齿轮、灯管和机械锁扣的金属箱体。运算靠可见的传动机构完成，像一台会动的机械电脑。",
+    note: "靠近后会自动播放动画，看完可进入内部。",
   },
   earbuds: {
     title: "新电脑",
@@ -94,6 +111,9 @@ const LEVEL_META: Record<
     file: "computer.glb",
     y: 0.1,
     interior: "新电脑内部",
+    role: "新时代电脑主机",
+    material: "承载电脑所有核心运算和硬件调度的“核心箱体”。包含CPU、主板、内存条、硬盘、电源、显卡、散热系统等关键组件。",
+    note: "靠近后会自动播放动画，看完可进入内部。",
   },
 };
 
@@ -990,9 +1010,9 @@ export class Game {
     const info = this.phase === "fps" && level
       ? {
           name: LEVEL_META[level.id].title,
-          role: "关卡场景",
-          material: "待鉴定",
-          note: "靠近后会自动展开爆炸图，看完可进入内部。",
+          role: "新时代电脑主机",
+          material: "承载电脑所有核心运算和硬件调度的“核心箱体”。包含CPU、主板、内存条、硬盘、电源、显卡、散热系统等关键组件。",
+          note: "靠近后会自动播放动画，看完可进入内部。",
         }
       : infoFor(this.resolveName(mesh));
     card.hidden = false;
