@@ -1391,6 +1391,7 @@ export class Game {
     this.updateHookRope();
     this.applyLook();
     this.updateLabels();
+    if (this.phase !== "interior") this.clampPlayer();
   }
 
   private clampToSky(p: Vector3) {
