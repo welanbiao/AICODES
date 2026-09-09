@@ -759,7 +759,8 @@ export class Game {
   }
 
   private phoneWorldSpan() {
-    const e = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const pack = this.packs.get("phone");
+    const e = this.scene.getWorldExtends((m) => this.isPackPart(m, pack) && !!m.getTotalVertices());
     const s = e.max.subtract(e.min);
     return {
       size: [s.x, s.y, s.z],
