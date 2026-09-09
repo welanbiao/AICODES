@@ -796,6 +796,13 @@ export class Game {
         mat.emissiveColor = mat.emissiveColor.add(new Color3(0.04, 0.04, 0.045));
         return;
       }
+      if (id === "connor" || id === "north") {
+        (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
+        mat.directIntensity = 1.35;
+        mat.environmentIntensity = 0.85;
+        mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.28);
+        return;
+      }
       (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
       mat.directIntensity = 0.82;
       mat.environmentIntensity = 0.22;
