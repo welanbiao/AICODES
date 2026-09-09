@@ -833,6 +833,7 @@ export class Game {
   }
 
   private applyExplode(dt: number) {
+    if (this.capturingExplode) return;
     const step = dt / EXPLODE_SEC;
     if (this.explodeT < this.explodeGoal) this.explodeT = Math.min(this.explodeGoal, this.explodeT + step);
     else if (this.explodeT > this.explodeGoal) this.explodeT = Math.max(this.explodeGoal, this.explodeT - step);
