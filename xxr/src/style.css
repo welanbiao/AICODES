@@ -411,17 +411,13 @@ button.ghost {
   h1 {
     font-size: calc(28px * var(--ui));
   }
-  .joystick .joy-base {
+  .joystick .joy-base,
+  .hook-orb {
     width: calc(96px * var(--ui));
     height: calc(96px * var(--ui));
   }
-  .play-actions {
-    width: calc(200px * var(--ui));
-    height: calc(200px * var(--ui));
-  }
-  .play-actions [data-testid="btn-fire"] {
-    width: calc(88px * var(--ui));
-    height: calc(88px * var(--ui));
+  .hook-orb button {
+    font-size: calc(12px * var(--ui));
   }
 }
 
