@@ -1667,6 +1667,8 @@ export class Game {
         gen: this.gen,
       }),
       explode: () => this.toggleExplode(),
+      fold: () => this.foldTogether(),
+      finishFold: () => this.finishFoldNow(),
       yankPart: () => {
         if (this.phase !== "interior") return false;
         const cam = this.fpsCam.position;
