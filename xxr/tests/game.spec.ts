@@ -20,11 +20,7 @@ test.describe("小小人", () => {
     expect(await page.getByTestId("level-label").textContent()).toContain("我的手机");
     expect(await page.evaluate(() => window.__XXR__?.hookOn)).toBe(false);
 
-    await page.evaluate(() => {
-      window.__XXR__?.lookAtPhone?.();
-    });
-    await page.waitForTimeout(250);
-    await page.evaluate(() => window.__XXR__?.fire());
+    await page.evaluate(() => window.__XXR__?.grabPhone?.());
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("docked");
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.docked)).toBe("phone");
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.hookOn)).toBe(false);

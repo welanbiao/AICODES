@@ -605,6 +605,11 @@ export class Game {
       toast("未锁定关卡，钩爪不能发射");
       return;
     }
+    this.launchAt(level);
+  }
+
+  private launchAt(level: LevelRef) {
+    if (!this.arms || this.handState !== "holstered" || this.phase !== "fps") return;
     const hook = this.arms.rightHand;
     setHookVisible(this.arms, true);
     const origin = this.arms.wristAnchor.getAbsolutePosition();
