@@ -722,6 +722,13 @@ export class Game {
       const extra = key === "front_panel" || key === "back_cover" ? 12 : 3.5 + Math.min(9, Math.max(len, 0.2) * 0.45);
       mesh.position.copyFrom(rest.add(dir.scale(extra * ease)));
     }
+    if (this.exploded && this.explodeT >= 0.995) {
+      if (!this.explodeDone) {
+        this.explodeDone = true;
+        this.syncHandButtons();
+        if (this.phase === "docked" && this.docked?.id === "phone") toast("可以进入内部探索");
+      }
+    }
   }
 
   private applyLook() {
