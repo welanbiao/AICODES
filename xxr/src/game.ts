@@ -530,6 +530,17 @@ export class Game {
       const rest = this.explodeRest.get(node.uniqueId);
       if (rest) node.position.copyFrom(rest);
     }
+    this.capturingExplode = false;
+  }
+
+  private phoneWorldSpan() {
+    const e = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const s = e.max.subtract(e.min);
+    return {
+      size: [s.x, s.y, s.z],
+      longest: Math.max(s.x, s.y, s.z),
+      parts: this.explodeNodes.length,
+    };
   }
 
   private isSkyMesh(mesh: AbstractMesh) {
