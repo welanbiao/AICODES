@@ -483,18 +483,25 @@ export class Game {
   }
 
   private makeLevelOrbs() {
-    const mk = (name: string, color: Color3) => {
-      const mat = new StandardMaterial(`${name}Mat`, this.scene);
-      mat.diffuseColor = color;
-      mat.emissiveColor = color.scale(0.45);
-      mat.specularColor = Color3.Black();
-      const mesh = MeshBuilder.CreateBox(name, { size: 0.28 }, this.scene);
-      mesh.material = mat;
-      mesh.isPickable = false;
-      return mesh;
-    };
-    this.lv2 = mk("level-laptop-orb", new Color3(0.25, 0.32, 0.4));
-    this.lv3 = mk("level-earbuds-orb", new Color3(0.25, 0.32, 0.4));
+    this.lv2 = createLaptopProp(this.scene);
+    this.lv3 = createEarbudsProp(this.scene);
+  }
+
+  returnToCenter() {
+    if (!this.worldReady) return;
+    this.riding = null;
+    if (this.arms && this.handState !== "holstered") this.recallHand(true);
+    this.fpsCam.position.set(0, 0, 0);
+    this.look.yaw = 0;
+    this.look.pitch = -0.08;
+    this.applyLook();
+    if (this.phase === "observe") {
+      this.phase = "fps";
+      setPhase("fps");
+    }
+    $<HTMLElement>("#play-status").textContent = "星空枢纽";
+    this.syncHandButtons();
+    toast("已返回星空中心");
   }
 
   toggleExplode() {
