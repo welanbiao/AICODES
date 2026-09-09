@@ -1094,7 +1094,7 @@ export class Game {
     setPhase("docked");
     const { stand, yaw } = this.standInFront(level.wrap);
     this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand, lookYaw: yaw };
-    $<HTMLElement>("#play-status").textContent = `锁定 ${{ phone: "我的手机", laptop: "我的电脑", earbuds: "无线耳机" }[level.id]}`;
+    $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[level.id].title}`;
     this.syncHandButtons();
     playSfx("fire");
     window.setTimeout(() => {
