@@ -484,7 +484,10 @@ export class Game {
     this.phoneHubScale.copyFrom(wrap.scaling);
   }
 
+  private capturingExplode = false;
+
   private captureExplodePoses(g: AnimationGroup) {
+    this.capturingExplode = true;
     this.explodeNodes = [];
     this.explodeRest.clear();
     this.explodePose.clear();
