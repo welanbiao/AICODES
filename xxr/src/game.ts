@@ -1150,13 +1150,15 @@ export class Game {
   }
 
   private clampPlayerDest(p: Vector3) {
-    this.clampToSky(p);
-    if (this.phase !== "interior" || !this.phoneWrap) return p;
-    const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
-    const pad = 0.45;
-    p.x = clamp(p.x, extents.min.x + pad, extents.max.x - pad);
-    p.y = clamp(p.y, extents.min.y + pad, extents.max.y - pad);
-    p.z = clamp(p.z, extents.min.z + pad, extents.max.z - pad);
+    if (this.phase === "interior" && this.phoneWrap) {
+      const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+      const pad = 0.35;
+      const axis = (v: number, lo: number, hi: number) => (hi - lo > pad * 2 ? clamp(v, lo + pad, hi - pad) : v);
+      p.x = axis(p.x, extents.min.x, extents.max.x);
+      p.y = axis(p.y, extents.min.y, extents.max.y);
+      p.z = axis(p.z, extents.min.z, extents.max.z);
+      return p;
+    }
     return this.clampToSky(p);
   }
 
