@@ -81,11 +81,20 @@ function cyl(
 
 export function isAvatarMesh(mesh: AbstractMesh | Node | string) {
   if (typeof mesh === "string") {
-    return mesh.startsWith("xxr") || mesh.startsWith("armmesh");
+    return (
+      mesh === "xxrArms" ||
+      mesh === "xxrHook" ||
+      mesh === "xxrRope" ||
+      mesh.startsWith("armmesh") ||
+      mesh.startsWith("xxrArm") ||
+      mesh.startsWith("xxrBatman") ||
+      mesh.startsWith("xxrScan") ||
+      mesh.startsWith("xxrClaw")
+    );
   }
   let n: Node | null = mesh;
   while (n) {
-    if (n.name === "xxrArms" || n.name.startsWith("xxr")) return true;
+    if (n.name === "xxrArms" || n.name === "xxrHook" || n.name === "xxrRope") return true;
     n = n.parent;
   }
   return false;
