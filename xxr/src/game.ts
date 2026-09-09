@@ -1211,6 +1211,7 @@ declare global {
         gen: number;
       };
       explode: () => void;
+      phoneSpan?: () => { size: number[]; longest: number; parts: number };
       finishExplode?: () => void;
       enter?: () => void;
       lookAtPhone: () => void;
