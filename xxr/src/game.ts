@@ -457,6 +457,22 @@ export class Game {
     wrap.position.set(0, 0.16, ORBIT_RADIUS);
   }
 
+  private isSkyMesh(mesh: AbstractMesh) {
+    if (mesh.metadata?.xxr === "sky") return true;
+    let n: Node | null = mesh;
+    while (n) {
+      if (n.name === "skyRoot" || n.name.startsWith("sky_") || /skybox|hdrSkyBox|BackgroundSkybox/i.test(n.name)) return true;
+      n = n.parent;
+    }
+    return false;
+  }
+
+  private canLatch(mesh: AbstractMesh) {
+    if (!mesh.isPickable || !mesh.isEnabled()) return false;
+    if (this.isSkyMesh(mesh) || isAvatarMesh(mesh)) return false;
+    return this.isPhonePart(mesh);
+  }
+
   private isPhonePart(mesh: AbstractMesh) {
     let n: Node | null = mesh;
     while (n) {
