@@ -627,30 +627,48 @@ export class Game {
   recallHand(silent = false) {
     if (!this.arms || this.handState === "holstered" || this.handState === "reeling") return;
     this.riding = null;
+    this.pendingLevel = null;
     this.arms.rightHand.setParent(null);
     setClaws(this.arms.claws, 0.35);
     this.handState = "reeling";
     this.syncHandButtons();
     if (!silent) playSfx("recall");
-    if (this.phase === "observe") this.dismount();
   }
 
   dismount() {
-    if (this.phase !== "observe") return;
+    if (this.phase !== "docked" || !this.docked) return;
+    this.alignOrbitTo(this.docked);
+    this.docked = null;
+    this.pendingLevel = null;
     this.phase = "fps";
     setPhase("fps");
     $<HTMLElement>("#play-status").textContent = "星空枢纽";
     this.syncHandButtons();
+    toast("已解除锁定");
+  }
+
+  private alignOrbitTo(level: LevelRef) {
+    const cam = this.fpsCam.position;
+    const rel = level.wrap.position.subtract(cam);
+    const a = Math.atan2(rel.x, rel.z);
+    if (level.id === "phone") this.phoneAngle = a;
+    else if (level.id === "laptop") this.phoneAngle = a - (Math.PI * 2) / 3;
+    else this.phoneAngle = a - (Math.PI * 4) / 3;
   }
 
   private syncHandButtons() {
-    $<HTMLButtonElement>('[data-testid="btn-recall"]').hidden = this.handState === "holstered" || this.handState === "reeling";
-    $<HTMLButtonElement>('[data-testid="btn-fire"]').hidden = this.handState !== "holstered" || this.phase === "observe";
-    $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "observe";
+    const holstered = this.handState === "holstered";
+    $<HTMLButtonElement>('[data-testid="btn-recall"]').hidden = holstered || this.handState === "reeling";
+    $<HTMLButtonElement>('[data-testid="btn-fire"]').hidden = !holstered || this.phase !== "fps";
+    $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
+    const canExplode = this.phase === "interior" || this.docked?.id === "phone";
+    $<HTMLButtonElement>('[data-testid="btn-explode-fps"]').hidden = !canExplode;
+    const canEnter = this.explodeDone && this.docked?.id === "phone" && this.phase === "docked";
+    $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
   }
 
   private pickPart(): PickingInfo | null {
-    const ray = this.fpsCam.getForwardRay(12);
+    const ray = this.fpsCam.getForwardRay(22);
     return this.scene.pickWithRay(ray, (m) => this.canLatch(m));
   }
 
