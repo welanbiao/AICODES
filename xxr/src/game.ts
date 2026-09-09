@@ -601,7 +601,7 @@ export class Game {
   fireHand() {
     if (this.phase !== "fps" || !this.arms) return;
     if (this.handState !== "holstered") return;
-    this.fpsCam.computeWorldMatrix(true);
+    this.fpsCam.getViewMatrix();
     const level = this.aimLevel();
     if (!level) {
       toast("未锁定关卡，钩爪不能发射");
