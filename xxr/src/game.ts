@@ -175,7 +175,6 @@ export class Game {
   private interiorId: LevelId | null = null;
   private phoneWrap: TransformNode | null = null;
   private phoneSpin: TransformNode | null = null;
-  private phoneMeshes: AbstractMesh[] = [];
   private lv2: TransformNode | null = null;
   private lv3: TransformNode | null = null;
   private phoneAngle = 0;
