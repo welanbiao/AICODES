@@ -737,6 +737,7 @@ export class Game {
     this.pendingLevel = null;
     this.pendingPart = null;
     this.docked = null;
+    this.nearExplode = false;
     if (this.arms && this.handState !== "holstered") this.recallHand(true);
     this.exitInterior(true);
     this.restoreNativeScales();
