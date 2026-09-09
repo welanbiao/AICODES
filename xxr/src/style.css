@@ -251,7 +251,7 @@ h1 {
   user-select: none;
   touch-action: manipulation;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .act-stack [data-testid="btn-home"] {
