@@ -1611,8 +1611,9 @@ export class Game {
     setPhase("docked");
     $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[level.id].title}`;
     this.syncHandButtons();
-    this.tryAutoExplode();
-    if (!this.exploded) toast("靠近模型后会自动展开");
+    const pack = this.packs.get(level.id);
+    if (pack && !pack.exploded) this.startExplode();
+    else this.tryAutoExplode();
   }
 
   enterInterior() {

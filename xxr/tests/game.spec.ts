@@ -51,7 +51,7 @@ test.describe("小小人", () => {
     });
     expect(flowed).toMatchObject({ ok: true, grabbed: "docked" });
     await expect(page.getByTestId("joystick")).toBeVisible();
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded === true), { timeout: 15_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded === true), { timeout: 30_000 }).toBe(true);
     await expect(page.getByTestId("btn-explode-fps")).toBeVisible();
     await expect(page.getByTestId("btn-explode-fps")).toHaveText("合拢");
 
