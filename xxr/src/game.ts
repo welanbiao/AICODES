@@ -246,6 +246,7 @@ export class Game {
     };
     base.addEventListener("pointerdown", (e) => {
       pid = e.pointerId;
+      unlockAudio();
       base.setPointerCapture(e.pointerId);
       const b = base.getBoundingClientRect();
       apply(e.clientX - (b.left + b.width / 2), e.clientY - (b.top + b.height / 2));
