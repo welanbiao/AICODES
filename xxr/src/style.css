@@ -157,9 +157,6 @@ h1 {
 .hint {
   color: var(--muted);
   text-align: right;
-}
-
-.hint {
   max-width: 58%;
 }
 
