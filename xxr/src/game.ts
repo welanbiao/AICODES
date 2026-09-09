@@ -114,10 +114,11 @@ export class Game {
   private highlight: AbstractMesh | null = null;
   private observePivot = Vector3.Zero();
   private worldReady = false;
-  private riding: { t: number; from: Vector3; to: Vector3 } | null = null;
+  private riding: { t: number; from: Vector3; to: Vector3; lookYaw: number } | null = null;
   private restLocal = new Map<number, Vector3>();
   private explodeT = 0;
   private explodeGoal = 0;
+  private explodeDone = false;
   private phoneWrap: TransformNode | null = null;
   private phoneSpin: TransformNode | null = null;
   private phoneMeshes: AbstractMesh[] = [];
@@ -127,6 +128,10 @@ export class Game {
   private skyMin = new Vector3(-30, -30, -30);
   private skyMax = new Vector3(30, 30, 30);
   private skyLimit = 30;
+  private docked: LevelRef | null = null;
+  private pendingLevel: LevelRef | null = null;
+  private phoneHubScale = new Vector3(1, 1, 1);
+  private interior = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
