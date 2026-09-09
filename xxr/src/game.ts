@@ -1261,9 +1261,7 @@ export class Game {
     const cam = this.fpsCam.position;
     const rel = level.wrap.position.subtract(cam);
     const a = Math.atan2(rel.x, rel.z);
-    if (level.id === "phone") this.phoneAngle = a;
-    else if (level.id === "laptop") this.phoneAngle = a - (Math.PI * 2) / 3;
-    else this.phoneAngle = a - (Math.PI * 4) / 3;
+    this.phoneAngle = a - LEVEL_META[level.id].orbit;
   }
 
   private syncHandButtons() {
