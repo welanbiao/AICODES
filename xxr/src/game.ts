@@ -814,7 +814,7 @@ export class Game {
       if (bright > 0.82) mat.albedoColor = mat.albedoColor.scale(0.52);
       return;
     }
-    if (mat instanceof StandardMaterial && id !== "phone") {
+    if (mat instanceof StandardMaterial && id !== "phone" && id !== "connor" && id !== "north") {
       mat.disableLighting = false;
       mat.emissiveColor = mat.emissiveColor.scale(0.1);
       mat.specularColor = new Color3(0.1, 0.1, 0.12);
