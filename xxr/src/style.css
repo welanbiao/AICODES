@@ -260,20 +260,6 @@ h1 {
   color: var(--muted);
 }
 
-.credit {
-  pointer-events: none;
-  position: absolute;
-  left: calc(12px * var(--ui));
-  right: auto;
-  bottom: calc(168px * var(--ui) + env(safe-area-inset-bottom));
-  margin: 0;
-  color: var(--muted);
-  font-size: calc(11px * var(--ui));
-  text-shadow: 0 1px 8px #000;
-  opacity: 0.75;
-  max-width: 42%;
-}
-
 button {
   font: inherit;
   color: var(--ink);
@@ -285,99 +271,6 @@ button {
   cursor: pointer;
   pointer-events: auto;
 }
-
-.play-actions button {
-  position: absolute;
-  margin: 0;
-  padding: 0 6px;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  line-height: 1.15;
-  border-radius: 50%;
-  user-select: none;
-  touch-action: manipulation;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-
-.play-actions [data-testid="btn-home"] {
-  right: calc(86px * var(--ui));
-  bottom: calc(148px * var(--ui));
-  width: calc(56px * var(--ui));
-  height: calc(56px * var(--ui));
-  font-size: calc(12px * var(--ui));
-}
-
-.play-actions [data-testid="btn-identify"] {
-  right: calc(148px * var(--ui));
-  bottom: calc(86px * var(--ui));
-  width: calc(58px * var(--ui));
-  height: calc(58px * var(--ui));
-  font-size: calc(12px * var(--ui));
-}
-
-.play-actions [data-testid="btn-dismount"] {
-  right: calc(168px * var(--ui));
-  bottom: calc(148px * var(--ui));
-  width: calc(54px * var(--ui));
-  height: calc(54px * var(--ui));
-  font-size: calc(12px * var(--ui));
-}
-
-.play-actions [data-testid="btn-explode-fps"] {
-  right: calc(28px * var(--ui));
-  bottom: calc(128px * var(--ui));
-  width: calc(58px * var(--ui));
-  height: calc(58px * var(--ui));
-  font-size: calc(12px * var(--ui));
-}
-
-.play-actions [data-testid="btn-enter"] {
-  right: calc(118px * var(--ui));
-  bottom: calc(78px * var(--ui));
-  width: calc(62px * var(--ui));
-  height: calc(62px * var(--ui));
-  font-size: calc(13px * var(--ui));
-}
-
-.play-actions [data-testid="btn-recall"] {
-  right: calc(118px * var(--ui));
-  bottom: calc(8px * var(--ui));
-  width: calc(62px * var(--ui));
-  height: calc(62px * var(--ui));
-  font-size: calc(13px * var(--ui));
-}
-
-.play-actions [data-testid="btn-fire"] {
-  right: 0;
-  bottom: 0;
-  width: calc(112px * var(--ui));
-  height: calc(112px * var(--ui));
-  min-height: 0;
-  font-size: calc(16px * var(--ui));
-  font-weight: 700;
-}
-
-.play-actions:has([data-testid="btn-fire"][hidden]) [data-testid="btn-enter"]:not([hidden]) {
-  right: 0;
-  bottom: 0;
-  width: calc(112px * var(--ui));
-  height: calc(112px * var(--ui));
-  font-size: calc(16px * var(--ui));
-  font-weight: 700;
-}
-
-.play-actions:has([data-testid="btn-fire"][hidden]):has([data-testid="btn-enter"][hidden])
-  [data-testid="btn-dismount"]:not([hidden]) {
-  right: 0;
-  bottom: 0;
-  width: calc(112px * var(--ui));
-  height: calc(112px * var(--ui));
-  font-size: calc(16px * var(--ui));
-  font-weight: 700;
-}
-
-button.primary {
   background: linear-gradient(180deg, #3ee0c8, #1aa894);
   color: #06221d;
   border-color: transparent;
