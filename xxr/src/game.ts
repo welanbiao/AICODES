@@ -352,7 +352,7 @@ export class Game {
       setPhase("fps");
       $<HTMLElement>("#play-status").textContent = "星空枢纽";
       this.syncHandButtons();
-      toast("第一关：我的手机");
+      toast("瞄准关卡后发射钩爪");
     } catch (err) {
       console.error(err);
       toast("模型加载失败");
