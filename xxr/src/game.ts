@@ -346,7 +346,10 @@ export class Game {
     root.name = "skyRoot";
     for (const mesh of loaded.meshes) {
       mesh.isPickable = false;
+      mesh.checkCollisions = false;
       mesh.alwaysSelectAsActiveMesh = true;
+      mesh.metadata = { ...(mesh.metadata ?? {}), xxr: "sky" };
+      mesh.name = mesh.name.startsWith("sky") ? mesh.name : `sky_${mesh.name}`;
       const mat = mesh.material;
       if (!mat) continue;
       mat.backFaceCulling = false;
