@@ -9,7 +9,8 @@ function paint(scene: Scene, name: string, color: Color3, emit = 0.18) {
 }
 
 function tag(mesh: Mesh) {
-  mesh.isPickable = false;
+  mesh.isPickable = true;
+  mesh.metadata = { ...(mesh.metadata ?? {}), xxr: "level" };
   return mesh;
 }
 
