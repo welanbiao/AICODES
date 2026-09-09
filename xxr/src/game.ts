@@ -207,6 +207,7 @@ export class Game {
       if (this.phase !== "fps" && this.phase !== "observe") return;
       this.dragging = true;
       this.lastPtr = { x: e.clientX, y: e.clientY };
+      unlockAudio();
       if (e.pointerType === "mouse") this.canvas.requestPointerLock();
     });
     window.addEventListener("pointerup", () => {
