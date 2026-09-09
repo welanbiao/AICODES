@@ -823,25 +823,17 @@ export class Game {
     if (this.explodeT < this.explodeGoal) this.explodeT = Math.min(this.explodeGoal, this.explodeT + step);
     else if (this.explodeT > this.explodeGoal) this.explodeT = Math.max(this.explodeGoal, this.explodeT - step);
     const ease = this.explodeT * this.explodeT * (3 - 2 * this.explodeT);
-    if (this.explodeGroup) {
+    if (this.explodeNodes.length) {
+      for (const node of this.explodeNodes) {
+        const rest = this.explodeRest.get(node.uniqueId);
+        const pose = this.explodePose.get(node.uniqueId);
+        if (!rest || !pose) continue;
+        Vector3.LerpToRef(rest, pose, ease, node.position);
+      }
+    } else if (this.explodeGroup) {
       const g = this.explodeGroup;
-      const frame = g.from + (g.to - g.from) * ease;
-      g.goToFrame(frame);
+      g.goToFrame(g.from + (g.to - g.from) * 0.84 * ease);
       g.pause();
-    }
-    for (const mesh of this.phoneMeshes) {
-      const rest = this.restLocal.get(mesh.uniqueId);
-      if (!rest) continue;
-      const key = partKeyFromName(mesh.name);
-      let dir = rest.clone();
-      const len = dir.length();
-      if (len < 0.0008) dir = new Vector3(0, 1, 0);
-      else dir.scaleInPlace(1 / len);
-      if (key === "front_panel") dir = new Vector3(rest.x >= 0 ? 1 : -1, 0.15, 0);
-      if (key === "back_cover" || key === "backplate") dir = new Vector3(rest.x >= 0 ? -1 : 1, -0.1, 0);
-      if (key === "battery") dir = new Vector3(0, 0, rest.z >= 0 ? 1 : -1);
-      const extra = key === "front_panel" || key === "back_cover" ? 12 : 3.5 + Math.min(9, Math.max(len, 0.2) * 0.45);
-      mesh.position.copyFrom(rest.add(dir.scale(extra * ease)));
     }
     if (this.exploded && this.explodeT >= 0.995) {
       if (!this.explodeDone) {
