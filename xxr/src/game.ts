@@ -717,11 +717,13 @@ export class Game {
     if (this.phase !== "fps" || !this.arms) return;
     if (this.handState !== "holstered") return;
     this.fpsCam.getViewMatrix();
+    this.scene.updateTransformMatrix();
     const level = this.aimLevel();
     if (!level) {
       toast("未锁定关卡，钩爪不能发射");
       return;
     }
+    this.lookAtNode(level.wrap);
     this.launchAt(level);
   }
 
