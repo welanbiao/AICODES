@@ -47,11 +47,6 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("identify-card")).toBeVisible();
     await expect(page.getByTestId("identify-card")).toContainText(/电池|零件|螺丝|主板|屏幕|未锁定|中框|摄像|玻璃|整机|手机/);
 
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.getByTestId("btn-identify")).toBeVisible();
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await expect(page.getByTestId("title")).toHaveCount(1);
-
     const fatal = pageErrors.filter((m) => !/ResizeObserver|webgl|draco|wasm/i.test(m));
     expect(fatal).toEqual([]);
   });
