@@ -962,6 +962,7 @@ export class Game {
       toast("先看完爆炸图动画");
       return;
     }
+    this.riding = null;
     this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
     this.phoneWrap.computeWorldMatrix(true);
     const before = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
