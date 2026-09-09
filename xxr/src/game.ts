@@ -859,7 +859,6 @@ export class Game {
     pack.exploded = true;
     pack.explodeGoal = 1;
     this.exploded = true;
-    this.explodeGoal = 1;
     this.syncHandButtons();
     toast("靠近模型，爆炸图展开");
   }
