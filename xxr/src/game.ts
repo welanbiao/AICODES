@@ -811,16 +811,28 @@ export class Game {
     this.updateLabels();
   }
 
-  private clampPlayer() {
-    const p = this.fpsCam.position;
+  private clampToSky(p: Vector3) {
     p.x = clamp(p.x, this.skyMin.x, this.skyMax.x);
     p.y = clamp(p.y, this.skyMin.y, this.skyMax.y);
     p.z = clamp(p.z, this.skyMin.z, this.skyMax.z);
+    return p;
+  }
+
+  private clampPlayer() {
+    this.clampToSky(this.fpsCam.position);
+    if (this.phase !== "interior" || !this.phoneWrap) return;
+    const extents = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const pad = 0.45;
+    const p = this.fpsCam.position;
+    p.x = clamp(p.x, extents.min.x + pad, extents.max.x - pad);
+    p.y = clamp(p.y, extents.min.y + pad, extents.max.y - pad);
+    p.z = clamp(p.z, extents.min.z + pad, extents.max.z - pad);
+    this.clampToSky(p);
   }
 
   private moveFps(dt: number) {
     const sprint = this.keys.has("ShiftLeft") || this.keys.has("ShiftRight") ? 1.85 : 1;
-    const speed = this.moveSpeed * sprint;
+    const speed = (this.phase === "interior" ? 3.2 : this.moveSpeed) * sprint;
     let x = this.joy.x;
     let z = -this.joy.y;
     if (this.keys.has("KeyA")) x -= 1;
@@ -836,6 +848,103 @@ export class Game {
     this.fpsCam.position.addInPlace(right.scale(x * speed * dt));
     this.fpsCam.position.addInPlace(Vector3.Up().scale(y * speed * dt));
     this.clampPlayer();
+  }
+
+  private standInFront(wrap: TransformNode) {
+    const dir = wrap.position.subtract(this.fpsCam.position);
+    dir.y = 0;
+    if (dir.lengthSquared() < 1e-6) dir.set(0, 0, 1);
+    dir.normalize();
+    const stand = this.clampToSky(wrap.position.subtract(dir.scale(STAND_DIST)));
+    stand.y = wrap.position.y + 0.08;
+    this.clampToSky(stand);
+    return { stand, yaw: Math.atan2(dir.x, dir.z) };
+  }
+
+  private finishDock() {
+    const level = this.docked ?? this.pendingLevel;
+    this.pendingLevel = null;
+    if (this.arms) {
+      holsterHook(this.arms);
+      this.handState = "holstered";
+    }
+    if (!level) {
+      this.phase = "fps";
+      setPhase("fps");
+      this.syncHandButtons();
+      return;
+    }
+    this.docked = level;
+    this.phase = "docked";
+    setPhase("docked");
+    const names: Record<LevelId, string> = { phone: "我的手机", laptop: "我的电脑", earbuds: "无线耳机" };
+    $<HTMLElement>("#play-status").textContent = `锁定 ${names[level.id]}`;
+    this.syncHandButtons();
+    if (level.id === "phone") toast("点击爆炸图，看完后可进入内部");
+    else toast(`${names[level.id]}即将开放`);
+  }
+
+  enterPhone() {
+    if (!this.worldReady || !this.phoneWrap) return;
+    if (this.phase !== "docked" || this.docked?.id !== "phone") {
+      toast("先用钩爪锁定我的手机");
+      return;
+    }
+    if (!this.explodeDone) {
+      toast("先看完爆炸图动画");
+      return;
+    }
+    this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
+    this.phoneWrap.computeWorldMatrix(true);
+    const before = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const size = before.max.subtract(before.min);
+    const longest = Math.max(size.x, size.y, size.z, 0.001);
+    this.phoneWrap.scaling.scaleInPlace(INTERIOR_SPAN / longest);
+    this.phoneWrap.computeWorldMatrix(true);
+    const after = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const center = after.min.add(after.max).scale(0.5);
+    this.fpsCam.position.copyFrom(center);
+    this.clampPlayer();
+    this.lv2?.setEnabled(false);
+    this.lv3?.setEnabled(false);
+    this.interior = true;
+    this.phase = "interior";
+    setPhase("interior");
+    $<HTMLElement>("#play-status").textContent = "手机内部";
+    this.syncHandButtons();
+    toast("进入内部探索");
+  }
+
+  private exitInterior(resetExplode: boolean) {
+    if (this.phoneWrap) {
+      this.phoneWrap.scaling.copyFrom(this.phoneHubScale);
+    }
+    this.lv2?.setEnabled(true);
+    this.lv3?.setEnabled(true);
+    this.interior = false;
+    if (resetExplode) {
+      this.exploded = false;
+      this.explodeGoal = 0;
+      this.explodeT = 0;
+      this.explodeDone = false;
+      if (this.explodeGroup) {
+        this.explodeGroup.goToFrame(this.explodeGroup.from);
+        this.explodeGroup.pause();
+      }
+      for (const mesh of this.phoneMeshes) {
+        const rest = this.restLocal.get(mesh.uniqueId);
+        if (rest) mesh.position.copyFrom(rest);
+      }
+    }
+  }
+
+  private finishExplodeNow() {
+    this.exploded = true;
+    this.explodeGoal = 1;
+    this.explodeT = 1;
+    this.applyExplode(0);
+    this.explodeDone = true;
+    this.syncHandButtons();
   }
 
   private moveObserve(dt: number) {
