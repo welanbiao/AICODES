@@ -1161,6 +1161,7 @@ export class Game {
         gen: this.gen,
       }),
       explode: () => this.toggleExplode(),
+      phoneSpan: () => this.phoneWorldSpan(),
       finishExplode: () => this.finishExplodeNow(),
       enter: () => this.enterPhone(),
       lookAtPhone: () => this.lookAtPhone(),
