@@ -230,7 +230,7 @@ export class Game {
       if (e.code === "KeyE") this.identify();
       if (e.code === "KeyF") this.fireHand();
       if (e.code === "KeyR") this.recallHand();
-      if (e.code === "KeyX") this.toggleExplode();
+      if (e.code === "KeyX") this.foldTogether();
       if (e.code === "KeyG") this.enterPhone();
       if (e.code === "KeyH" || e.code === "Home") this.returnToCenter();
       if (e.code === "Escape" && this.phase === "docked") this.dismount();
