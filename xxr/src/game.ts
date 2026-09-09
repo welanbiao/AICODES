@@ -1262,17 +1262,17 @@ export class Game {
     if (!this.skyRoot) return;
     this.skyRoot.computeWorldMatrix(true);
     const b = this.skyRoot.getHierarchyBoundingVectors(true);
-    const pad = 1.6;
-    this.skyMin.copyFrom(b.min.add(new Vector3(pad, pad, pad)));
-    this.skyMax.copyFrom(b.max.subtract(new Vector3(pad, pad, pad)));
-    this.skyLimit = Math.max(
-      Math.abs(this.skyMin.x),
-      Math.abs(this.skyMax.x),
-      Math.abs(this.skyMin.y),
-      Math.abs(this.skyMax.y),
-      Math.abs(this.skyMin.z),
-      Math.abs(this.skyMax.z),
-    );
+    this.skyMin.copyFrom(b.min);
+    this.skyMax.copyFrom(b.max);
+    this.skyCenter.copyFrom(b.min.add(b.max).scale(0.5));
+    const hx = (b.max.x - b.min.x) * 0.5;
+    const hy = (b.max.y - b.min.y) * 0.5;
+    const hz = (b.max.z - b.min.z) * 0.5;
+    const inner = Math.min(hx, hy, hz);
+    const pad = Math.max(2.8, inner * 0.08);
+    this.skyRadius = Math.max(4, inner - pad);
+    this.skyLimit = this.skyRadius;
+    if (this.phase !== "interior") this.clampPlayer();
   }
 
   private pointerSpan() {
