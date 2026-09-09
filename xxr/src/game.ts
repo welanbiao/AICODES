@@ -200,6 +200,7 @@ export class Game {
     $<HTMLButtonElement>('[data-testid="btn-fire"]').onclick = () => this.fireHand();
     $<HTMLButtonElement>('[data-testid="btn-recall"]').onclick = () => this.recallHand();
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').onclick = () => this.dismount();
+    $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterPhone();
   }
 
   private bindInput() {
