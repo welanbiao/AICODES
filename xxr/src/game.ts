@@ -554,6 +554,7 @@ export class Game {
     this.explodeDone = false;
     wrap.position.set(0, 0.16, ORBIT_RADIUS);
     this.phoneHubScale.copyFrom(wrap.scaling);
+    this.captureNativeScale(wrap);
   }
 
   private capturingExplode = false;
