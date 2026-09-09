@@ -824,12 +824,7 @@ export class Game {
     return null;
   }
 
-  private makeLevelOrbs() {
-    this.lv2 = createLaptopProp(this.scene);
-    this.lv3 = createEarbudsProp(this.scene);
-    this.captureNativeScale(this.lv2);
-    this.captureNativeScale(this.lv3);
-  }
+  private makeLevelOrbs() {}
 
   returnToCenter() {
     if (!this.worldReady) return;
