@@ -665,7 +665,7 @@ export class Game {
 
   identify() {
     if (!playable(this.phase)) return;
-    const hit = this.pickPart() ?? (this.phase === "interior" ? this.aimedPartInfo() : null);
+    const hit = this.pickPart();
     const card = $<HTMLElement>("#identify-card");
     if (this.highlight) {
       this.highlight.renderOverlay = false;
