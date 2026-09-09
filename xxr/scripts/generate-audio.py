@@ -189,23 +189,6 @@ def cosmic_stroll() -> None:
 
     highpass(left, 320, SR)
     highpass(right, 320, SR)
-    peak = 1e-6
-    for i in range(n):
-        peak = max(peak, abs(left[i]), abs(right[i]))
-    gain = 0.86 / peak
-    fade = int(SR * 0.18)
-    for i in range(n):
-        edge = 1.0
-        if i < fade:
-            edge = i / fade
-        elif i > n - fade:
-            edge = (n - 1 - i) / fade
-        left[i] *= gain * edge
-        right[i] *= gain * edge
-
-    low = sum(1 for s in left[::8] if abs(s) > 0)  # dummy to keep lint quiet
-    del low
-    write_wav_stereo("cosmic-stroll.wav", left, right)
     write_wav_stereo("starlit-jaunt.wav", left, right)
     write_wav_stereo("celestial-drift.wav", left, right)
     write_wav_stereo("bgm.wav", left, right)
