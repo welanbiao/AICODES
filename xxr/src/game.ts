@@ -1318,27 +1318,37 @@ export class Game {
   private applyExplode(dt: number) {
     if (this.capturingExplode) return;
     const step = dt / EXPLODE_SEC;
-    if (this.explodeT < this.explodeGoal) this.explodeT = Math.min(this.explodeGoal, this.explodeT + step);
-    else if (this.explodeT > this.explodeGoal) this.explodeT = Math.max(this.explodeGoal, this.explodeT - step);
-    const ease = this.explodeT * this.explodeT * (3 - 2 * this.explodeT);
-    if (this.explodeNodes.length) {
-      for (const node of this.explodeNodes) {
-        const rest = this.explodeRest.get(node.uniqueId);
-        const pose = this.explodePose.get(node.uniqueId);
-        if (!rest || !pose) continue;
-        Vector3.LerpToRef(rest, pose, ease, node.position);
+    for (const pack of this.packs.values()) {
+      if (pack.explodeT < pack.explodeGoal) pack.explodeT = Math.min(pack.explodeGoal, pack.explodeT + step);
+      else if (pack.explodeT > pack.explodeGoal) pack.explodeT = Math.max(pack.explodeGoal, pack.explodeT - step);
+      const ease = pack.explodeT * pack.explodeT * (3 - 2 * pack.explodeT);
+      if (pack.explodeNodes.length) {
+        for (const node of pack.explodeNodes) {
+          const rest = pack.explodeRest.get(node.uniqueId);
+          const pose = pack.explodePose.get(node.uniqueId);
+          if (!rest || !pose) continue;
+          Vector3.LerpToRef(rest, pose, ease, node.position);
+        }
+      } else if (pack.explodeGroup) {
+        const g = pack.explodeGroup;
+        g.goToFrame(g.from + (g.to - g.from) * 0.84 * ease);
+        g.pause();
       }
-    } else if (this.explodeGroup) {
-      const g = this.explodeGroup;
-      g.goToFrame(g.from + (g.to - g.from) * 0.84 * ease);
-      g.pause();
-    }
-    if (this.exploded && this.explodeT >= 0.995) {
-      if (!this.explodeDone) {
-        this.explodeDone = true;
+      if (pack.exploded && pack.explodeT >= 0.995 && !pack.explodeDone) {
+        pack.explodeDone = true;
         this.syncHandButtons();
-        if (this.phase === "docked" && this.docked?.id === "phone") toast("可以进入内部探索");
+        if (this.phase === "docked" && this.docked?.id === pack.id) toast("可以进入内部探索");
       }
+    }
+    const active = this.activePack();
+    if (active) {
+      this.exploded = active.exploded;
+      this.explodeT = active.explodeT;
+      this.explodeGoal = active.explodeGoal;
+      this.explodeDone = active.explodeDone;
+    } else {
+      this.exploded = false;
+      this.explodeDone = false;
     }
   }
 
