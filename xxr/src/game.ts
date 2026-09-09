@@ -59,6 +59,7 @@ type LevelPack = {
   explodeGoal: number;
   exploded: boolean;
   explodeDone: boolean;
+  explodeSec: number;
 };
 
 const LEVEL_META: Record<
