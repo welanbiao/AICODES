@@ -616,6 +616,7 @@ export class Game {
     if (!this.worldReady) return;
     this.riding = null;
     this.pendingLevel = null;
+    this.pendingPart = null;
     this.docked = null;
     if (this.arms && this.handState !== "holstered") this.recallHand(true);
     this.exitInterior(true);
