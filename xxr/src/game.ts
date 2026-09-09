@@ -803,6 +803,7 @@ export class Game {
     $<HTMLElement>("#play-status").textContent = `钩住 ${infoFor(this.resolveName(hit.pickedMesh)).name}`;
     this.syncHandButtons();
     this.identify();
+    playSfx("hit");
     toast("钩索抓住，沿绳飞过去");
   }
 
