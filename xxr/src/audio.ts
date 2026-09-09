@@ -21,7 +21,7 @@ function makeAudio(src: string, loop = false, volume = 1) {
 
 export function initAudio() {
   if (bgm) return;
-  bgm = makeAudio("/audio/cosmic-stroll.wav?v=2", true, 0.46);
+  bgm = makeAudio("/audio/weightless.mp3", true, 0.48);
   (Object.keys(files) as SfxName[]).forEach((key) => {
     sfxPool.set(key, makeAudio(files[key], false, 0.55));
   });
