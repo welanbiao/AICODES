@@ -1130,6 +1130,68 @@ export class Game {
     this.fpsCam.rotation.z = 0;
   }
 
+  private captureNativeScale(node: TransformNode | null) {
+    if (!node) return;
+    const s = node.scaling.clone();
+    this.nativeScale.set(node.uniqueId, s);
+    this.zoomBase.set(node.uniqueId, s.clone());
+  }
+
+  private setZoomBase(node: TransformNode | null) {
+    if (!node) return;
+    this.zoomBase.set(node.uniqueId, node.scaling.clone());
+  }
+
+  private restoreNativeScales() {
+    for (const node of [this.phoneWrap, this.lv2, this.lv3]) {
+      if (!node) continue;
+      const s = this.nativeScale.get(node.uniqueId);
+      if (!s) continue;
+      node.scaling.copyFrom(s);
+      this.zoomBase.set(node.uniqueId, s.clone());
+    }
+    if (this.phoneWrap) this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
+  }
+
+  private inspectRoot(): TransformNode | null {
+    if (this.phase === "interior") return this.phoneWrap;
+    if (this.phase === "docked") return this.docked?.wrap ?? this.phoneWrap;
+    return this.aimLevel()?.wrap ?? null;
+  }
+
+  private pointerSpan() {
+    const pts = [...this.ptrs.values()];
+    if (pts.length < 2) return 0;
+    return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+  }
+
+  private zoomInspect(factor: number) {
+    const node = this.inspectRoot();
+    if (!node || !Number.isFinite(factor) || factor <= 0) return false;
+    let base = this.zoomBase.get(node.uniqueId);
+    if (!base) {
+      this.setZoomBase(node);
+      base = this.zoomBase.get(node.uniqueId);
+    }
+    if (!base) return false;
+    const rest = Math.max(1e-5, Math.abs(base.x));
+    const k = clamp((node.scaling.x / rest) * factor, 0.4, 3.2);
+    node.scaling.copyFrom(base);
+    node.scaling.scaleInPlace(k);
+    return true;
+  }
+
+  private levelPose() {
+    const pack = (node: TransformNode | null) =>
+      node ? { pos: node.position.asArray() as [number, number, number], rotY: node.rotation.y } : null;
+    return {
+      phone: pack(this.phoneWrap),
+      laptop: pack(this.lv2),
+      earbuds: pack(this.lv3),
+      spinY: this.phoneSpin?.rotation.y ?? 0,
+    };
+  }
+
   private orbitLevels(dt: number) {
     if (this.phase === "interior") {
       this.setSideLevelsVisible(false);
