@@ -1138,6 +1138,15 @@ declare global {
       identify: () => void;
       fire: () => void;
       grabPhone?: () => string | void;
+      getState?: () => {
+        phase: string;
+        docked: string | null;
+        hookOn: boolean;
+        exploded: boolean;
+        explodeDone: boolean;
+        handState: string;
+        gen: number;
+      };
       explode: () => void;
       finishExplode?: () => void;
       enter?: () => void;
