@@ -697,7 +697,7 @@ export class Game {
   }
 
   private aimLevel(): LevelRef | null {
-    this.fpsCam.computeWorldMatrix(true);
+    this.fpsCam.getViewMatrix();
     const ray = this.fpsCam.getForwardRay(22);
     const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
     if (hit?.hit && hit.pickedMesh) return this.levelRootOf(hit.pickedMesh);
