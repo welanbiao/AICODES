@@ -22,9 +22,9 @@ test.describe("小小人", () => {
 
     const grabbed = await page.evaluate(() => window.__XXR__?.grabPhone?.());
     expect(grabbed).toBe("docked");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase), { timeout: 15_000 }).toBe("docked");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.docked)).toBe("phone");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.hookOn), { timeout: 8_000 }).toBe(false);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.().phase ?? window.__XXR__?.phase), { timeout: 15_000 }).toBe("docked");
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.().docked ?? window.__XXR__?.docked)).toBe("phone");
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.getState?.().hookOn ?? window.__XXR__?.hookOn), { timeout: 8_000 }).toBe(false);
 
     await page.evaluate(() => window.__XXR__?.explode());
     await page.evaluate(() => window.__XXR__?.finishExplode?.());
