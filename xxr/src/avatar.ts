@@ -117,7 +117,7 @@ export function createArms(scene: Scene, parent: Node): Arms {
   const mkLimb = (side: 1 | -1, label: string) => {
     const pivot = new TransformNode(`xxr${label}Pivot`, scene);
     pivot.parent = root;
-    pivot.position = new Vector3(0.145 * side, -0.2, 0.36);
+    pivot.position = new Vector3(0.12 * side, -0.18, 0.34);
     pivot.rotation = new Vector3(0.4, -0.34 * side, 0.08 * side);
 
     cyl(`xxr${label}Upper`, { height: 0.2, diameterTop: 0.05, diameterBottom: 0.072 }, scene, chassis, pivot, new Vector3(0, -0.07, 0));

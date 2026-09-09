@@ -265,39 +265,53 @@ export class Game {
     const base = $<HTMLElement>("#joystick");
     const knob = $<HTMLElement>("#joy-knob");
     let pid: number | null = null;
-    const apply = (x: number, y: number) => {
-      const r = 56;
-      const len = Math.hypot(x, y) || 1;
-      const nx = (x / len) * Math.min(len, r);
-      const ny = (y / len) * Math.min(len, r);
-      this.joy.x = nx / r;
-      this.joy.y = ny / r;
-      knob.style.left = `calc(29% + ${nx * 0.4}px)`;
-      knob.style.top = `calc(29% + ${ny * 0.4}px)`;
+    let origin = { x: 0, y: 0 };
+    let radius = 48;
+    const resetKnob = () => {
+      knob.style.transform = "translate(-50%, -50%)";
     };
-    base.addEventListener("pointerdown", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      pid = e.pointerId;
-      unlockAudio();
-      base.setPointerCapture(e.pointerId);
-      const b = base.getBoundingClientRect();
-      apply(e.clientX - (b.left + b.width / 2), e.clientY - (b.top + b.height / 2));
-    });
-    base.addEventListener("pointermove", (e) => {
+    const apply = (dx: number, dy: number) => {
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = (dx / len) * Math.min(len, radius);
+      const ny = (dy / len) * Math.min(len, radius);
+      this.joy.x = nx / radius;
+      this.joy.y = ny / radius;
+      knob.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+    };
+    base.addEventListener(
+      "pointerdown",
+      (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        pid = e.pointerId;
+        unlockAudio();
+        const b = base.getBoundingClientRect();
+        origin = { x: b.left + b.width * 0.5, y: b.top + b.height * 0.5 };
+        radius = Math.max(24, b.width * 0.36);
+        base.setPointerCapture(e.pointerId);
+        apply(e.clientX - origin.x, e.clientY - origin.y);
+      },
+      { passive: false },
+    );
+    base.addEventListener(
+      "pointermove",
+      (e) => {
+        if (pid !== e.pointerId) return;
+        e.preventDefault();
+        apply(e.clientX - origin.x, e.clientY - origin.y);
+      },
+      { passive: false },
+    );
+    const end = (e: PointerEvent) => {
       if (pid !== e.pointerId) return;
-      const b = base.getBoundingClientRect();
-      apply(e.clientX - (b.left + b.width / 2), e.clientY - (b.top + b.height / 2));
-    });
-    const end = () => {
       pid = null;
       this.joy.x = 0;
       this.joy.y = 0;
-      knob.style.left = "29%";
-      knob.style.top = "29%";
+      resetKnob();
     };
     base.addEventListener("pointerup", end);
     base.addEventListener("pointercancel", end);
+    base.addEventListener("lostpointercapture", end);
   }
 
   private setLoad(p: number) {
