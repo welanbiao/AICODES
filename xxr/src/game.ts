@@ -1024,17 +1024,19 @@ export class Game {
     const prev = hand.position.clone();
     const level = this.pendingLevel ?? this.docked;
     if (level) {
-      const to = level.wrap.position.subtract(hand.position);
-      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(22);
+      const to = level.wrap.getAbsolutePosition().subtract(hand.getAbsolutePosition());
+      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(28);
     }
-    hand.position.addInPlace(this.handVel.scale(dt));
-    this.clampToSky(hand.position);
+    const next = hand.getAbsolutePosition().add(this.handVel.scale(dt));
+    this.clampToSky(next);
+    hand.setAbsolutePosition(next);
     aimHook(hand, this.handVel);
-    const delta = hand.position.subtract(prev);
-    const dist = delta.length();
+    const dist = Vector3.Distance(prev, next);
     this.handFlight += dist;
-    if (level && Vector3.Distance(hand.position, level.wrap.position) < 0.42) {
-      this.catchLevel(level);
+    if (level && Vector3.Distance(hand.getAbsolutePosition(), level.wrap.getAbsolutePosition()) < 0.55) {
+      hand.setAbsolutePosition(level.wrap.getAbsolutePosition());
+      this.handState = "stuck";
+      playSfx("hit");
       return;
     }
     if (dist > 0.0001) {
