@@ -90,6 +90,10 @@ body,
   margin: 0 auto;
 }
 
+#screen-load h1 {
+  margin: 0 0 12px;
+}
+
 #screen-load .load-msg {
   margin: 0;
   color: var(--muted);
@@ -97,8 +101,7 @@ body,
 }
 
 #screen-load .bar {
-  margin-left: auto;
-  margin-right: auto;
+  margin: 18px auto 8px;
   max-width: 260px;
 }
 
