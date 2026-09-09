@@ -1357,11 +1357,7 @@ export class Game {
   }
 
   private eachLevel(): LevelRef[] {
-    const levels: LevelRef[] = [];
-    if (this.phoneWrap) levels.push({ id: "phone", wrap: this.phoneWrap });
-    if (this.lv2) levels.push({ id: "laptop", wrap: this.lv2 });
-    if (this.lv3) levels.push({ id: "earbuds", wrap: this.lv3 });
-    return levels;
+    return [...this.packs.values()].map((pack) => ({ id: pack.id, wrap: pack.wrap }));
   }
 
   private aimLevel(): LevelRef | null {
