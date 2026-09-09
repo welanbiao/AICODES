@@ -1840,7 +1840,7 @@ export class Game {
       yankPart: () => {
         if (this.phase !== "interior") return false;
         const cam = this.fpsCam.position;
-        const mesh = [...this.phoneMeshes]
+        const mesh = [...(this.activePack()?.meshes ?? [])]
           .filter((m) => m.isEnabled() && m.getTotalVertices() > 8)
           .sort((a, b) => Vector3.DistanceSquared(this.partCenter(b), cam) - Vector3.DistanceSquared(this.partCenter(a), cam))[0];
         if (!mesh) return false;
@@ -1849,7 +1849,7 @@ export class Game {
       },
       phoneSpan: () => this.phoneWorldSpan(),
       finishExplode: () => this.finishExplodeNow(),
-      enter: () => this.enterPhone(),
+      enter: () => this.enterInterior(),
       lookAtPhone: () => this.lookAtPhone(),
       home: () => this.returnToCenter(),
       setLook: (yaw, pitch) => {
