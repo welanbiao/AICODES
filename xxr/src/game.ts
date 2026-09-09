@@ -824,8 +824,6 @@ export class Game {
     return null;
   }
 
-  private makeLevelOrbs() {}
-
   returnToCenter() {
     if (!this.worldReady) return;
     this.riding = null;
