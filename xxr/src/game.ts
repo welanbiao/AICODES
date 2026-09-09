@@ -1166,6 +1166,11 @@ export class Game {
       return;
     }
     this.riding = null;
+    this.pendingPart = null;
+    if (this.arms) {
+      holsterHook(this.arms);
+      this.handState = "holstered";
+    }
     this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
     this.phoneWrap.computeWorldMatrix(true);
     const before = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
