@@ -190,10 +190,12 @@ export class Game {
   private bindInput() {
     window.addEventListener("keydown", (e) => {
       this.keys.add(e.code);
+      unlockAudio();
       if (e.code === "KeyE") this.identify();
       if (e.code === "KeyF") this.fireHand();
       if (e.code === "KeyR") this.recallHand();
       if (e.code === "KeyX") this.toggleExplode();
+      if (e.code === "KeyH" || e.code === "Home") this.returnToCenter();
       if (e.code === "Escape") {
         document.exitPointerLock();
         if (this.phase === "observe") this.dismount();
