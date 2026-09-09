@@ -914,6 +914,7 @@ export class Game {
     const pack = this.activePack();
     if (!pack) return;
     if (!pack.exploded && pack.explodeT <= 0.02) return;
+    this.stopInteriorLoop(pack);
     pack.exploded = false;
     pack.explodeGoal = 0;
     pack.explodeDone = false;
