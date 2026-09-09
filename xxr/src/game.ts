@@ -837,26 +837,44 @@ export class Game {
 
   private aimLevel(): LevelRef | null {
     this.fpsCam.getViewMatrix();
-    const ray = this.fpsCam.getForwardRay(22);
-    const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
-    if (hit?.hit && hit.pickedMesh) return this.levelRootOf(hit.pickedMesh);
+    this.scene.updateTransformMatrix();
+    const w = this.engine.getRenderWidth();
+    const h = this.engine.getRenderHeight();
+    const pick = this.scene.pick(w * 0.5, h * 0.5, (m) => this.canLatch(m));
+    if (pick?.hit && pick.pickedMesh) {
+      const locked = this.levelRootOf(pick.pickedMesh);
+      if (locked) return locked;
+    }
 
-    let best: { level: LevelRef; score: number } | null = null;
+    const ray = this.fpsCam.getForwardRay(28);
+    const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
+    if (hit?.hit && hit.pickedMesh) {
+      const locked = this.levelRootOf(hit.pickedMesh);
+      if (locked) return locked;
+    }
+
     const fwd = ray.direction;
     if (fwd.lengthSquared() < 1e-8) return null;
+    const viewport = this.fpsCam.viewport.toGlobal(w, h);
+    const transform = this.scene.getTransformMatrix();
+    let best: { level: LevelRef; score: number } | null = null;
     for (const level of this.eachLevel()) {
       level.wrap.computeWorldMatrix(true);
       const center = level.wrap.getAbsolutePosition();
-      const to = center.subtract(ray.origin);
+      const to = center.subtract(this.fpsCam.position);
       const dist = to.length();
-      if (dist < 0.15 || dist > 20) continue;
+      if (dist < 0.12 || dist > 28) continue;
       const dir = to.scale(1 / dist);
       const dot = Vector3.Dot(fwd, dir);
+      if (dot < 0.18) continue;
+      const p = Vector3.Project(center, Matrix.Identity(), transform, viewport);
+      if (p.z <= 0 || p.z >= 1) continue;
+      const screen = Math.hypot(p.x / w - 0.5, p.y / h - 0.5);
       const box = level.wrap.getHierarchyBoundingVectors(true);
       const boxOk = Number.isFinite(box.min.x) && Number.isFinite(box.max.x) && box.max.x >= box.min.x;
       const hitsBox = boxOk && ray.intersectsBoxMinMax(box.min, box.max);
-      if (!hitsBox && dot < 0.72) continue;
-      const score = (hitsBox ? 2 : 1) * dot / Math.max(dist, 0.4);
+      if (!hitsBox && screen > 0.36 && dot < 0.78) continue;
+      const score = (hitsBox ? 2.2 : 1) * dot + (1 - Math.min(screen, 1)) * 1.35 + 0.4 / Math.max(dist, 0.5);
       if (!best || score > best.score) best = { level, score };
     }
     return best?.level ?? null;
