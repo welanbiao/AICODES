@@ -79,14 +79,14 @@ def bgm() -> None:
 def write_wav_stereo(name: str, left: list[float], right: list[float]) -> None:
     path = ROOT / name
     n = min(len(left), len(right))
+    pcm = bytearray()
+    for i in range(n):
+        pcm += struct.pack("<hh", clamp(left[i]), clamp(right[i]))
     with wave.open(str(path), "w") as wav:
         wav.setnchannels(2)
         wav.setsampwidth(2)
         wav.setframerate(SR)
-        frames = bytearray()
-        for i in range(n):
-            frames += struct.pack("<hh", clamp(left[i]), clamp(right[i]))
-        wav.writeframes(frames)
+        wav.writeframes(pcm)
     print(path.name, path.stat().st_size)
 
 
