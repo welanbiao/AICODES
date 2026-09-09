@@ -92,6 +92,7 @@ export class Game {
   readonly scene: Scene;
   phase: Phase = "loading";
   fps = 0;
+  private readonly gen: number;
 
   private canvas: HTMLCanvasElement;
   private fpsCam!: UniversalCamera;
