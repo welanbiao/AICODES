@@ -987,15 +987,14 @@ export class Game {
     mesh.overlayColor = new Color3(0.24, 0.88, 0.78);
     mesh.overlayAlpha = 0.35;
     const level = this.levelRootOf(mesh);
-    const info =
-      this.phase !== "interior" && level
-        ? {
-            name: LEVEL_META[level.id].title,
-            role: "关卡场景",
-            material: "待鉴定",
-            note: "靠近后会自动展开爆炸图，看完可进入内部。",
-          }
-        : infoFor(this.resolveName(mesh));
+    const info = this.phase === "fps" && level
+      ? {
+          name: LEVEL_META[level.id].title,
+          role: "关卡场景",
+          material: "待鉴定",
+          note: "靠近后会自动展开爆炸图，看完可进入内部。",
+        }
+      : infoFor(this.resolveName(mesh));
     card.hidden = false;
     card.innerHTML = `<h2>${info.name}</h2>
       <p><strong>作用</strong>　${info.role}</p>
