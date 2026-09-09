@@ -77,8 +77,10 @@ function loadProgress(ev: { loaded: number; total: number; lengthComputable?: bo
 
 function setPhase(phase: Phase) {
   $("#app").dataset.phase = phase;
+  const load = document.querySelector("#screen-load") as HTMLElement | null;
+  if (load) load.hidden = phase !== "loading";
   const play = document.querySelector("#screen-play") as HTMLElement | null;
-  if (play) play.hidden = false;
+  if (play) play.hidden = phase === "loading";
 }
 
 function playable(phase: Phase) {

@@ -7,7 +7,9 @@ test.describe("小小人", () => {
 
     await page.goto("/");
     await expect(page.getByTestId("title")).toHaveText("小小人");
-    await expect(page.getByTestId("loading")).toHaveCount(0);
+    await expect(page.getByTestId("loading")).toBeVisible();
+    await expect(page.getByTestId("btn-identify")).toBeHidden();
+    await expect(page.getByTestId("btn-home")).toBeHidden();
     await expect(page.getByTestId("level-phone")).toHaveCount(0);
 
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 180_000 }).toBe(true);

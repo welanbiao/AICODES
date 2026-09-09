@@ -16,9 +16,18 @@
   <body>
     <div id="app" data-phase="loading">
       <canvas id="view" tabindex="0" aria-label="小小人游戏画面"></canvas>
-      <h1 data-testid="title" class="visually-hidden">小小人</h1>
       <div id="hud">
-        <section id="screen-play" class="screen overlay" data-testid="screen-play">
+        <section id="screen-load" class="screen" data-testid="loading">
+          <div class="load-card">
+            <p class="eyebrow">第一人称 · 星空枢纽</p>
+            <h1 data-testid="title">小小人</h1>
+            <p>正在进入星空…</p>
+            <div class="bar" data-testid="load-bar"><i id="load-bar"></i></div>
+            <span id="load-pct" data-testid="load-pct">0%</span>
+          </div>
+        </section>
+
+        <section id="screen-play" class="screen overlay" data-testid="screen-play" hidden>
           <div class="top-bar">
             <span id="play-status">星空枢纽</span>
             <span class="hint">左摇杆移动 · 拖动转向 · 双指缩放 · 右下角钩爪</span>
