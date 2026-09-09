@@ -165,10 +165,11 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("btn-home")).toBeVisible();
     const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
     const limit = await page.evaluate(() => window.__XXR__?.skyLimit ?? 30);
-    expect(Math.abs(clamped[0])).toBeLessThanOrEqual(limit + 2);
-    expect(Math.abs(clamped[1])).toBeLessThanOrEqual(limit + 2);
-    expect(Math.abs(clamped[2])).toBeLessThanOrEqual(limit + 2);
+    const dist = Math.hypot(clamped[0], clamped[1], clamped[2]);
+    expect(dist).toBeLessThanOrEqual(limit + 0.05);
     expect(Math.abs(clamped[0])).toBeLessThan(80);
+    const alongAxis = await page.evaluate(() => window.__XXR__?.tryMove?.(0, 0, 400) ?? [0, 0, 400]);
+    expect(Math.hypot(alongAxis[0], alongAxis[1], alongAxis[2])).toBeLessThanOrEqual(limit + 0.05);
 
     await page.getByTestId("btn-home").click();
     const home = await page.evaluate(() => window.__XXR__?.pos ?? [1, 1, 1]);
