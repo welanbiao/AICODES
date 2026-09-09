@@ -693,6 +693,47 @@ export class Game {
     return pack;
   }
 
+  private clipSeconds(g: AnimationGroup | null) {
+    if (!g) return EXPLODE_SEC;
+    const fps = g.targetedAnimations[0]?.animation.framePerSecond || 30;
+    const sec = Math.abs(g.to - g.from) / Math.max(1, fps);
+    return clamp(sec || EXPLODE_SEC, 2.2, 8);
+  }
+
+  private tuneLevelMaterial(mat: Material | null | undefined, id: LevelId) {
+    if (!mat) return;
+    if (mat instanceof MultiMaterial) {
+      for (const sub of mat.subMaterials) this.tuneLevelMaterial(sub, id);
+      return;
+    }
+    if (mat instanceof PBRMaterial) {
+      if (mat.subSurface) {
+        mat.subSurface.isRefractionEnabled = false;
+        mat.subSurface.isTranslucencyEnabled = false;
+      }
+      if (id === "phone") {
+        mat.directIntensity = 1.7;
+        mat.environmentIntensity = 1.15;
+        mat.emissiveColor = mat.emissiveColor.add(new Color3(0.04, 0.04, 0.045));
+        return;
+      }
+      (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
+      mat.directIntensity = 0.82;
+      mat.environmentIntensity = 0.22;
+      mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.16);
+      mat.emissiveColor = new Color3(mat.emissiveColor.r * 0.1, mat.emissiveColor.g * 0.1, mat.emissiveColor.b * 0.1);
+      if (mat.emissiveTexture) mat.emissiveIntensity = 0.14;
+      const bright = Math.max(mat.albedoColor.r, mat.albedoColor.g, mat.albedoColor.b);
+      if (bright > 0.82) mat.albedoColor = mat.albedoColor.scale(0.52);
+      return;
+    }
+    if (mat instanceof StandardMaterial && id !== "phone") {
+      mat.disableLighting = false;
+      mat.emissiveColor = mat.emissiveColor.scale(0.1);
+      mat.specularColor = new Color3(0.1, 0.1, 0.12);
+    }
+  }
+
   private capturingExplode = false;
 
   private captureExplodePoses(g: AnimationGroup, pack: LevelPack) {
