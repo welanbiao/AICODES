@@ -1158,7 +1158,7 @@ export class Game {
     }
     const dist = Vector3.Distance(this.fpsCam.position, pack.wrap.getAbsolutePosition());
     const near = dist < AUTO_EXPLODE_DIST * 1.35;
-    if (near && !this.nearExplode && !pack.exploded) this.startExplode();
+    if (near && !this.nearExplode && !pack.exploded) this.startExplode(pack);
     this.nearExplode = near;
   }
 
