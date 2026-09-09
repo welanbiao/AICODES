@@ -1145,7 +1145,7 @@ export class Game {
   }
 
   private restoreNativeScales() {
-    for (const node of [this.phoneWrap, this.lv2, this.lv3]) {
+    for (const node of [this.skyRoot, this.phoneWrap, this.lv2, this.lv3]) {
       if (!node) continue;
       const s = this.nativeScale.get(node.uniqueId);
       if (!s) continue;
@@ -1153,23 +1153,27 @@ export class Game {
       this.zoomBase.set(node.uniqueId, s.clone());
     }
     if (this.phoneWrap) this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
+    this.refreshSkyBounds();
   }
 
   private inspectRoot(): TransformNode | null {
     if (this.phase === "interior") return this.phoneWrap;
     if (this.phase === "docked") return this.docked?.wrap ?? this.phoneWrap;
-    return this.aimLevel()?.wrap ?? null;
+    return this.aimLevel()?.wrap ?? this.phoneWrap;
   }
 
-  private pointerSpan() {
-    const pts = [...this.ptrs.values()];
-    if (pts.length < 2) return 0;
-    return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+  private zoomTargets() {
+    const nodes: TransformNode[] = [];
+    if (this.skyRoot) nodes.push(this.skyRoot);
+    if (this.phoneWrap) nodes.push(this.phoneWrap);
+    if (this.phase !== "interior") {
+      if (this.lv2) nodes.push(this.lv2);
+      if (this.lv3) nodes.push(this.lv3);
+    }
+    return nodes;
   }
 
-  private zoomInspect(factor: number) {
-    const node = this.inspectRoot();
-    if (!node || !Number.isFinite(factor) || factor <= 0) return false;
+  private scaleNode(node: TransformNode, factor: number) {
     let base = this.zoomBase.get(node.uniqueId);
     if (!base) {
       this.setZoomBase(node);
@@ -1181,6 +1185,50 @@ export class Game {
     node.scaling.copyFrom(base);
     node.scaling.scaleInPlace(k);
     return true;
+  }
+
+  private refreshSkyBounds() {
+    if (!this.skyRoot) return;
+    this.skyRoot.computeWorldMatrix(true);
+    const b = this.skyRoot.getHierarchyBoundingVectors(true);
+    const pad = 1.6;
+    this.skyMin.copyFrom(b.min.add(new Vector3(pad, pad, pad)));
+    this.skyMax.copyFrom(b.max.subtract(new Vector3(pad, pad, pad)));
+    this.skyLimit = Math.max(
+      Math.abs(this.skyMin.x),
+      Math.abs(this.skyMax.x),
+      Math.abs(this.skyMin.y),
+      Math.abs(this.skyMax.y),
+      Math.abs(this.skyMin.z),
+      Math.abs(this.skyMax.z),
+    );
+  }
+
+  private pointerSpan() {
+    const pts = [...this.ptrs.values()];
+    if (pts.length < 2) return 0;
+    return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+  }
+
+  private zoomInspect(factor: number) {
+    if (!Number.isFinite(factor) || factor <= 0) return false;
+    let centerBefore: Vector3 | null = null;
+    if (this.phase === "interior" && this.phoneWrap) {
+      this.phoneWrap.computeWorldMatrix(true);
+      const e = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+      centerBefore = e.min.add(e.max).scale(0.5);
+    }
+    let ok = false;
+    for (const node of this.zoomTargets()) ok = this.scaleNode(node, factor) || ok;
+    this.refreshSkyBounds();
+    if (ok && centerBefore && this.phoneWrap) {
+      this.phoneWrap.computeWorldMatrix(true);
+      const e = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+      const centerAfter = e.min.add(e.max).scale(0.5);
+      this.fpsCam.position.addInPlace(centerAfter.subtract(centerBefore));
+      this.clampPlayer();
+    }
+    return ok;
   }
 
   private levelPose() {
