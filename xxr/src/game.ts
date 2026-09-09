@@ -312,6 +312,46 @@ export class Game {
     this.bindJoystick();
   }
 
+  private bindTouchZoom() {
+    const span = (touches: TouchList) => {
+      if (touches.length < 2) return 0;
+      return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+    };
+    const opts: AddEventListenerOptions = { passive: false, capture: true };
+    window.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!playable(this.phase) || e.touches.length < 2) return;
+        e.preventDefault();
+        this.pinching = true;
+        this.dragging = false;
+        this.lookPtr = null;
+        this.joy.x = 0;
+        this.joy.y = 0;
+        this.pinchDist = span(e.touches);
+      },
+      opts,
+    );
+    window.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!this.pinching || e.touches.length < 2) return;
+        e.preventDefault();
+        const dist = span(e.touches);
+        if (this.pinchDist > 8 && dist > 8) this.zoomInspect(dist / this.pinchDist);
+        this.pinchDist = dist;
+      },
+      opts,
+    );
+    const endPinch = (e: TouchEvent) => {
+      if (e.touches.length < 2) this.pinching = false;
+    };
+    window.addEventListener("touchend", endPinch, opts);
+    window.addEventListener("touchcancel", endPinch, opts);
+    window.addEventListener("gesturestart", (e) => e.preventDefault(), opts);
+    window.addEventListener("gesturechange", (e) => e.preventDefault(), opts);
+  }
+
   private bindJoystick() {
     const base = $<HTMLElement>("#joystick");
     const knob = $<HTMLElement>("#joy-knob");
