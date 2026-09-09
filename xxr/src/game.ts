@@ -875,9 +875,15 @@ export class Game {
   }
 
   private pickPart(): PickingInfo | null {
-    const ray = this.fpsCam.getForwardRay(22);
+    const reach = this.phase === "interior" ? 80 : 28;
+    const ray = this.fpsCam.getForwardRay(reach);
     const hit = this.scene.pickWithRay(ray, (m) => this.canLatch(m));
     if (hit?.hit && hit.pickedMesh) return hit;
+    const cx = this.canvas.clientWidth * 0.5;
+    const cy = this.canvas.clientHeight * 0.5;
+    const screenHit = this.scene.pick(cx, cy, (m) => this.canLatch(m));
+    if (screenHit?.hit && screenHit.pickedMesh) return screenHit;
+    if (this.phase === "interior") return null;
     const aimed = this.aimLevel();
     if (!aimed) return null;
     const mesh = this.scene.meshes.find((m) => this.levelRootOf(m)?.id === aimed.id && !!m.getTotalVertices());
