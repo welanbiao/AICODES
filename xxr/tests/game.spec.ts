@@ -30,6 +30,39 @@ test.describe("小小人", () => {
       x.lookAtPhone?.();
       x.fire();
       const grabbed = x.getState?.()?.phase ?? x.phase;
+      return { ok: true as const, grabbed };
+    });
+    expect(flowed).toMatchObject({ ok: true, grabbed: "docked" });
+
+    const frozenA = await page.evaluate(() => window.__XXR__?.levelPose?.() ?? null);
+    await page.waitForTimeout(500);
+    const frozenB = await page.evaluate(() => window.__XXR__?.levelPose?.() ?? null);
+    expect(frozenA?.laptop && frozenB?.laptop).toBeTruthy();
+    if (frozenA?.laptop && frozenB?.laptop) {
+      const drift = Math.hypot(
+        frozenB.laptop.pos[0] - frozenA.laptop.pos[0],
+        frozenB.laptop.pos[1] - frozenA.laptop.pos[1],
+        frozenB.laptop.pos[2] - frozenA.laptop.pos[2],
+      );
+      expect(drift).toBeLessThan(0.02);
+      expect(Math.abs(frozenB.laptop.rotY - frozenA.laptop.rotY)).toBeLessThan(0.01);
+    }
+    if (frozenA && frozenB) expect(Math.abs(frozenB.spinY - frozenA.spinY)).toBeLessThan(0.01);
+
+    const zoomed = await page.evaluate(() => {
+      const x = window.__XXR__;
+      if (!x?.phoneSpan || !x.pinch) return { ok: false, before: 0, after: 0 };
+      const before = x.phoneSpan().longest;
+      const ok = x.pinch(1.45);
+      const after = x.phoneSpan().longest;
+      return { ok, before, after };
+    });
+    expect(zoomed.ok).toBe(true);
+    expect(zoomed.after).toBeGreaterThan(zoomed.before * 1.2);
+
+    const entered = await page.evaluate(() => {
+      const x = window.__XXR__;
+      if (!x) return { ok: false as const, reason: "missing" };
       x.explode();
       const closed = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
       x.finishExplode?.();
@@ -44,11 +77,11 @@ test.describe("小小人", () => {
         handState: x.handState ?? "",
         gen: 0,
       };
-      return { ok: true as const, grabbed, ...state, closed, opened };
+      return { ok: true as const, ...state, closed, opened };
     });
-    expect(flowed).toMatchObject({ ok: true, grabbed: "docked", phase: "interior", exploded: true, explodeDone: true });
-    expect(flowed.opened.parts).toBeGreaterThan(40);
-    expect(flowed.opened.longest).toBeGreaterThan(flowed.closed.longest * 1.6);
+    expect(entered).toMatchObject({ ok: true, phase: "interior", exploded: true, explodeDone: true });
+    expect(entered.opened.parts).toBeGreaterThan(40);
+    expect(entered.opened.longest).toBeGreaterThan(entered.closed.longest * 1.6);
     await expect(page.getByTestId("joystick")).toBeVisible();
 
     const yanked = await page.evaluate(() => {
