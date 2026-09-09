@@ -73,7 +73,7 @@ body,
 }
 
 #screen-load {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 40;
   display: flex;
