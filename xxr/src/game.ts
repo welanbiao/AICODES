@@ -1739,8 +1739,8 @@ export class Game {
       pack.wrap.scaling.copyFrom(pack.hubScale);
       pack.wrap.setEnabled(true);
       for (const mesh of pack.meshes) mesh.isVisible = true;
-      if (!resetExplode) continue;
       this.stopInteriorLoop(pack);
+      if (!resetExplode) continue;
       pack.exploded = false;
       pack.explodeGoal = 0;
       pack.explodeT = 0;
