@@ -1040,6 +1040,10 @@ export class Game {
         this.explodeGroup.goToFrame(this.explodeGroup.from);
         this.explodeGroup.pause();
       }
+      for (const node of this.explodeNodes) {
+        const rest = this.explodeRest.get(node.uniqueId);
+        if (rest) node.position.copyFrom(rest);
+      }
       for (const mesh of this.phoneMeshes) {
         const rest = this.restLocal.get(mesh.uniqueId);
         if (rest) mesh.position.copyFrom(rest);
