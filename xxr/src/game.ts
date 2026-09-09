@@ -794,19 +794,16 @@ export class Game {
     if (this.worldReady) this.orbitLevels(dt);
     this.applyExplode(dt);
     if (this.riding) {
-      this.riding.t += dt / 0.75;
+      this.riding.t += dt / 0.7;
       const t = easeInOut(Math.min(1, this.riding.t));
       Vector3.LerpToRef(this.riding.from, this.riding.to, t, this.fpsCam.position);
+      this.look.yaw = this.riding.lookYaw;
       this.clampPlayer();
       if (this.riding.t >= 1) {
         this.riding = null;
-        this.phase = "observe";
-        setPhase("observe");
-        this.syncHandButtons();
-        toast("钩住了，360° 观察");
+        this.finishDock();
       }
-    } else if (this.phase === "fps") this.moveFps(dt);
-    if (this.phase === "observe") this.moveObserve(dt);
+    } else if (this.phase === "fps" || this.phase === "interior") this.moveFps(dt);
     if (this.handState === "flying") this.tickHand(dt);
     else if (this.handState === "reeling") this.tickReel(dt);
     this.updateHookRope();
