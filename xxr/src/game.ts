@@ -230,8 +230,8 @@ export class Game {
 
   private bindInput() {
     window.addEventListener("keydown", (e) => {
-      if (e.repeat) return;
       if (playable(this.phase) && (e.code === "Space" || e.code.startsWith("Arrow"))) e.preventDefault();
+      if (e.repeat) return;
       this.keys.add(e.code);
       unlockAudio();
       if (e.code === "KeyE") this.identify();
