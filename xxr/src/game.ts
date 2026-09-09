@@ -1063,6 +1063,7 @@ export class Game {
   }
 
   private publish() {
+    if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
     const p = this.fpsCam.position;
     window.__XXR__ = {
       phase: this.phase,
