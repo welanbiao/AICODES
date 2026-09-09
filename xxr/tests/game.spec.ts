@@ -23,7 +23,9 @@ test.describe("小小人", () => {
     const flowed = await page.evaluate(() => {
       const x = window.__XXR__;
       if (!x) return { ok: false as const, reason: "missing" };
-      const grabbed = x.grabPhone?.() ?? x.phase;
+      x.lookAtPhone?.();
+      x.fire();
+      const grabbed = x.phase;
       x.explode();
       const closed = x.phoneSpan?.() ?? { longest: 0, parts: 0, size: [0, 0, 0] };
       x.finishExplode?.();

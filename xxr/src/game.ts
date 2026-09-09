@@ -225,7 +225,6 @@ export class Game {
       btn.addEventListener("pointerdown", down);
       btn.addEventListener("pointerup", up);
       btn.addEventListener("pointercancel", up);
-      btn.addEventListener("lostpointercapture", up);
     });
   }
 
