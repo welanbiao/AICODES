@@ -165,6 +165,13 @@ test.describe("小小人", () => {
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.fps ?? 0)).toBeGreaterThan(1);
 
     await expect(page.getByTestId("btn-home")).toBeVisible();
+    await page.getByTestId("btn-about").click();
+    await expect(page.getByTestId("about")).toBeVisible();
+    await expect(page.getByTestId("about-body")).toContainText("叩君芯");
+    await expect(page.getByTestId("about")).toContainText("Lumen 64 Spark");
+    await expect(page.getByTestId("about")).toContainText("iPhone 12 Teardown");
+    await page.getByTestId("btn-about-close").click();
+    await expect(page.getByTestId("about")).toBeHidden();
     const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
     const limit = await page.evaluate(() => window.__XXR__?.skyLimit ?? 30);
     const dist = Math.hypot(clamped[0], clamped[1], clamped[2]);
