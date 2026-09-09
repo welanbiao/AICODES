@@ -1015,7 +1015,6 @@ export class Game {
           note: LEVEL_META[level.id].note,
         }
       : infoFor(this.resolveName(mesh));
-      : infoFor(this.resolveName(mesh));
     card.hidden = false;
     card.innerHTML = `<h2>${info.name}</h2>
       <p><strong>作用</strong>　${info.role}</p>
