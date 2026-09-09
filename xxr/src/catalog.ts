@@ -346,15 +346,50 @@ export const CATALOG: Record<string, PartInfo> = {
   ...PC_CATALOG,
 };
 
-export function partKeyFromName(name: string): string {
-  const base = name
+function cleanedPartName(name: string) {
+  return name
     .split("_$Assimp")[0]
     .replace(/_primitive\d+$/i, "")
     .replace(/_node$/i, "")
+    .replace(/^1_uv_/i, "")
+    .replace(/\s+/g, "_")
     .trim();
-  if (CATALOG[base]) return base;
-  if (/^Screw/i.test(base) || /^screw/i.test(base)) return "__screw__";
-  return base;
+}
+
+function strippedPartName(name: string) {
+  return cleanedPartName(name).replace(/\.\d+$/, "").replace(/_\d+$/, "");
+}
+
+export function partKeyFromName(name: string): string {
+  const cleaned = cleanedPartName(name);
+  const stripped = strippedPartName(name);
+  const variants = [cleaned, stripped];
+  for (const v of variants) {
+    if (CATALOG[v]) return v;
+  }
+  const byLower = new Map(Object.keys(CATALOG).map((k) => [k.toLowerCase(), k]));
+  for (const v of variants) {
+    const hit = byLower.get(v.toLowerCase());
+    if (hit) return hit;
+  }
+  const keys = Object.keys(CATALOG).sort((a, b) => b.length - a.length);
+  for (const v of variants) {
+    const lower = v.toLowerCase();
+    for (const k of keys) {
+      const kl = k.toLowerCase();
+      if (lower === kl || lower.startsWith(`${kl}_`) || lower.startsWith(`${kl}.`)) return k;
+    }
+  }
+  if (/bolt|screw/i.test(cleaned)) return "__screw__";
+  if (/^Cube/i.test(stripped)) return "Cube";
+  if (/^Cylinder/i.test(stripped)) return "Cylinder";
+  if (/^Object/i.test(stripped)) return "Object";
+  if (/^BezierCurve|^NurbsPath/i.test(stripped)) return "BezierCurve";
+  if (/^kipas/i.test(stripped)) return "kipas";
+  if (/kotak_?kipas/i.test(stripped)) return "kotak_kipas";
+  if (/^Plane/i.test(stripped)) return "Plane";
+  if (/^keykup/i.test(stripped)) return "keykup";
+  return stripped || cleaned;
 }
 
 export function infoFor(name: string): PartInfo {
