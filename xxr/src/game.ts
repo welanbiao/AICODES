@@ -33,7 +33,8 @@ import {
   loadFpsArms,
   type Arms,
 } from "./avatar";
-import { infoFor, partKeyFromName, CATALOG } from "./catalog";
+import { createLaptopProp, createEarbudsProp } from "./props";
+import { initAudio, unlockAudio, playSfx, stopAudio } from "./audio";
 
 export type Phase = "loading" | "fps" | "observe";
 

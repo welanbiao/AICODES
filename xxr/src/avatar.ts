@@ -43,7 +43,7 @@ function glowMat(scene: Scene, name: string, color: Color3) {
   return m;
 }
 
-function tag(mesh: Mesh) {
+function tag(mesh: AbstractMesh) {
   mesh.isPickable = false;
   mesh.renderingGroupId = ARM_GROUP;
   return mesh;
