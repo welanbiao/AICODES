@@ -1074,9 +1074,10 @@ export class Game {
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       grabPhone: () => {
-        if (!this.phoneWrap || this.phase !== "fps") return;
+        if (!this.phoneWrap || this.phase !== "fps") return this.phase;
         this.lookAtPhone();
         this.launchAt({ id: "phone", wrap: this.phoneWrap });
+        return this.phase;
       },
       explode: () => this.toggleExplode(),
       finishExplode: () => this.finishExplodeNow(),
