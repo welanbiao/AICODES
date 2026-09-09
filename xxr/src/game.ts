@@ -730,6 +730,8 @@ export class Game {
     if (this.arms && this.handState !== "holstered") this.recallHand(true);
     this.exitInterior(true);
     this.restoreNativeScales();
+    this.viewZoom = 1;
+    this.applyViewFov();
     this.fpsCam.position.set(0, 0, 0);
     this.look.yaw = 0;
     this.look.pitch = -0.08;
