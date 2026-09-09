@@ -1000,6 +1000,7 @@ export class Game {
     this.applyViewFov();
     this.docked = null;
     this.pendingLevel = null;
+    this.nearExplode = false;
     this.phase = "fps";
     setPhase("fps");
     $<HTMLElement>("#play-status").textContent = "星空枢纽";
