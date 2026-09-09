@@ -475,6 +475,7 @@ export class Game {
     root.computeWorldMatrix(true);
     const b3 = root.getHierarchyBoundingVectors(true);
     const pad = 1.6;
+    this.skyRoot = root;
     this.skyMin.copyFrom(b3.min.add(new Vector3(pad, pad, pad)));
     this.skyMax.copyFrom(b3.max.subtract(new Vector3(pad, pad, pad)));
     this.skyLimit = Math.max(
@@ -485,6 +486,7 @@ export class Game {
       Math.abs(this.skyMin.z),
       Math.abs(this.skyMax.z),
     );
+    this.captureNativeScale(root);
   }
 
   private preparePhone(loaded: ISceneLoaderAsyncResult) {
