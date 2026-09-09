@@ -36,16 +36,21 @@ import { infoFor, partKeyFromName, CATALOG } from "./catalog";
 import { createLaptopProp, createEarbudsProp } from "./props";
 import { initAudio, unlockAudio, playSfx, stopAudio } from "./audio";
 
-export type Phase = "loading" | "fps" | "observe";
+export type Phase = "loading" | "fps" | "docked" | "interior";
 
 type HandState = "holstered" | "flying" | "stuck" | "reeling";
+type LevelId = "phone" | "laptop" | "earbuds";
+type LevelRef = { id: LevelId; wrap: TransformNode };
 
 const SKY_SIZE = 72;
 const PHONE_SPAN = 1.15;
 const ORBIT_RADIUS = 2.52;
-const ORBIT_SPEED = 0.14;
-const SPIN_SPEED = 0.5;
+const ORBIT_SPEED = 0.035;
+const SPIN_SPEED = 0.125;
 const EXPLODE_SEC = 12;
+const STAND_DIST = 1.38;
+const INTERIOR_SPAN = 22;
+const HOOK_MAX = 16;
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
