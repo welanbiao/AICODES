@@ -76,93 +76,139 @@ def bgm() -> None:
     write_wav("bgm.wav", out)
 
 
-def mix_pluck(buf: list[float], sr: int, start: float, freq: float, length: float, vol: float, bright: float = 0.28) -> None:
+def write_wav_stereo(name: str, left: list[float], right: list[float]) -> None:
+    path = ROOT / name
+    n = min(len(left), len(right))
+    with wave.open(str(path), "w") as wav:
+        wav.setnchannels(2)
+        wav.setsampwidth(2)
+        wav.setframerate(SR)
+        frames = bytearray()
+        for i in range(n):
+            frames += struct.pack("<hh", clamp(left[i]), clamp(right[i]))
+        wav.writeframes(frames)
+    print(path.name, path.stat().st_size)
+
+
+def highpass(buf: list[float], cutoff: float, sr: int) -> None:
+    rc = 1.0 / (2.0 * math.pi * cutoff)
+    dt = 1.0 / sr
+    alpha = rc / (rc + dt)
+    prev_x = 0.0
+    prev_y = 0.0
+    for i, x in enumerate(buf):
+        y = alpha * (prev_y + x - prev_x)
+        buf[i] = y
+        prev_x = x
+        prev_y = y
+
+
+def mix_bell(left: list[float], right: list[float], sr: int, start: float, freq: float, length: float, vol: float, pan: float = 0.0) -> None:
     i0 = int(start * sr)
     count = int(length * sr)
-    n = len(buf)
+    n = min(len(left), len(right))
+    lg = math.sqrt(0.5 * (1.0 - pan))
+    rg = math.sqrt(0.5 * (1.0 + pan))
     for i in range(count):
         idx = i0 + i
         if idx >= n:
             break
         t = i / sr
-        att = min(1.0, t / 0.007)
-        e = att * math.exp(-t * (6.2 + freq * 0.0035))
-        fund = math.sin(2 * math.pi * freq * t)
-        oct2 = math.sin(2 * math.pi * freq * 2.0 * t) * math.exp(-t * 11)
-        oct3 = math.sin(2 * math.pi * freq * 3.0 * t) * math.exp(-t * 16)
-        tri = 2 * abs(2 * ((t * freq) % 1) - 1) - 1
-        buf[idx] += (0.7 * fund + bright * oct2 + 0.1 * oct3 + 0.16 * tri) * e * vol
+        att = min(1.0, t / 0.006)
+        e = att * math.exp(-t * 7.8)
+        mod = math.sin(2 * math.pi * freq * 2.01 * t)
+        car = math.sin(2 * math.pi * freq * t + 1.6 * mod * math.exp(-t * 9))
+        sparkle = 0.22 * math.sin(2 * math.pi * freq * 3.01 * t) * math.exp(-t * 14)
+        sample = (car + sparkle) * e * vol
+        left[idx] += sample * lg
+        right[idx] += sample * rg
 
 
-def starlit_jaunt() -> None:
-    """Cheerful space-theme loop: music-box arps, no sustained bass drone."""
-    bpm = 120.0
+def mix_blip(left: list[float], right: list[float], sr: int, start: float, freq: float, length: float, vol: float) -> None:
+    i0 = int(start * sr)
+    count = int(length * sr)
+    n = min(len(left), len(right))
+    for i in range(count):
+        idx = i0 + i
+        if idx >= n:
+            break
+        t = i / sr
+        e = math.exp(-t * 38)
+        s = math.sin(2 * math.pi * freq * t) * e * vol
+        left[idx] += s
+        right[idx] += s
+
+
+def cosmic_stroll() -> None:
+    """Bright, cheerful space stroll: bells + melody, no bass drone."""
+    global SR
+    SR = 44100
+    bpm = 128.0
     beat = 60.0 / bpm
     bars = 16
     dur = bars * 4 * beat
     n = int(SR * dur)
-    out = [0.0] * n
+    left = [0.0] * n
+    right = [0.0] * n
 
-    c4, d4, e4, f4, g4, a4, b4 = 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88
-    c5, d5, e5, f5, g5, a5 = 523.25, 587.33, 659.25, 698.46, 783.99, 880.00
-    c6, e6, g6 = 1046.50, 1318.51, 1567.98
-    g3, a3 = 196.00, 220.00
+    e4, g4, a4 = 329.63, 392.00, 440.00
+    c5, d5, e5, f5, g5, a5, b5 = 523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77
+    c6, d6, e6, g6 = 1046.50, 1174.66, 1318.51, 1567.98
 
-    chords = [
-        (c4, e4, g4, c5),
-        (a3, c4, e4, a4),
-        (f4, a4, c5, f5),
-        (g3, b4, d4, g4),
-        (c4, e4, g4, c5),
-        (e4, g4, b4, e5),
-        (f4, a4, c5, f5),
-        (g3, b4, d5, g5),
-    ]
     melody = [
-        e5, d5, c5, g4,
-        a4, c5, e5, c5,
-        f5, e5, d5, c5,
-        d5, b4, g4, d5,
-        e5, g5, e5, c5,
-        b4, c5, d5, e5,
-        f5, a5, f5, d5,
-        e5, d5, c5, g4,
-        c5, e5, g5, e5,
-        a4, c5, e5, a4,
-        f5, c5, a4, c5,
-        g4, b4, d5, g5,
-        e5, d5, c5, e5,
-        g5, e5, d5, c5,
-        a4, f5, d5, b4,
-        c5, e5, g5, c6,
+        g5, e5, g5, c6, a5, g5, e5, d5,
+        f5, a5, c6, a5, g5, e5, c5, d5,
+        e5, g5, c6, g5, a5, f5, d5, f5,
+        e5, d5, c5, e5, g5, e5, c5, g5,
+        g5, a5, b5, c6, d6, c6, a5, g5,
+        e5, g5, a5, g5, f5, d5, e5, c5,
+        c6, a5, g5, e5, f5, a5, g5, e5,
+        d5, e5, g5, e5, c5, e5, g5, c6,
     ]
-
-    eighth = beat * 0.5
-    for bar in range(bars):
-        root, third, fifth, octv = chords[bar % len(chords)]
-        t0 = bar * 4 * beat
-        mix_pluck(out, SR, t0, root, 0.28, 0.16, 0.12)
-        mix_pluck(out, SR, t0 + 2 * beat, fifth, 0.24, 0.13, 0.12)
-        arp = [root, third, fifth, octv, fifth, third, fifth, octv]
-        for k, note in enumerate(arp):
-            mix_pluck(out, SR, t0 + k * eighth, note, 0.42, 0.17, 0.32)
-        mix_pluck(out, SR, t0 + 1.5 * beat, g6 if bar % 2 == 0 else e6, 0.35, 0.09, 0.4)
-        mix_pluck(out, SR, t0 + 3.5 * beat, c6, 0.3, 0.07, 0.38)
-
+    # one melody note per eighth-note; rest every 8th slot for air
     for i, note in enumerate(melody):
-        mix_pluck(out, SR, i * beat, note, 0.55, 0.22, 0.3)
+        if i % 8 == 7:
+            continue
+        t0 = i * beat * 0.5
+        mix_bell(left, right, SR, t0, note, 0.38, 0.34, pan=(-0.25 if i % 2 == 0 else 0.25))
+        mix_bell(left, right, SR, t0 + 0.012, note * 2.005, 0.22, 0.09, pan=(0.35 if i % 2 == 0 else -0.35))
 
-    peak = max(1e-6, max(abs(s) for s in out))
-    gain = 0.82 / peak
-    fade = int(SR * 0.22)
-    for i, s in enumerate(out):
+    # high sparkle ostinato, not a pad
+    sparkle = [g6, e6, c6, e6]
+    for bar in range(bars):
+        t0 = bar * 4 * beat
+        root = [c5, a4, f5, g4][bar % 4]
+        mix_bell(left, right, SR, t0, root * 2, 0.28, 0.12, pan=-0.1)
+        mix_bell(left, right, SR, t0 + 2 * beat, e5, 0.22, 0.1, pan=0.1)
+        for k in range(4):
+            mix_bell(left, right, SR, t0 + (0.5 + k) * beat, sparkle[k], 0.18, 0.07, pan=0.45 if k % 2 else -0.45)
+        mix_blip(left, right, SR, t0, 2480, 0.045, 0.11)
+        mix_blip(left, right, SR, t0 + beat, 3120, 0.03, 0.07)
+        mix_blip(left, right, SR, t0 + 2 * beat, 2480, 0.04, 0.1)
+        mix_blip(left, right, SR, t0 + 3 * beat, 3360, 0.028, 0.06)
+
+    highpass(left, 320, SR)
+    highpass(right, 320, SR)
+    peak = 1e-6
+    for i in range(n):
+        peak = max(peak, abs(left[i]), abs(right[i]))
+    gain = 0.86 / peak
+    fade = int(SR * 0.18)
+    for i in range(n):
         edge = 1.0
         if i < fade:
             edge = i / fade
         elif i > n - fade:
             edge = (n - 1 - i) / fade
-        out[i] = s * gain * edge
-    write_wav("starlit-jaunt.wav", out)
+        left[i] *= gain * edge
+        right[i] *= gain * edge
+
+    low = sum(1 for s in left[::8] if abs(s) > 0)  # dummy to keep lint quiet
+    del low
+    write_wav_stereo("cosmic-stroll.wav", left, right)
+    write_wav_stereo("starlit-jaunt.wav", left, right)
+    write_wav_stereo("celestial-drift.wav", left, right)
+    write_wav_stereo("bgm.wav", left, right)
 
 
 def sfx_fire() -> None:
