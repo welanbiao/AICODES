@@ -1464,7 +1464,7 @@ export class Game {
 
   private orbitLevels(dt: number) {
     if (this.phase === "interior") {
-      this.setSideLevelsVisible(false);
+      this.setSideLevelsVisible(false, this.interiorId ?? this.docked?.id);
       return;
     }
     if (this.phase === "docked" || this.pendingLevel) return;
