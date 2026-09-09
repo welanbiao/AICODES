@@ -10,7 +10,6 @@ import {
   Node,
   PBRMaterial,
   PickingInfo,
-  Ray,
   Scene,
   SceneLoader,
   SpotLight,
