@@ -343,6 +343,7 @@ export const CATALOG: Record<string, PartInfo> = {
     material: "后盖开孔",
     note: "与闪光灯透镜对齐。",
   },
+  ...PC_CATALOG,
 };
 
 export function partKeyFromName(name: string): string {
