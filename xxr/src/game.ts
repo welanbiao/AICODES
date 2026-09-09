@@ -322,6 +322,7 @@ export class Game {
       if (env?.skybox) {
         env.skybox.setEnabled(false);
         env.skybox.isPickable = false;
+        env.skybox.metadata = { xxr: "sky" };
       }
       this.scene.environmentIntensity = 1.45;
       this.scene.imageProcessingConfiguration.exposure = 1.25;
