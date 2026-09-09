@@ -339,8 +339,8 @@ async function attachBatmanHook(scene: Scene, hook: TransformNode) {
       glbRoot.scaling.scaleInPlace(target / long);
     };
     glbRoot.rotation.x = Math.PI;
-    fitTo(0.07);
-    fitTo(0.07);
+    fitTo(0.028);
+    fitTo(0.028);
     glbRoot.computeWorldMatrix(true);
     const b2 = glbRoot.getHierarchyBoundingVectors(true);
     const center = b2.min.add(b2.max).scale(0.5);
