@@ -1611,7 +1611,7 @@ export class Game {
     $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[level.id].title}`;
     this.syncHandButtons();
     const pack = this.packs.get(level.id);
-    if (pack && !pack.exploded) this.startExplode();
+    if (pack && !pack.exploded) this.startExplode(pack);
     else this.tryAutoExplode();
   }
 
