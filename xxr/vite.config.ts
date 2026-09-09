@@ -12,12 +12,16 @@ function xxrModels(): Plugin {
     apply: "build",
     buildStart() {
       mkdirSync(resolve(root, "public/models"), { recursive: true });
+      mkdirSync(resolve(root, "public/audio"), { recursive: true });
       for (const name of MX_FILES) {
         const dest = resolve(root, "public/models", name);
         if (!existsSync(dest) && existsSync(resolve(root, "mx", name))) {
           copyFileSync(resolve(root, "mx", name), dest);
         }
       }
+      const bgmSrc = resolve(root, "mx/weightless.mp3");
+      const bgmDest = resolve(root, "public/audio/weightless.mp3");
+      if (existsSync(bgmSrc) && !existsSync(bgmDest)) copyFileSync(bgmSrc, bgmDest);
     },
   };
 }

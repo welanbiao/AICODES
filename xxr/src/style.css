@@ -161,36 +161,37 @@ h1 {
 }
 
 .play-actions {
+  --orb: calc(128px * var(--ui) * 2 / 3);
+  --mini: calc(48px * var(--ui) * 2 / 3);
+  --ring: calc(var(--orb) / 2 + var(--mini) / 2 + 10px * var(--ui));
   pointer-events: none;
   position: absolute;
   right: calc(10px * var(--ui) + env(safe-area-inset-right));
   bottom: calc(16px * var(--ui) + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  gap: calc(10px * var(--ui));
-  width: auto;
-  height: auto;
+  width: calc(var(--orb) / 2 + var(--ring) + var(--mini) / 2);
+  height: calc(var(--orb) / 2 + var(--ring) + var(--mini) / 2);
 }
 
 .act-stack {
   pointer-events: none;
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  gap: calc(8px * var(--ui));
+  position: absolute;
+  inset: 0;
 }
 
 .hook-orb {
   pointer-events: auto;
-  width: calc(128px * var(--ui));
-  height: calc(128px * var(--ui));
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--orb);
+  height: var(--orb);
   border-radius: 50%;
   overflow: hidden;
   display: flex;
   flex-shrink: 0;
   border: 2px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  opacity: 0.5;
 }
 
 .hook-orb .half-left,
@@ -207,12 +208,13 @@ h1 {
   height: 100%;
   min-height: 0;
   margin: 0;
-  padding: 0 6px;
+  padding: 0 4px;
   border: none;
   border-radius: 0;
   box-shadow: none;
-  font-size: calc(14px * var(--ui));
+  font-size: calc(14px * var(--ui) * 2 / 3);
   font-weight: 650;
+  opacity: 1;
 }
 
 .hook-orb .half-left {
@@ -234,19 +236,40 @@ h1 {
 
 .act-stack button {
   pointer-events: auto;
-  position: static;
-  width: calc(48px * var(--ui));
-  height: calc(48px * var(--ui));
+  position: absolute;
+  width: var(--mini);
+  height: var(--mini);
   min-height: 0;
   margin: 0;
   padding: 0;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  font-size: calc(11px * var(--ui));
+  font-size: calc(11px * var(--ui) * 2 / 3);
   user-select: none;
   touch-action: manipulation;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  opacity: 0.5;
+}
+
+.act-stack [data-testid="btn-home"] {
+  left: 0;
+  bottom: calc(var(--orb) / 2 - var(--mini) / 2);
+}
+
+.act-stack [data-testid="btn-explode-fps"] {
+  left: calc(0.181 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.574 * var(--ring) - var(--mini) / 2);
+}
+
+.act-stack [data-testid="btn-enter"] {
+  left: calc(0.658 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.94 * var(--ring) - var(--mini) / 2);
+}
+
+.act-stack [data-testid="btn-dismount"] {
+  left: calc(1.259 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.966 * var(--ring) - var(--mini) / 2);
 }
 
 .float-label {
