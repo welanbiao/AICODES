@@ -134,6 +134,11 @@ export class Game {
   private docked: LevelRef | null = null;
   private pendingLevel: LevelRef | null = null;
   private phoneHubScale = new Vector3(1, 1, 1);
+  private nativeScale = new Map<number, Vector3>();
+  private zoomBase = new Map<number, Vector3>();
+  private ptrs = new Map<number, { x: number; y: number }>();
+  private pinchDist = 0;
+  private pinching = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.gen = ++gameGen;
