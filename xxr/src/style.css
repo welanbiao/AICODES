@@ -63,7 +63,8 @@ body,
   inset: 0;
 }
 
-.screen[hidden] {
+.screen[hidden],
+[hidden] {
   display: none !important;
 }
 
