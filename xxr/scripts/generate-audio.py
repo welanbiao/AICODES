@@ -269,4 +269,4 @@ def sfx_recall() -> None:
 
 
 if __name__ == "__main__":
-    starlit_jaunt()
+    cosmic_stroll()
