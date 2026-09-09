@@ -760,12 +760,16 @@ export class Game {
   private standInFrontOfMesh(mesh: AbstractMesh) {
     const center = this.partCenter(mesh);
     let dir = center.subtract(this.fpsCam.position);
-    if (dir.lengthSquared() < 1e-8) dir = this.fpsCam.getForwardRay(1).direction.clone();
+    if (dir.lengthSquared() < 0.05) dir = this.fpsCam.getForwardRay(1).direction.clone();
     dir.normalize();
     const ext = mesh.getBoundingInfo().boundingBox.extendSizeWorld;
     const thick = Math.max(ext.x, ext.y, ext.z, 0.06) * 2;
-    const dist = clamp(thick * 1.55 + 0.42, 0.5, 3.2);
-    const stand = this.clampToSky(center.subtract(dir.scale(dist)));
+    const dist = clamp(thick * 1.55 + 0.5, 1.05, 3.6);
+    const stand = this.clampPlayerDest(center.subtract(dir.scale(dist)));
+    if (Vector3.Distance(stand, this.fpsCam.position) < 0.4) {
+      const back = this.fpsCam.getForwardRay(1).direction.scale(-dist);
+      stand.copyFrom(this.clampPlayerDest(this.fpsCam.position.add(back)));
+    }
     const lookDir = center.subtract(stand);
     const horiz = Math.max(0.001, Math.hypot(lookDir.x, lookDir.z));
     return {
