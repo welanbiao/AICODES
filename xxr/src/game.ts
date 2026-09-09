@@ -790,13 +790,27 @@ export class Game {
     return this.isLevelMesh(mesh);
   }
 
-  private isPhonePart(mesh: AbstractMesh) {
+  private isPackPart(mesh: AbstractMesh, pack: LevelPack | null | undefined) {
+    if (!pack) return false;
     let n: Node | null = mesh;
     while (n) {
-      if (n.name === "phoneWrap" || n.name === "phoneSpin" || n.name === "phoneModel") return true;
+      if (n === pack.wrap) return true;
       n = n.parent;
     }
     return false;
+  }
+
+  private activePack() {
+    const id = this.phase === "interior" ? this.interiorId ?? this.docked?.id : this.docked?.id;
+    return id ? this.packs.get(id) ?? null : null;
+  }
+
+  private isActivePart(mesh: AbstractMesh) {
+    return this.isPackPart(mesh, this.activePack());
+  }
+
+  private isPhonePart(mesh: AbstractMesh) {
+    return this.isPackPart(mesh, this.packs.get("phone"));
   }
 
   private levelRootOf(mesh: AbstractMesh | Node | null): LevelRef | null {
