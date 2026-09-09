@@ -1002,57 +1002,23 @@ export class Game {
   private tickHand(dt: number) {
     if (!this.arms) return;
     const hand = this.arms.rightHand;
-    const prev = hand.position.clone();
+    const prev = hand.getAbsolutePosition();
     const level = this.pendingLevel ?? this.docked;
     if (level) {
-      const to = level.wrap.getAbsolutePosition().subtract(hand.getAbsolutePosition());
+      const to = level.wrap.getAbsolutePosition().subtract(prev);
       if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(28);
     }
-    const next = hand.getAbsolutePosition().add(this.handVel.scale(dt));
+    const next = prev.add(this.handVel.scale(dt));
     this.clampToSky(next);
+    hand.setParent(null);
     hand.setAbsolutePosition(next);
     aimHook(hand, this.handVel);
-    const dist = Vector3.Distance(prev, next);
-    this.handFlight += dist;
-    if (level && Vector3.Distance(hand.getAbsolutePosition(), level.wrap.getAbsolutePosition()) < 0.55) {
+    this.handFlight += Vector3.Distance(prev, next);
+    if (level && Vector3.Distance(next, level.wrap.getAbsolutePosition()) < 0.55) {
       hand.setAbsolutePosition(level.wrap.getAbsolutePosition());
       this.handState = "stuck";
       playSfx("hit");
-      return;
     }
-    if (dist > 0.0001) {
-      const hit = this.scene.pickWithRay(new Ray(prev, delta.normalize(), dist + 0.25), (m) => this.canLatch(m));
-      if (hit?.hit && hit.pickedMesh) {
-        const caught = this.levelRootOf(hit.pickedMesh);
-        if (caught) {
-          this.catchLevel(caught);
-          return;
-        }
-      }
-    }
-    if (this.handFlight > HOOK_MAX) {
-      toast("钩索没有勾住");
-      playSfx("miss");
-      this.docked = null;
-      this.pendingLevel = null;
-      this.recallHand(true);
-    }
-  }
-
-  private catchLevel(level: LevelRef) {
-    if (!this.arms) return;
-    const hook = this.arms.rightHand;
-    hook.position.copyFrom(level.wrap.position);
-    this.clampToSky(hook.position);
-    aimHook(hook, level.wrap.position.subtract(this.arms.wristAnchor.getAbsolutePosition()));
-    setClaws(this.arms.claws, 1.15);
-    this.handState = "stuck";
-    this.docked = level;
-    this.pendingLevel = level;
-    const { stand, yaw } = this.standInFront(level.wrap);
-    this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand, lookYaw: yaw };
-    this.syncHandButtons();
-    playSfx("hit");
   }
 
   private tickReel(dt: number) {
