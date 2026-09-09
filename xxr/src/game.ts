@@ -265,7 +265,12 @@ export class Game {
     $<HTMLButtonElement>('[data-testid="btn-identify"]').onclick = () => this.identify();
     $<HTMLButtonElement>('[data-testid="btn-fire"]').onclick = () => this.fireHand();
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').onclick = () => this.dismount();
-    $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterPhone();
+    $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterInterior();
+    const aboutBtn = document.querySelector('[data-testid="btn-about"]') as HTMLButtonElement | null;
+    if (aboutBtn) aboutBtn.onclick = () => this.openAbout();
+    const aboutClose = document.querySelector('[data-testid="btn-about-close"]') as HTMLButtonElement | null;
+    if (aboutClose) aboutClose.onclick = () => this.closeAbout();
+    this.fillAbout();
   }
 
   private bindInput() {
