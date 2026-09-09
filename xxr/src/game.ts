@@ -1035,6 +1035,9 @@ export class Game {
       fps: this.fps,
       ready: this.worldReady,
       exploded: this.exploded,
+      explodeDone: this.explodeDone,
+      docked: this.docked?.id ?? null,
+      hookOn: !!this.arms?.rightHand.isEnabled(),
       size: [this.phoneSize.x, this.phoneSize.y, this.phoneSize.z],
       meshes: this.scene.meshes.length,
       pos: [p.x, p.y, p.z],
@@ -1046,6 +1049,8 @@ export class Game {
       identify: () => this.identify(),
       fire: () => this.fireHand(),
       explode: () => this.toggleExplode(),
+      finishExplode: () => this.finishExplodeNow(),
+      enter: () => this.enterPhone(),
       lookAtPhone: () => this.lookAtPhone(),
       home: () => this.returnToCenter(),
       setLook: (yaw, pitch) => {
@@ -1069,6 +1074,9 @@ declare global {
       fps: number;
       ready: boolean;
       exploded: boolean;
+      explodeDone?: boolean;
+      docked?: string | null;
+      hookOn?: boolean;
       size?: number[];
       meshes?: number;
       pos?: number[];
@@ -1080,6 +1088,8 @@ declare global {
       identify: () => void;
       fire: () => void;
       explode: () => void;
+      finishExplode?: () => void;
+      enter?: () => void;
       lookAtPhone: () => void;
       home: () => void;
       setLook: (yaw: number, pitch: number) => void;
