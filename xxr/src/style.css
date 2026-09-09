@@ -302,6 +302,7 @@ button {
   padding: 0 16px;
   cursor: pointer;
   pointer-events: auto;
+  opacity: 0.5;
 }
 
 button.primary {
