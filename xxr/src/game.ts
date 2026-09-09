@@ -1129,7 +1129,7 @@ export class Game {
       Vector3.LerpToRef(this.riding.from, this.riding.to, t, this.fpsCam.position);
       this.look.yaw = this.riding.lookYaw;
       if (this.riding.lookPitch != null) this.look.pitch = this.riding.lookPitch;
-      this.clampPlayer();
+      if (this.phase !== "interior") this.clampPlayer();
       if (this.riding.t >= 1) {
         const interiorYank = this.phase === "interior";
         this.riding = null;
