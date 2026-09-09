@@ -155,9 +155,10 @@ export class Game {
     sun.intensity = 0.55;
 
     this.fpsCam = new UniversalCamera("fps", new Vector3(0, 0, 0), this.scene);
-    this.fpsCam.minZ = 0.04;
+    this.fpsCam.minZ = 0.02;
     this.fpsCam.maxZ = 400;
-    this.fpsCam.fov = 0.98;
+    this.fpsCam.fovMode = Camera.FOVMODE_HORIZONTAL_FIXED;
+    this.fpsCam.fov = 1.22;
     this.fpsCam.inertia = 0;
     this.fpsCam.speed = 0;
     this.fpsCam.applyGravity = false;
