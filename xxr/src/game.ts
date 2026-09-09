@@ -893,6 +893,7 @@ declare global {
       explode: () => void;
       lookAtPhone: () => void;
       home: () => void;
+      setLook: (yaw: number, pitch: number) => void;
       tryMove: (x: number, y: number, z: number) => number[];
     };
   }
