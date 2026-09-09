@@ -7,7 +7,7 @@ test.describe("小小人", () => {
 
     await page.goto("/");
     await expect(page.getByTestId("title")).toHaveText("小小人");
-    await expect(page.getByTestId("loading")).toBeVisible();
+    await expect(page.getByTestId("loading")).toHaveCount(0);
     await expect(page.getByTestId("level-phone")).toHaveCount(0);
     await expect(page.getByTestId("btn-enter")).toBeHidden();
 

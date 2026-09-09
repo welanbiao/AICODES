@@ -1684,6 +1684,7 @@ declare global {
       setLook: (yaw: number, pitch: number) => void;
       tryMove: (x: number, y: number, z: number) => number[];
       pinch?: (factor: number) => boolean;
+      fov?: () => number;
       levelPose?: () => {
         phone: { pos: [number, number, number]; rotY: number } | null;
         laptop: { pos: [number, number, number]; rotY: number } | null;
