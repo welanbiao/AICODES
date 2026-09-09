@@ -1619,22 +1619,20 @@ export class Game {
     this.docked = level;
     this.phase = "docked";
     setPhase("docked");
-    const names: Record<LevelId, string> = { phone: "我的手机", laptop: "我的电脑", earbuds: "无线耳机" };
-    $<HTMLElement>("#play-status").textContent = `锁定 ${names[level.id]}`;
+    $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[level.id].title}`;
     this.syncHandButtons();
-    if (level.id === "phone") {
-      this.tryAutoExplode();
-      if (!this.exploded) toast("靠近模型后会自动展开");
-    } else toast(`${names[level.id]}即将开放`);
+    this.tryAutoExplode();
+    if (!this.exploded) toast("靠近模型后会自动展开");
   }
 
-  enterPhone() {
-    if (!this.worldReady || !this.phoneWrap) return;
-    if (this.phase !== "docked" || this.docked?.id !== "phone") {
-      toast("先用钩爪锁定我的手机");
+  enterInterior() {
+    const pack = this.activePack();
+    if (!this.worldReady || !pack) return;
+    if (this.phase !== "docked") {
+      toast("先用钩爪锁定关卡");
       return;
     }
-    if (!this.explodeDone) {
+    if (!pack.explodeDone) {
       toast("先看完爆炸图动画");
       return;
     }
@@ -1644,52 +1642,59 @@ export class Game {
       holsterHook(this.arms);
       this.handState = "holstered";
     }
-    this.phoneHubScale.copyFrom(this.phoneWrap.scaling);
-    this.phoneWrap.computeWorldMatrix(true);
-    const before = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    pack.hubScale.copyFrom(pack.wrap.scaling);
+    pack.wrap.computeWorldMatrix(true);
+    const before = this.scene.getWorldExtends((m) => this.isPackPart(m, pack) && !!m.getTotalVertices());
     const size = before.max.subtract(before.min);
     const longest = Math.max(size.x, size.y, size.z, 0.001);
-    this.phoneWrap.scaling.scaleInPlace(INTERIOR_SPAN / longest);
-    this.phoneWrap.computeWorldMatrix(true);
-    this.setZoomBase(this.phoneWrap);
+    pack.wrap.scaling.scaleInPlace(INTERIOR_SPAN / longest);
+    pack.wrap.computeWorldMatrix(true);
+    this.setZoomBase(pack.wrap);
     this.viewZoom = 1;
     this.applyViewFov();
-    const after = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
+    const after = this.scene.getWorldExtends((m) => this.isPackPart(m, pack) && !!m.getTotalVertices());
     const center = after.min.add(after.max).scale(0.5);
-    this.setSideLevelsVisible(false);
+    this.interiorId = pack.id;
+    this.setSideLevelsVisible(false, pack.id);
     this.phase = "interior";
     setPhase("interior");
     this.fpsCam.position.copyFrom(center);
     this.clampPlayer();
-    $<HTMLElement>("#play-status").textContent = "手机内部";
+    $<HTMLElement>("#play-status").textContent = LEVEL_META[pack.id].interior;
     this.syncHandButtons();
     toast("进入内部探索");
   }
 
   private exitInterior(resetExplode: boolean) {
-    if (this.phoneWrap) {
-      this.phoneWrap.scaling.copyFrom(this.phoneHubScale);
+    for (const pack of this.packs.values()) {
+      pack.wrap.scaling.copyFrom(pack.hubScale);
+      pack.wrap.setEnabled(true);
+      for (const mesh of pack.meshes) mesh.isVisible = true;
+      if (!resetExplode) continue;
+      pack.exploded = false;
+      pack.explodeGoal = 0;
+      pack.explodeT = 0;
+      pack.explodeDone = false;
+      if (pack.explodeGroup) {
+        pack.explodeGroup.goToFrame(pack.explodeGroup.from);
+        pack.explodeGroup.pause();
+      }
+      for (const node of pack.explodeNodes) {
+        const rest = pack.explodeRest.get(node.uniqueId);
+        if (rest) node.position.copyFrom(rest);
+      }
+      for (const mesh of pack.meshes) {
+        const rest = pack.restLocal.get(mesh.uniqueId);
+        if (rest) mesh.position.copyFrom(rest);
+      }
     }
-    this.lv2?.setEnabled(true);
-    this.lv3?.setEnabled(true);
+    this.interiorId = null;
     this.setSideLevelsVisible(true);
     if (resetExplode) {
       this.exploded = false;
       this.explodeGoal = 0;
       this.explodeT = 0;
       this.explodeDone = false;
-      if (this.explodeGroup) {
-        this.explodeGroup.goToFrame(this.explodeGroup.from);
-        this.explodeGroup.pause();
-      }
-      for (const node of this.explodeNodes) {
-        const rest = this.explodeRest.get(node.uniqueId);
-        if (rest) node.position.copyFrom(rest);
-      }
-      for (const mesh of this.phoneMeshes) {
-        const rest = this.restLocal.get(mesh.uniqueId);
-        if (rest) mesh.position.copyFrom(rest);
-      }
     }
   }
 
