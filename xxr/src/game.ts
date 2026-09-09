@@ -562,7 +562,7 @@ export class Game {
     this.look.yaw = Math.atan2(dir.x, dir.z);
     this.look.pitch = clamp(-Math.atan2(dir.y, horiz), -1.2, 1.2);
     this.applyLook();
-    this.fpsCam.computeWorldMatrix(true);
+    this.fpsCam.getViewMatrix();
   }
 
   identify() {
