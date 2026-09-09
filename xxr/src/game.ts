@@ -1314,7 +1314,7 @@ export class Game {
         if (interiorYank) this.finishPartYank();
         else this.finishDock();
       }
-    } else if (this.phase === "fps" || this.phase === "interior") this.moveFps(dt);
+    } else if (playable(this.phase)) this.moveFps(dt);
     if (this.handState === "flying") this.tickHand(dt);
     else if (this.handState === "reeling") this.tickReel(dt);
     this.updateHookRope();
