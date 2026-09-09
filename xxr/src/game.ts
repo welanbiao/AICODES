@@ -696,21 +696,21 @@ export class Game {
 
   private capturingExplode = false;
 
-  private captureExplodePoses(g: AnimationGroup) {
+  private captureExplodePoses(g: AnimationGroup, pack: LevelPack) {
     this.capturingExplode = true;
-    this.explodeNodes = [];
-    this.explodeRest.clear();
-    this.explodePose.clear();
+    pack.explodeNodes = [];
+    pack.explodeRest.clear();
+    pack.explodePose.clear();
     try {
       const seen = new Set<number>();
       for (const ta of g.targetedAnimations) {
         const node = ta.target as TransformNode | null;
         if (!node?.position || seen.has(node.uniqueId)) continue;
         seen.add(node.uniqueId);
-        this.explodeNodes.push(node);
-        this.explodeRest.set(node.uniqueId, node.position.clone());
+        pack.explodeNodes.push(node);
+        pack.explodeRest.set(node.uniqueId, node.position.clone());
       }
-      if (!this.explodeNodes.length) return;
+      if (!pack.explodeNodes.length) return;
 
       const span = g.to - g.from;
       const cap = g.from + span * 0.92;
@@ -721,8 +721,8 @@ export class Game {
         const frame = Math.min(cap, g.from + span * (i / steps));
         g.goToFrame(frame);
         let score = 0;
-        for (const node of this.explodeNodes) {
-          const rest = this.explodeRest.get(node.uniqueId);
+        for (const node of pack.explodeNodes) {
+          const rest = pack.explodeRest.get(node.uniqueId);
           if (rest) score += Vector3.Distance(node.position, rest);
         }
         if (score > peakScore) {
@@ -732,25 +732,25 @@ export class Game {
       }
 
       if (peakScore < 0.05) {
-        this.explodeNodes = [];
-        this.explodeRest.clear();
-        this.explodePose.clear();
+        pack.explodeNodes = [];
+        pack.explodeRest.clear();
+        pack.explodePose.clear();
         return;
       }
 
       g.goToFrame(peakFrame);
-      for (const node of this.explodeNodes) {
-        this.explodePose.set(node.uniqueId, node.position.clone());
+      for (const node of pack.explodeNodes) {
+        pack.explodePose.set(node.uniqueId, node.position.clone());
       }
       g.goToFrame(g.from);
       g.pause();
-      for (const node of this.explodeNodes) {
-        const rest = this.explodeRest.get(node.uniqueId);
+      for (const node of pack.explodeNodes) {
+        const rest = pack.explodeRest.get(node.uniqueId);
         if (rest) node.position.copyFrom(rest);
       }
       g.stop();
-      for (const node of this.explodeNodes) {
-        const rest = this.explodeRest.get(node.uniqueId);
+      for (const node of pack.explodeNodes) {
+        const rest = pack.explodeRest.get(node.uniqueId);
         if (rest) node.position.copyFrom(rest);
       }
     } finally {
