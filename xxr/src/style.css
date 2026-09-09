@@ -163,8 +163,8 @@ h1 {
 }
 
 .play-actions {
-  --orb: calc(128px * var(--ui) * 2 / 3);
-  --mini: calc(48px * var(--ui) * 2 / 3);
+  --orb: calc(128px * var(--ui) * 8 / 9);
+  --mini: calc(48px * var(--ui) * 8 / 9);
   --ring: calc(var(--orb) / 2 + var(--mini) / 2 + 10px * var(--ui));
   pointer-events: none;
   position: absolute;
