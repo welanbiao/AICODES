@@ -988,7 +988,7 @@ export class Game {
     this.fpsCam.getViewMatrix();
     this.scene.updateTransformMatrix();
     const target = mesh ?? this.pickPart()?.pickedMesh ?? this.nearestAimedPart();
-    if (!target || !this.isPhonePart(target)) {
+    if (!target || !this.isActivePart(target)) {
       toast("未锁定零件，钩爪不能发射");
       return false;
     }
