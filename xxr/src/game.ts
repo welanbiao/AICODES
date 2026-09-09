@@ -947,71 +947,58 @@ export class Game {
     this.syncHandButtons();
   }
 
-  private moveObserve(dt: number) {
-    if (this.keys.has("KeyA") || this.joy.x < -0.2) this.look.yaw -= dt * 1.2;
-    if (this.keys.has("KeyD") || this.joy.x > 0.2) this.look.yaw += dt * 1.2;
-    const orbit = this.keys.has("KeyQ") ? -1 : this.keys.has("KeyZ") ? 1 : 0;
-    if (orbit) {
-      const rel = this.fpsCam.position.subtract(this.observePivot);
-      const q = orbit * dt * 1.4;
-      const c = Math.cos(q);
-      const s = Math.sin(q);
-      const nx = rel.x * c - rel.z * s;
-      const nz = rel.x * s + rel.z * c;
-      this.fpsCam.position.x = this.observePivot.x + nx;
-      this.fpsCam.position.z = this.observePivot.z + nz;
-    }
-    this.clampPlayer();
-  }
-
   private tickHand(dt: number) {
     if (!this.arms) return;
     const hand = this.arms.rightHand;
     const prev = hand.position.clone();
+    const level = this.pendingLevel ?? this.docked;
+    if (level) {
+      const to = level.wrap.position.subtract(hand.position);
+      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(22);
+    }
     hand.position.addInPlace(this.handVel.scale(dt));
+    this.clampToSky(hand.position);
     aimHook(hand, this.handVel);
     const delta = hand.position.subtract(prev);
     const dist = delta.length();
     this.handFlight += dist;
+    if (level && Vector3.Distance(hand.position, level.wrap.position) < 0.42) {
+      this.catchLevel(level);
+      return;
+    }
     if (dist > 0.0001) {
-      const hit = this.scene.pickWithRay(
-        new Ray(prev, delta.normalize(), dist + 0.2),
-        (m) => this.canLatch(m),
-      );
-      if (hit?.hit && hit.pickedMesh && hit.pickedPoint) {
-        this.catchPart(hit);
-        return;
+      const hit = this.scene.pickWithRay(new Ray(prev, delta.normalize(), dist + 0.25), (m) => this.canLatch(m));
+      if (hit?.hit && hit.pickedMesh) {
+        const caught = this.levelRootOf(hit.pickedMesh);
+        if (caught) {
+          this.catchLevel(caught);
+          return;
+        }
       }
     }
-    if (this.handFlight > 14) {
+    if (this.handFlight > HOOK_MAX) {
       toast("钩索没有勾住");
       playSfx("miss");
+      this.docked = null;
+      this.pendingLevel = null;
       this.recallHand(true);
     }
   }
 
-  private catchPart(hit: PickingInfo) {
-    if (!this.arms || !hit.pickedPoint || !hit.pickedMesh) return;
-    if (this.isSkyMesh(hit.pickedMesh) || !this.canLatch(hit.pickedMesh)) {
-      playSfx("miss");
-      this.recallHand(true);
-      return;
-    }
+  private catchLevel(level: LevelRef) {
+    if (!this.arms) return;
     const hook = this.arms.rightHand;
-    hook.position.copyFrom(hit.pickedPoint);
-    aimHook(hook, hit.pickedPoint.subtract(this.arms.wristAnchor.getAbsolutePosition()));
+    hook.position.copyFrom(level.wrap.position);
+    this.clampToSky(hook.position);
+    aimHook(hook, level.wrap.position.subtract(this.arms.wristAnchor.getAbsolutePosition()));
     setClaws(this.arms.claws, 1.15);
-    hook.setParent(hit.pickedMesh);
     this.handState = "stuck";
-    this.observePivot.copyFrom(hit.pickedPoint);
-    const normal = (hit.getNormal(true) ?? Vector3.Up()).normalize();
-    const stand = hit.pickedPoint.add(normal.scale(0.55));
-    this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand };
-    $<HTMLElement>("#play-status").textContent = `钩住 ${infoFor(this.resolveName(hit.pickedMesh)).name}`;
+    this.docked = level;
+    this.pendingLevel = level;
+    const { stand, yaw } = this.standInFront(level.wrap);
+    this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand, lookYaw: yaw };
     this.syncHandButtons();
-    this.identify();
     playSfx("hit");
-    toast("钩索抓住，沿绳飞过去");
   }
 
   private tickReel(dt: number) {
