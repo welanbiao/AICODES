@@ -76,6 +76,95 @@ def bgm() -> None:
     write_wav("bgm.wav", out)
 
 
+def mix_pluck(buf: list[float], sr: int, start: float, freq: float, length: float, vol: float, bright: float = 0.28) -> None:
+    i0 = int(start * sr)
+    count = int(length * sr)
+    n = len(buf)
+    for i in range(count):
+        idx = i0 + i
+        if idx >= n:
+            break
+        t = i / sr
+        att = min(1.0, t / 0.007)
+        e = att * math.exp(-t * (6.2 + freq * 0.0035))
+        fund = math.sin(2 * math.pi * freq * t)
+        oct2 = math.sin(2 * math.pi * freq * 2.0 * t) * math.exp(-t * 11)
+        oct3 = math.sin(2 * math.pi * freq * 3.0 * t) * math.exp(-t * 16)
+        tri = 2 * abs(2 * ((t * freq) % 1) - 1) - 1
+        buf[idx] += (0.7 * fund + bright * oct2 + 0.1 * oct3 + 0.16 * tri) * e * vol
+
+
+def starlit_jaunt() -> None:
+    """Cheerful space-theme loop: music-box arps, no sustained bass drone."""
+    bpm = 120.0
+    beat = 60.0 / bpm
+    bars = 16
+    dur = bars * 4 * beat
+    n = int(SR * dur)
+    out = [0.0] * n
+
+    c4, d4, e4, f4, g4, a4, b4 = 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88
+    c5, d5, e5, f5, g5, a5 = 523.25, 587.33, 659.25, 698.46, 783.99, 880.00
+    c6, e6, g6 = 1046.50, 1318.51, 1567.98
+    g3, a3 = 196.00, 220.00
+
+    chords = [
+        (c4, e4, g4, c5),
+        (a3, c4, e4, a4),
+        (f4, a4, c5, f5),
+        (g3, b4, d4, g4),
+        (c4, e4, g4, c5),
+        (e4, g4, b4, e5),
+        (f4, a4, c5, f5),
+        (g3, b4, d5, g5),
+    ]
+    melody = [
+        e5, d5, c5, g4,
+        a4, c5, e5, c5,
+        f5, e5, d5, c5,
+        d5, b4, g4, d5,
+        e5, g5, e5, c5,
+        b4, c5, d5, e5,
+        f5, a5, f5, d5,
+        e5, d5, c5, g4,
+        c5, e5, g5, e5,
+        a4, c5, e5, a4,
+        f5, c5, a4, c5,
+        g4, b4, d5, g5,
+        e5, d5, c5, e5,
+        g5, e5, d5, c5,
+        a4, f5, d5, b4,
+        c5, e5, g5, c6,
+    ]
+
+    eighth = beat * 0.5
+    for bar in range(bars):
+        root, third, fifth, octv = chords[bar % len(chords)]
+        t0 = bar * 4 * beat
+        mix_pluck(out, SR, t0, root, 0.28, 0.16, 0.12)
+        mix_pluck(out, SR, t0 + 2 * beat, fifth, 0.24, 0.13, 0.12)
+        arp = [root, third, fifth, octv, fifth, third, fifth, octv]
+        for k, note in enumerate(arp):
+            mix_pluck(out, SR, t0 + k * eighth, note, 0.42, 0.17, 0.32)
+        mix_pluck(out, SR, t0 + 1.5 * beat, g6 if bar % 2 == 0 else e6, 0.35, 0.09, 0.4)
+        mix_pluck(out, SR, t0 + 3.5 * beat, c6, 0.3, 0.07, 0.38)
+
+    for i, note in enumerate(melody):
+        mix_pluck(out, SR, i * beat, note, 0.55, 0.22, 0.3)
+
+    peak = max(1e-6, max(abs(s) for s in out))
+    gain = 0.82 / peak
+    fade = int(SR * 0.22)
+    for i, s in enumerate(out):
+        edge = 1.0
+        if i < fade:
+            edge = i / fade
+        elif i > n - fade:
+            edge = (n - 1 - i) / fade
+        out[i] = s * gain * edge
+    write_wav("starlit-jaunt.wav", out)
+
+
 def sfx_fire() -> None:
     dur = 0.42
     n = int(SR * dur)
