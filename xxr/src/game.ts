@@ -208,25 +208,6 @@ export class Game {
     $<HTMLButtonElement>('[data-testid="btn-recall"]').onclick = () => this.recallHand();
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').onclick = () => this.dismount();
     $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterPhone();
-    this.bindHoldButtons();
-  }
-
-  private bindHoldButtons() {
-    document.querySelectorAll<HTMLButtonElement>("[data-hold]").forEach((btn) => {
-      const code = btn.dataset.hold;
-      if (!code) return;
-      const down = (e: PointerEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        unlockAudio();
-        this.keys.add(code);
-        btn.setPointerCapture(e.pointerId);
-      };
-      const up = () => this.keys.delete(code);
-      btn.addEventListener("pointerdown", down);
-      btn.addEventListener("pointerup", up);
-      btn.addEventListener("pointercancel", up);
-    });
   }
 
   private bindInput() {
