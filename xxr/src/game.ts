@@ -112,7 +112,6 @@ export class Game {
   private handVel = Vector3.Zero();
   private handFlight = 0;
   private highlight: AbstractMesh | null = null;
-  private observePivot = Vector3.Zero();
   private worldReady = false;
   private riding: { t: number; from: Vector3; to: Vector3; lookYaw: number } | null = null;
   private restLocal = new Map<number, Vector3>();
