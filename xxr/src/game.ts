@@ -42,6 +42,56 @@ type HandState = "holstered" | "flying" | "stuck" | "reeling";
 type LevelId = "phone" | "laptop" | "earbuds";
 type LevelRef = { id: LevelId; wrap: TransformNode };
 
+type LevelPack = {
+  id: LevelId;
+  wrap: TransformNode;
+  spin: TransformNode;
+  meshes: AbstractMesh[];
+  explodeGroup: AnimationGroup | null;
+  explodeNodes: TransformNode[];
+  explodeRest: Map<number, Vector3>;
+  explodePose: Map<number, Vector3>;
+  restLocal: Map<number, Vector3>;
+  hubScale: Vector3;
+  explodeT: number;
+  explodeGoal: number;
+  exploded: boolean;
+  explodeDone: boolean;
+};
+
+const LEVEL_META: Record<
+  LevelId,
+  { title: string; wrap: string; spin: string; model: string; file: string; y: number; interior: string }
+> = {
+  phone: {
+    title: "手机",
+    wrap: "phoneWrap",
+    spin: "phoneSpin",
+    model: "phoneModel",
+    file: "iphone_12_teardown.glb",
+    y: 0.16,
+    interior: "手机内部",
+  },
+  laptop: {
+    title: "旧电脑",
+    wrap: "level-laptop",
+    spin: "laptopSpin",
+    model: "laptopModel",
+    file: "lumen_64_spark__computer.glb",
+    y: 0.1,
+    interior: "旧电脑内部",
+  },
+  earbuds: {
+    title: "新电脑",
+    wrap: "level-earbuds",
+    spin: "earbudsSpin",
+    model: "earbudsModel",
+    file: "computer.glb",
+    y: 0.1,
+    interior: "新电脑内部",
+  },
+};
+
 const SKY_SIZE = 72;
 const PHONE_SPAN = 1.15;
 const ORBIT_RADIUS = 2.52;
