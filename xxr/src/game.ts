@@ -560,13 +560,14 @@ export class Game {
     playSfx("fire");
   }
 
-  recallHand() {
+  recallHand(silent = false) {
     if (!this.arms || this.handState === "holstered" || this.handState === "reeling") return;
     this.riding = null;
     this.arms.rightHand.setParent(null);
     setClaws(this.arms.claws, 0.35);
     this.handState = "reeling";
     this.syncHandButtons();
+    if (!silent) playSfx("recall");
     if (this.phase === "observe") this.dismount();
   }
 
