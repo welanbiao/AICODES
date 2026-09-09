@@ -48,6 +48,7 @@ test.describe("小小人", () => {
     expect(flowed).toMatchObject({ ok: true, grabbed: "docked", phase: "interior", exploded: true, explodeDone: true });
     expect(flowed.opened.parts).toBeGreaterThan(40);
     expect(flowed.opened.longest).toBeGreaterThan(flowed.closed.longest * 1.6);
+    await expect(page.getByTestId("joystick")).toBeVisible();
 
     const yanked = await page.evaluate(() => {
       const x = window.__XXR__;
