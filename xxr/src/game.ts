@@ -207,10 +207,32 @@ export class Game {
     $<HTMLButtonElement>('[data-testid="btn-recall"]').onclick = () => this.recallHand();
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').onclick = () => this.dismount();
     $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterPhone();
+    this.bindHoldButtons();
+  }
+
+  private bindHoldButtons() {
+    document.querySelectorAll<HTMLButtonElement>("[data-hold]").forEach((btn) => {
+      const code = btn.dataset.hold;
+      if (!code) return;
+      const down = (e: PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        unlockAudio();
+        this.keys.add(code);
+        btn.setPointerCapture(e.pointerId);
+      };
+      const up = () => this.keys.delete(code);
+      btn.addEventListener("pointerdown", down);
+      btn.addEventListener("pointerup", up);
+      btn.addEventListener("pointercancel", up);
+      btn.addEventListener("lostpointercapture", up);
+    });
   }
 
   private bindInput() {
     window.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
+      if (playable(this.phase) && (e.code === "Space" || e.code.startsWith("Arrow"))) e.preventDefault();
       this.keys.add(e.code);
       unlockAudio();
       if (e.code === "KeyE") this.identify();
@@ -219,37 +241,41 @@ export class Game {
       if (e.code === "KeyX") this.toggleExplode();
       if (e.code === "KeyG") this.enterPhone();
       if (e.code === "KeyH" || e.code === "Home") this.returnToCenter();
-      if (e.code === "Escape") {
-        document.exitPointerLock();
-        if (this.phase === "docked") this.dismount();
-      }
+      if (e.code === "Escape" && this.phase === "docked") this.dismount();
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
+    window.addEventListener("blur", () => {
+      this.keys.clear();
+      this.dragging = false;
+      this.lookPtr = null;
+    });
 
     this.canvas.addEventListener("pointerdown", (e) => {
       if (!playable(this.phase)) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      e.preventDefault();
       this.dragging = true;
+      this.lookPtr = e.pointerId;
       this.lastPtr = { x: e.clientX, y: e.clientY };
+      this.canvas.setPointerCapture(e.pointerId);
       unlockAudio();
-      if (e.pointerType === "mouse") this.canvas.requestPointerLock();
     });
-    window.addEventListener("pointerup", () => {
+    const endLook = (e: PointerEvent) => {
+      if (e.pointerId !== this.lookPtr) return;
       this.dragging = false;
-    });
-    window.addEventListener("pointermove", (e) => {
-      if (!playable(this.phase)) return;
-      let dx = 0;
-      let dy = 0;
-      if (document.pointerLockElement === this.canvas) {
-        dx = e.movementX;
-        dy = e.movementY;
-      } else if (this.dragging) {
-        dx = e.clientX - this.lastPtr.x;
-        dy = e.clientY - this.lastPtr.y;
-        this.lastPtr = { x: e.clientX, y: e.clientY };
-      } else return;
-      this.look.yaw += dx * 0.0024;
-      this.look.pitch = Math.max(-1.2, Math.min(1.2, this.look.pitch + dy * 0.0024));
+      this.lookPtr = null;
+    };
+    this.canvas.addEventListener("pointerup", endLook);
+    this.canvas.addEventListener("pointercancel", endLook);
+    this.canvas.addEventListener("lostpointercapture", endLook);
+    this.canvas.addEventListener("pointermove", (e) => {
+      if (!playable(this.phase) || !this.dragging || e.pointerId !== this.lookPtr) return;
+      const dx = e.clientX - this.lastPtr.x;
+      const dy = e.clientY - this.lastPtr.y;
+      this.lastPtr = { x: e.clientX, y: e.clientY };
+      const sens = e.pointerType === "touch" ? 0.0034 : 0.0024;
+      this.look.yaw += dx * sens;
+      this.look.pitch = Math.max(-1.2, Math.min(1.2, this.look.pitch + dy * sens));
     });
 
     this.bindJoystick();
