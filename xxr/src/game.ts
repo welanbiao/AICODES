@@ -167,8 +167,6 @@ export class Game {
   private worldReady = false;
   private riding: { t: number; from: Vector3; to: Vector3; lookYaw: number; lookPitch?: number } | null = null;
   private pendingPart: AbstractMesh | null = null;
-  private explodeT = 0;
-  private explodeGoal = 0;
   private explodeDone = false;
   private nearExplode = false;
   private packs = new Map<LevelId, LevelPack>();
