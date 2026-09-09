@@ -50,8 +50,7 @@ test.describe("小小人", () => {
     const moved = Math.hypot(after[0] - before[0], after[1] - before[1], after[2] - before[2]);
     expect(moved).toBeGreaterThan(0.05);
 
-    const fps = await page.evaluate(() => window.__XXR__?.fps ?? 0);
-    expect(fps).toBeGreaterThan(1);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.fps ?? 0)).toBeGreaterThan(1);
 
     await expect(page.getByTestId("btn-home")).toBeVisible();
     const clamped = await page.evaluate(() => window.__XXR__?.tryMove?.(400, 400, 400) ?? [400, 400, 400]);
