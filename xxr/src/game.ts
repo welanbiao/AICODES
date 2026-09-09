@@ -783,7 +783,8 @@ export class Game {
     }
     if (this.handFlight > 14) {
       toast("钩索没有勾住");
-      this.recallHand();
+      playSfx("miss");
+      this.recallHand(true);
     }
   }
 
