@@ -968,6 +968,8 @@ export class Game {
     if (this.phase !== "docked" || !this.docked) return;
     this.alignOrbitTo(this.docked);
     this.restoreNativeScales();
+    this.viewZoom = 1;
+    this.applyViewFov();
     this.docked = null;
     this.pendingLevel = null;
     this.phase = "fps";
