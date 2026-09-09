@@ -587,7 +587,7 @@ export class Game {
 
   private pickPart(): PickingInfo | null {
     const ray = this.fpsCam.getForwardRay(12);
-    return this.scene.pickWithRay(ray, (m) => m.isPickable && m.isEnabled() && this.isPhonePart(m) && !isAvatarMesh(m));
+    return this.scene.pickWithRay(ray, (m) => this.canLatch(m));
   }
 
   private resolveName(mesh: AbstractMesh): string {
