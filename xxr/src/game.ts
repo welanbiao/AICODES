@@ -1156,12 +1156,6 @@ export class Game {
     this.refreshSkyBounds();
   }
 
-  private inspectRoot(): TransformNode | null {
-    if (this.phase === "interior") return this.phoneWrap;
-    if (this.phase === "docked") return this.docked?.wrap ?? this.phoneWrap;
-    return this.aimLevel()?.wrap ?? this.phoneWrap;
-  }
-
   private zoomTargets() {
     const nodes: TransformNode[] = [];
     if (this.skyRoot) nodes.push(this.skyRoot);

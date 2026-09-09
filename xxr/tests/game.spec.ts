@@ -33,6 +33,7 @@ test.describe("小小人", () => {
       return { ok: true as const, grabbed };
     });
     expect(flowed).toMatchObject({ ok: true, grabbed: "docked" });
+    await expect(page.getByTestId("joystick")).toBeVisible();
 
     const frozenA = await page.evaluate(() => window.__XXR__?.levelPose?.() ?? null);
     await page.waitForTimeout(500);
