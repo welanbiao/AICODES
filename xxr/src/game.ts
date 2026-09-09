@@ -112,8 +112,8 @@ export class Game {
   private phoneWrap: TransformNode | null = null;
   private phoneSpin: TransformNode | null = null;
   private phoneMeshes: AbstractMesh[] = [];
-  private lv2: Mesh | null = null;
-  private lv3: Mesh | null = null;
+  private lv2: TransformNode | null = null;
+  private lv3: TransformNode | null = null;
   private phoneAngle = 0;
   private skyMin = new Vector3(-30, -30, -30);
   private skyMax = new Vector3(30, 30, 30);

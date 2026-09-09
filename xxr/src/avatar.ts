@@ -319,7 +319,7 @@ async function attachBatmanHook(scene: Scene, hook: TransformNode) {
       mesh.isPickable = false;
       mesh.alwaysSelectAsActiveMesh = true;
       if (mesh.material) mesh.material.backFaceCulling = false;
-      tag(mesh as Mesh);
+      tag(mesh);
     }
     glbRoot.rotationQuaternion = null;
     glbRoot.rotation.setAll(0);
