@@ -87,6 +87,8 @@ function playable(phase: Phase) {
   return phase === "fps" || phase === "docked" || phase === "interior";
 }
 
+let gameGen = 0;
+
 export class Game {
   readonly engine: Engine;
   readonly scene: Scene;
