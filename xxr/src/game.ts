@@ -903,13 +903,13 @@ export class Game {
     this.phoneWrap.computeWorldMatrix(true);
     const after = this.scene.getWorldExtends((m) => this.isPhonePart(m) && !!m.getTotalVertices());
     const center = after.min.add(after.max).scale(0.5);
-    this.fpsCam.position.copyFrom(center);
-    this.clampPlayer();
     this.lv2?.setEnabled(false);
     this.lv3?.setEnabled(false);
     this.interior = true;
     this.phase = "interior";
     setPhase("interior");
+    this.fpsCam.position.copyFrom(center);
+    this.clampPlayer();
     $<HTMLElement>("#play-status").textContent = "手机内部";
     this.syncHandButtons();
     toast("进入内部探索");
