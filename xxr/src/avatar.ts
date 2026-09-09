@@ -394,8 +394,6 @@ export async function loadFpsArms(
     if (mesh.material) mesh.material.backFaceCulling = false;
   }
 
-  fitFirstPerson(glbRoot);
-
   const findBone = (name: string) =>
     scene.getTransformNodeByName(name) ??
     (scene.getNodeByName(name) as TransformNode | null) ??
@@ -409,16 +407,7 @@ export async function loadFpsArms(
     throw new Error("fps_arms.glb missing wrist bones");
   }
 
-  leftWrist.computeWorldMatrix(true);
-  rightWrist.computeWorldMatrix(true);
-  const mid = leftWrist.getAbsolutePosition().add(rightWrist.getAbsolutePosition()).scale(0.5);
-  if (mid.z < 0.02) {
-    glbRoot.rotation.y += Math.PI;
-    glbRoot.computeWorldMatrix(true);
-    const b3 = glbRoot.getHierarchyBoundingVectors(true);
-    const c3 = b3.min.add(b3.max).scale(0.5);
-    glbRoot.position.addInPlace(new Vector3(0, -0.34, 0.48).subtract(c3));
-  }
+  fitByWrists(glbRoot, leftWrist, rightWrist);
 
   const kit = createGrapple(scene, rightWrist, leftWrist);
   await attachBatmanHook(scene, kit.hook);
