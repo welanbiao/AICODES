@@ -382,6 +382,9 @@ export function partKeyFromName(name: string): string {
       if (lower === kl || lower.startsWith(`${kl}_`) || lower.startsWith(`${kl}.`)) return k;
     }
   }
+  for (const [re, key] of HUMAN_ALIASES) {
+    if (re.test(cleaned) || re.test(stripped)) return key;
+  }
   if (/bolt|screw/i.test(cleaned)) return "__screw__";
   if (/^Cube/i.test(stripped)) return "Cube";
   if (/^Cylinder/i.test(stripped)) return "Cylinder";
