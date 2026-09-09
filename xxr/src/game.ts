@@ -666,6 +666,7 @@ export class Game {
       explodeGoal: 0,
       exploded: false,
       explodeDone: false,
+      explodeSec: id === "phone" ? EXPLODE_SEC : this.clipSeconds(explodeGroup),
     };
 
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
