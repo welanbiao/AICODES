@@ -499,7 +499,10 @@ export class Game {
       this.explodeNodes.push(node);
       this.explodeRest.set(node.uniqueId, node.position.clone());
     }
-    if (!this.explodeNodes.length) return;
+    if (!this.explodeNodes.length) {
+      this.capturingExplode = false;
+      return;
+    }
 
     const span = g.to - g.from;
     const cap = g.from + span * 0.92;
