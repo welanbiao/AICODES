@@ -447,12 +447,12 @@ button.ghost {
     font-size: calc(28px * var(--ui));
   }
   .joystick .joy-base {
-    width: calc(96px * var(--ui));
-    height: calc(96px * var(--ui));
+    width: calc(96px * var(--ui) * 4 / 3);
+    height: calc(96px * var(--ui) * 4 / 3);
   }
   .play-actions {
-    --orb: calc(96px * var(--ui) * 2 / 3);
-    --mini: calc(40px * var(--ui) * 2 / 3);
+    --orb: calc(96px * var(--ui) * 8 / 9);
+    --mini: calc(40px * var(--ui) * 8 / 9);
   }
 }
 
