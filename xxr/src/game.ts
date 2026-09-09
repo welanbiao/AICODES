@@ -74,10 +74,6 @@ function loadProgress(ev: { loaded: number; total: number; lengthComputable?: bo
   return ev.total ? Math.min(0.92, ev.loaded / ev.total) : 0.12;
 }
 
-function touchUi() {
-  return (navigator.maxTouchPoints ?? 0) > 0 || window.matchMedia("(pointer: coarse)").matches;
-}
-
 function setPhase(phase: Phase) {
   $("#app").dataset.phase = phase;
   $<HTMLElement>("#screen-load").hidden = phase !== "loading";
