@@ -1297,24 +1297,23 @@ export class Game {
     const dest = part ? this.partCenter(part) : level?.wrap.getAbsolutePosition() ?? null;
     if (dest) {
       const to = dest.subtract(prev);
-      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(part ? 32 : 28);
+      if (to.lengthSquared() > 1e-8) this.handVel = to.normalize().scale(part ? 48 : 28);
     }
     const next = prev.add(this.handVel.scale(dt));
-    this.clampToSky(next);
+    if (this.phase !== "interior") this.clampToSky(next);
     hand.setParent(null);
     hand.setAbsolutePosition(next);
     aimHook(hand, this.handVel);
     this.handFlight += Vector3.Distance(prev, next);
     const reach = part
-      ? clamp(part.getBoundingInfo().boundingBox.extendSizeWorld.length() * 2.2, 0.35, 1.4)
+      ? clamp(part.getBoundingInfo().boundingBox.extendSizeWorld.length() * 2.2, 0.55, 2.8)
       : 0.55;
     if (dest && Vector3.Distance(next, dest) < reach) {
       hand.setAbsolutePosition(dest);
       this.handState = "stuck";
       playSfx("hit");
-      if (part) {
+      if (part && !this.riding) {
         const pose = this.standInFrontOfMesh(part);
-        this.fpsCam.position.copyFrom(this.clampToSky(this.fpsCam.position));
         pose.stand.copyFrom(this.clampPlayerDest(pose.stand));
         this.riding = {
           t: 0,
