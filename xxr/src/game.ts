@@ -1473,9 +1473,10 @@ export class Game {
     const names: Record<LevelId, string> = { phone: "我的手机", laptop: "我的电脑", earbuds: "无线耳机" };
     $<HTMLElement>("#play-status").textContent = `锁定 ${names[level.id]}`;
     this.syncHandButtons();
-    if (level.id === "phone") toast("靠近模型后会自动展开");
-    else toast(`${names[level.id]}即将开放`);
-    this.tryAutoExplode();
+    if (level.id === "phone") {
+      this.tryAutoExplode();
+      if (!this.exploded) toast("靠近模型后会自动展开");
+    } else toast(`${names[level.id]}即将开放`);
   }
 
   enterPhone() {
