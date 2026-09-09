@@ -1357,6 +1357,7 @@ export class Game {
   private applyExplode(dt: number) {
     if (this.capturingExplode) return;
     for (const pack of this.packs.values()) {
+      if (pack.looping) continue;
       const step = dt / Math.max(0.5, pack.explodeSec || EXPLODE_SEC);
       if (pack.explodeT < pack.explodeGoal) pack.explodeT = Math.min(pack.explodeGoal, pack.explodeT + step);
       else if (pack.explodeT > pack.explodeGoal) pack.explodeT = Math.max(pack.explodeGoal, pack.explodeT - step);
