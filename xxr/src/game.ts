@@ -135,6 +135,8 @@ export class Game {
   private skyRoot: TransformNode | null = null;
   private skyMin = new Vector3(-30, -30, -30);
   private skyMax = new Vector3(30, 30, 30);
+  private skyCenter = new Vector3(0, 0, 0);
+  private skyRadius = 30;
   private skyLimit = 30;
   private docked: LevelRef | null = null;
   private pendingLevel: LevelRef | null = null;
