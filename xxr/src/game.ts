@@ -116,6 +116,9 @@ export class Game {
   private worldReady = false;
   private riding: { t: number; from: Vector3; to: Vector3; lookYaw: number } | null = null;
   private restLocal = new Map<number, Vector3>();
+  private explodeNodes: TransformNode[] = [];
+  private explodeRest = new Map<number, Vector3>();
+  private explodePose = new Map<number, Vector3>();
   private explodeT = 0;
   private explodeGoal = 0;
   private explodeDone = false;
