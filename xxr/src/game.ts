@@ -1639,6 +1639,7 @@ export class Game {
       },
       pinch: (factor: number) => this.zoomInspect(factor),
       levelPose: () => this.levelPose(),
+      fov: () => this.fpsCam.fov,
     };
   }
 }
