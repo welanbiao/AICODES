@@ -223,8 +223,4 @@ def sfx_recall() -> None:
 
 
 if __name__ == "__main__":
-    bgm()
-    sfx_fire()
-    sfx_hit()
-    sfx_miss()
-    sfx_recall()
+    starlit_jaunt()
