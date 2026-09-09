@@ -738,19 +738,21 @@ export class Game {
   }
 
   private orbitLevels(dt: number) {
+    if (this.phase === "interior") return;
     this.phoneAngle += dt * ORBIT_SPEED;
     const cam = this.fpsCam.position;
-    const place = (node: TransformNode | null, offset: number, y: number) => {
-      if (!node) return;
+    const frozen = this.docked?.id;
+    const place = (node: TransformNode | null, offset: number, y: number, id: LevelId) => {
+      if (!node || frozen === id) return;
       const a = this.phoneAngle + offset;
       node.position.set(cam.x + Math.sin(a) * ORBIT_RADIUS, cam.y + y, cam.z + Math.cos(a) * ORBIT_RADIUS);
     };
-    place(this.phoneWrap, 0, 0.16);
-    place(this.lv2, (Math.PI * 2) / 3, 0.02);
-    place(this.lv3, (Math.PI * 4) / 3, 0.02);
-    if (this.phoneSpin) this.phoneSpin.rotation.y += dt * SPIN_SPEED;
-    if (this.lv2) this.lv2.rotation.y += dt * 0.7;
-    if (this.lv3) this.lv3.rotation.y += dt * 0.7;
+    place(this.phoneWrap, 0, 0.16, "phone");
+    place(this.lv2, (Math.PI * 2) / 3, 0.02, "laptop");
+    place(this.lv3, (Math.PI * 4) / 3, 0.02, "earbuds");
+    if (this.phoneSpin && frozen !== "phone") this.phoneSpin.rotation.y += dt * SPIN_SPEED;
+    if (this.lv2 && frozen !== "laptop") this.lv2.rotation.y += dt * 0.175;
+    if (this.lv3 && frozen !== "earbuds") this.lv3.rotation.y += dt * 0.175;
   }
 
   private projectLabel(el: HTMLElement, world: Vector3) {
