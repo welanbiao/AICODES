@@ -1709,6 +1709,28 @@ export class Game {
     $<HTMLElement>("#play-status").textContent = LEVEL_META[pack.id].interior;
     this.syncHandButtons();
     toast("进入内部探索");
+    this.startInteriorLoop(pack);
+  }
+
+  private startInteriorLoop(pack: LevelPack) {
+    if (pack.id === "phone" || !pack.animGroups.length) return;
+    this.stopInteriorLoop(pack);
+    pack.looping = true;
+    for (const g of pack.animGroups) {
+      g.loopAnimation = true;
+      g.start(true, 1, g.from, g.to);
+    }
+  }
+
+  private stopInteriorLoop(pack: LevelPack) {
+    pack.looping = false;
+    for (const g of pack.animGroups) {
+      g.stop();
+      g.reset();
+      g.loopAnimation = false;
+      g.pause();
+      g.goToFrame(g.from);
+    }
   }
 
   private exitInterior(resetExplode: boolean) {
