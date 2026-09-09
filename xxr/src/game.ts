@@ -524,20 +524,9 @@ export class Game {
     const center = b2.min.add(b2.max).scale(0.5);
     root.position.subtractInPlace(center);
     root.computeWorldMatrix(true);
-    const b3 = root.getHierarchyBoundingVectors(true);
-    const pad = 1.6;
     this.skyRoot = root;
-    this.skyMin.copyFrom(b3.min.add(new Vector3(pad, pad, pad)));
-    this.skyMax.copyFrom(b3.max.subtract(new Vector3(pad, pad, pad)));
-    this.skyLimit = Math.max(
-      Math.abs(this.skyMin.x),
-      Math.abs(this.skyMax.x),
-      Math.abs(this.skyMin.y),
-      Math.abs(this.skyMax.y),
-      Math.abs(this.skyMin.z),
-      Math.abs(this.skyMax.z),
-    );
     this.captureNativeScale(root);
+    this.refreshSkyBounds();
   }
 
   private preparePhone(loaded: ISceneLoaderAsyncResult) {
