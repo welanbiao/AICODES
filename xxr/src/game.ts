@@ -557,8 +557,10 @@ export class Game {
   }
 
   lookAtPhone() {
-    this.look.yaw = this.phoneAngle;
-    this.look.pitch = -0.1;
+    if (!this.phoneWrap) return;
+    const dir = this.phoneWrap.position.subtract(this.fpsCam.position);
+    this.look.yaw = Math.atan2(dir.x, dir.z);
+    this.look.pitch = -0.08;
     this.applyLook();
   }
 
