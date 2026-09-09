@@ -85,6 +85,17 @@ test.describe("小小人", () => {
     expect(entered.opened.longest).toBeGreaterThan(entered.closed.longest * 1.6);
     await expect(page.getByTestId("joystick")).toBeVisible();
 
+    const interiorZoom = await page.evaluate(() => {
+      const x = window.__XXR__;
+      if (!x?.phoneSpan || !x.pinch) return { ok: false, before: 0, after: 0 };
+      const before = x.phoneSpan().longest;
+      const ok = x.pinch(1.35);
+      const after = x.phoneSpan().longest;
+      return { ok, before, after };
+    });
+    expect(interiorZoom.ok).toBe(true);
+    expect(interiorZoom.after).toBeGreaterThan(interiorZoom.before * 1.15);
+
     const yanked = await page.evaluate(() => {
       const x = window.__XXR__;
       if (!x) return { ok: false, before: [0, 0, 0] };
