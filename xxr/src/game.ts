@@ -630,25 +630,6 @@ export class Game {
     this.syncHandButtons();
     playSfx("fire");
   }
-    const hook = this.arms.rightHand;
-    setHookVisible(this.arms, true);
-    const origin = this.arms.wristAnchor.getAbsolutePosition();
-    hook.setParent(null);
-    hook.position.copyFrom(origin);
-    this.clampToSky(hook.position);
-    const target = level.wrap.position.clone();
-    const dir = target.subtract(origin);
-    if (dir.lengthSquared() < 1e-6) dir.set(0, 0, 1);
-    this.handVel = dir.normalize().scale(22);
-    aimHook(hook, this.handVel);
-    setClaws(this.arms.claws, 0.92);
-    this.handFlight = 0;
-    this.handState = "flying";
-    this.pendingLevel = level;
-    this.docked = level;
-    this.syncHandButtons();
-    playSfx("fire");
-  }
 
   recallHand(silent = false) {
     if (!this.arms || this.handState === "holstered" || this.handState === "reeling") return;
