@@ -155,6 +155,7 @@ export class Game {
 
     this.bindUi();
     this.bindInput();
+    initAudio();
     this.scene.onBeforeRenderObservable.add(() => this.tick());
     this.engine.runRenderLoop(() => {
       this.fps = this.engine.getFps();
