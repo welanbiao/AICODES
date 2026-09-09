@@ -267,7 +267,7 @@ export class Game {
     const knob = $<HTMLElement>("#joy-knob");
     let pid: number | null = null;
     const apply = (x: number, y: number) => {
-      const r = 40;
+      const r = 56;
       const len = Math.hypot(x, y) || 1;
       const nx = (x / len) * Math.min(len, r);
       const ny = (y / len) * Math.min(len, r);
