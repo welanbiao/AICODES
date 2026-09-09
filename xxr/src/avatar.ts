@@ -280,21 +280,30 @@ export function aimHook(hook: TransformNode, dir: Vector3) {
 
 export const setRightHandOnWrist = holsterHook;
 
-function fitFirstPerson(model: TransformNode) {
+function fitByWrists(model: TransformNode, left: TransformNode, right: TransformNode) {
   model.position.setAll(0);
   model.scaling.setAll(1);
   model.rotation.setAll(0);
   model.rotationQuaternion = null;
   model.rotation.y = Math.PI;
   model.computeWorldMatrix(true);
-  const b = model.getHierarchyBoundingVectors(true);
-  const size = b.max.subtract(b.min);
-  const longest = Math.max(size.x, size.y, size.z, 0.0001);
-  model.scaling.setAll(0.52 / longest);
+  left.computeWorldMatrix(true);
+  right.computeWorldMatrix(true);
+  let mid = left.getAbsolutePosition().add(right.getAbsolutePosition()).scale(0.5);
+  if (mid.z < 0.02) {
+    model.rotation.y += Math.PI;
+    model.computeWorldMatrix(true);
+    left.computeWorldMatrix(true);
+    right.computeWorldMatrix(true);
+    mid = left.getAbsolutePosition().add(right.getAbsolutePosition()).scale(0.5);
+  }
+  const span = Math.max(0.0001, Vector3.Distance(left.getAbsolutePosition(), right.getAbsolutePosition()));
+  model.scaling.setAll(0.5 / span);
   model.computeWorldMatrix(true);
-  const b2 = model.getHierarchyBoundingVectors(true);
-  const center = b2.min.add(b2.max).scale(0.5);
-  model.position.addInPlace(new Vector3(0, -0.34, 0.48).subtract(center));
+  left.computeWorldMatrix(true);
+  right.computeWorldMatrix(true);
+  const mid2 = left.getAbsolutePosition().add(right.getAbsolutePosition()).scale(0.5);
+  model.position.addInPlace(new Vector3(0, -0.24, 0.44).subtract(mid2));
 }
 
 function createGrapple(scene: Scene, wrist: TransformNode, leftWrist: TransformNode) {
