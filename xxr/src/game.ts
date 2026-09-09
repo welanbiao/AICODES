@@ -151,7 +151,6 @@ export class Game {
   private fpsCam!: UniversalCamera;
   private headlamp!: SpotLight;
   private arms: Arms | null = null;
-  private explodeGroup: AnimationGroup | null = null;
   private exploded = false;
   private keys = new Set<string>();
   private look = { yaw: 0, pitch: -0.08 };
