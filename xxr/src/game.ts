@@ -540,7 +540,12 @@ export class Game {
       let phoneP = 0;
       let laptopP = 0;
       let pcP = 0;
-      const bump = () => this.setLoad(skyP * 0.1 + armsP * 0.12 + phoneP * 0.34 + laptopP * 0.28 + pcP * 0.16);
+      let connorP = 0;
+      let northP = 0;
+      const bump = () =>
+        this.setLoad(
+          skyP * 0.06 + armsP * 0.08 + phoneP * 0.22 + laptopP * 0.16 + pcP * 0.14 + connorP * 0.17 + northP * 0.17,
+        );
 
       const skyJob = SceneLoader.ImportMeshAsync("", "/models/", "skybox.glb", this.scene, (ev) => {
         skyP = loadProgress(ev);
@@ -558,6 +563,14 @@ export class Game {
         pcP = loadProgress(ev);
         bump();
       });
+      const connorJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.connor.file, this.scene, (ev) => {
+        connorP = loadProgress(ev);
+        bump();
+      });
+      const northJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.north.file, this.scene, (ev) => {
+        northP = loadProgress(ev);
+        bump();
+      });
       const armsJob = loadFpsArms(this.scene, this.fpsCam, (ev) => {
         armsP = loadProgress(ev);
         bump();
@@ -566,13 +579,23 @@ export class Game {
         return createArms(this.scene, this.fpsCam);
       });
 
-      const [skyRes, phoneRes, laptopRes, pcRes, arms] = await Promise.all([skyJob, phoneJob, laptopJob, pcJob, armsJob]);
+      const [skyRes, phoneRes, laptopRes, pcRes, connorRes, northRes, arms] = await Promise.all([
+        skyJob,
+        phoneJob,
+        laptopJob,
+        pcJob,
+        connorJob,
+        northJob,
+        armsJob,
+      ]);
       this.arms = arms;
       this.prepareSkybox(skyRes);
       this.phoneWrap = this.prepareLevelGlb(phoneRes, "phone").wrap;
       this.phoneSpin = this.packs.get("phone")?.spin ?? null;
       this.lv2 = this.prepareLevelGlb(laptopRes, "laptop").wrap;
       this.lv3 = this.prepareLevelGlb(pcRes, "earbuds").wrap;
+      this.lv4 = this.prepareLevelGlb(connorRes, "connor").wrap;
+      this.lv5 = this.prepareLevelGlb(northRes, "north").wrap;
       this.look.yaw = 0;
       this.look.pitch = -0.08;
       this.fpsCam.position.set(0, 0, 0);
