@@ -1,3 +1,5 @@
+import { PC_CATALOG } from "./catalog-pc";
+
 export type PartInfo = {
   name: string;
   role: string;
