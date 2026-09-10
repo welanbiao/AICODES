@@ -1994,12 +1994,21 @@ export class Game {
   }
 
   private updateLabels() {
-    const ids = ["level-label", "level-2-label", "level-3-label", "level-4-label", "level-5-label"] as const;
+    const ids = [
+      "level-label",
+      "level-2-label",
+      "level-3-label",
+      "level-4-label",
+      "level-5-label",
+      "level-6-label",
+    ] as const;
     if (this.phase === "loading" || this.phase === "interior") {
       for (const id of ids) {
         const el = document.querySelector(`[data-testid="${id}"]`) as HTMLElement | null;
         if (el) el.style.opacity = "0";
       }
+      const outerHost = document.querySelector('[data-testid="outer-labels"]') as HTMLElement | null;
+      if (outerHost) outerHost.innerHTML = "";
       return;
     }
     const show = (sel: string, node: TransformNode | null, dy: number) => {
@@ -2012,6 +2021,23 @@ export class Game {
     show('[data-testid="level-3-label"]', this.lv3, -0.32);
     show('[data-testid="level-4-label"]', this.lv4, -0.58);
     show('[data-testid="level-5-label"]', this.lv5, -0.58);
+    show('[data-testid="level-6-label"]', this.lv6, -0.52);
+
+    const host = document.querySelector('[data-testid="outer-labels"]') as HTMLElement | null;
+    if (host) {
+      const customs = [...this.packs.values()].filter((p) => p.kind === "custom");
+      while (host.children.length < customs.length) {
+        const el = document.createElement("div");
+        el.className = "float-label muted";
+        host.appendChild(el);
+      }
+      while (host.children.length > customs.length) host.lastElementChild?.remove();
+      customs.forEach((pack, i) => {
+        const el = host.children[i] as HTMLElement;
+        el.textContent = pack.title;
+        this.projectLabel(el, pack.wrap.position.add(new Vector3(0, -0.4, 0)));
+      });
+    }
   }
 
   private tick() {
