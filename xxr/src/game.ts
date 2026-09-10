@@ -2224,6 +2224,10 @@ export class Game {
   enterInterior() {
     const pack = this.activePack();
     if (!this.worldReady || !pack) return;
+    if (pack.kind === "portal") {
+      this.openPortalImport();
+      return;
+    }
     if (this.phase !== "docked") {
       toast("先用钩爪锁定关卡");
       return;
