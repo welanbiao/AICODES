@@ -145,7 +145,6 @@ test.describe("小小人", () => {
     await page.goto("/");
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 120_000 }).toBe(true);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.levelsReady === true), { timeout: 420_000 }).toBe(true);
     expect(await page.evaluate(() => window.__XXR__?.partName?.("audio_4"))).toBe("音频模块");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("kipas.001_0"))).toBe("散热风扇");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("mB_0"))).toBe("主板");
@@ -160,21 +159,6 @@ test.describe("小小人", () => {
     expect(await page.evaluate(() => window.__XXR__?.partName?.("LTBT44OJU70I6KCKJRCD1ZWUV_Modelpart1_hair_Material012_0"))).toBe("头发");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("LTBT44OJU70I6KCKJRCD1ZWUV.007_Modelpart1_top_Material007_0"))).toBe("上衣");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("Modelpart1_hands_Material003"))).toBe("双手");
-
-    const humanParts = await page.evaluate(() => {
-      const dump = (id: string) => (window.__XXR__?.partCatalog?.(id) ?? []).map((p) => p.name);
-      return { connor: dump("connor"), north: dump("north") };
-    });
-    for (const name of humanParts.connor) {
-      expect(name).not.toBe("机内部件");
-      expect(name).not.toMatch(/^Object/i);
-    }
-    for (const name of humanParts.north) {
-      expect(name).not.toBe("机内部件");
-      expect(name).not.toMatch(/^Object/i);
-    }
-    expect(humanParts.connor).toEqual(expect.arrayContaining(["外套", "衬衫", "长裤", "头部", "太阳穴指示灯"]));
-    expect(humanParts.north).toEqual(expect.arrayContaining(["上衣", "头发", "双手", "头部"]));
 
     await page.evaluate(() => window.__XXR__?.setLook(0, -1.15));
     const lockedPos = await page.evaluate(() => window.__XXR__?.pos ?? [0, 0, 0]);
@@ -218,5 +202,21 @@ test.describe("小小人", () => {
     await page.getByTestId("btn-home").click();
     const home = await page.evaluate(() => window.__XXR__?.pos ?? [1, 1, 1]);
     expect(Math.hypot(home[0], home[1], home[2])).toBeLessThan(0.05);
+
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.levelsReady === true), { timeout: 420_000 }).toBe(true);
+    const humanParts = await page.evaluate(() => {
+      const dump = (id: string) => (window.__XXR__?.partCatalog?.(id) ?? []).map((p) => p.name);
+      return { connor: dump("connor"), north: dump("north") };
+    });
+    for (const name of humanParts.connor) {
+      expect(name).not.toBe("机内部件");
+      expect(name).not.toMatch(/^Object/i);
+    }
+    for (const name of humanParts.north) {
+      expect(name).not.toBe("机内部件");
+      expect(name).not.toMatch(/^Object/i);
+    }
+    expect(humanParts.connor).toEqual(expect.arrayContaining(["外套", "衬衫", "长裤", "头部", "太阳穴指示灯"]));
+    expect(humanParts.north).toEqual(expect.arrayContaining(["上衣", "头发", "双手", "头部"]));
   });
 });
