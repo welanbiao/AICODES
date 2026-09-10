@@ -2089,6 +2089,7 @@ declare global {
       pinch?: (factor: number) => boolean;
       fov?: () => number;
       partName?: (n: string) => string;
+      partCatalog?: (id?: string) => { mesh: string; mat: string; resolved: string; name: string }[];
       levelPose?: () => {
         phone: { pos: [number, number, number]; rotY: number } | null;
         laptop: { pos: [number, number, number]; rotY: number } | null;
