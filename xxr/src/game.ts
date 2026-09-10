@@ -1989,6 +1989,8 @@ export class Game {
       phase: this.phase,
       fps: this.fps,
       ready: this.worldReady,
+      levelsReady: this.levelsReady,
+      loadingLevel: this.loadingLevel,
       exploded: this.exploded,
       explodeDone: this.explodeDone,
       docked: this.docked?.id ?? null,
