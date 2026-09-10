@@ -1630,7 +1630,7 @@ export class Game {
     const canFold = !!pack && (pack.exploded || pack.explodeT > 0.02);
     explodeBtn.textContent = "动作";
     explodeBtn.hidden = !canFold;
-    const canEnter = !!pack && pack.explodeDone && this.phase === "docked";
+    const canEnter = !!pack && pack.explodeDone && this.phase === "docked" && pack.kind !== "portal";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
     const joy = $<HTMLElement>("#joystick");
     if (joy) joy.hidden = !playable(this.phase);
