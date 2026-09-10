@@ -279,7 +279,12 @@ export class Game {
   private lv3: TransformNode | null = null;
   private lv4: TransformNode | null = null;
   private lv5: TransformNode | null = null;
+  private lv6: TransformNode | null = null;
   private phoneAngle = 0;
+  private outerAngle = 0;
+  private authSession: AuthSession | null = null;
+  private portalPlus: TransformNode[] = [];
+  private importBusy = false;
   private skyRoot: TransformNode | null = null;
   private skyMin = new Vector3(-30, -30, -30);
   private skyMax = new Vector3(30, 30, 30);
