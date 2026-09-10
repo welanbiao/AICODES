@@ -1761,31 +1761,44 @@ export class Game {
   }
 
   private syncHeadlamp() {
+    // 世界空间对准准星：不挂在相机上，避免局部方向与瞄准点错位
+    const origin = this.fpsCam.globalPosition ?? this.fpsCam.position;
+    const fwd = this.fpsCam.getForwardRay(1).direction;
+    if (fwd.lengthSquared() > 1e-8) fwd.normalize();
+    else fwd.set(0, 0, 1);
+    this.headlamp.parent = null;
+    this.headlamp.position.copyFrom(origin);
+    this.headlamp.position.addInPlace(fwd.scale(0.05));
+    this.headlamp.direction.copyFrom(fwd);
+
     const id = this.activePack()?.id;
     const interior = this.phase === "interior";
     const close = this.phase === "docked" || interior;
     if (interior && id === "phone") {
-      this.headlamp.intensity = 9;
-      this.headlamp.range = 18 * Math.SQRT3;
-      this.headlamp.angle = 2 * Math.atan(Math.SQRT3 * Math.tan(1.12 / 2));
-      this.headlamp.exponent = 1.15;
+      this.headlamp.intensity = 16;
+      this.headlamp.range = 24;
+      this.headlamp.angle = 0.72;
+      this.headlamp.exponent = 3.4;
       return;
     }
     if (close && id === "phone") {
-      this.headlamp.intensity = 2.1;
+      this.headlamp.intensity = 4.5;
       this.headlamp.range = 16;
-      this.headlamp.angle = 0.98;
+      this.headlamp.angle = 0.78;
+      this.headlamp.exponent = 2.6;
       return;
     }
     if (close && id) {
-      this.headlamp.intensity = 1.25;
+      this.headlamp.intensity = 2.2;
       this.headlamp.range = 14;
-      this.headlamp.angle = 0.98;
+      this.headlamp.angle = 0.85;
+      this.headlamp.exponent = 2.2;
       return;
     }
     this.headlamp.intensity = 5.4;
     this.headlamp.range = 28;
-    this.headlamp.angle = 0.98;
+    this.headlamp.angle = 0.85;
+    this.headlamp.exponent = 2.4;
   }
 
   private clampToSky(p: Vector3) {
