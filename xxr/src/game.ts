@@ -285,14 +285,15 @@ export class Game {
     this.fpsCam.checkCollisions = false;
     this.scene.activeCamera = this.fpsCam;
 
-    this.headlamp = new SpotLight("headlamp", Vector3.Zero(), new Vector3(0, 0, 1), 0.7, 2.8, this.scene);
+    this.headlamp = new SpotLight("headlamp", Vector3.Zero(), new Vector3(0, 0, 1), 0.7, 2.2, this.scene);
     this.headlamp.intensity = 5.4;
-    this.headlamp.range = 28;
+    this.headlamp.range = 40;
     this.headlamp.diffuse = new Color3(1, 0.97, 0.88);
     this.headlamp.specular = new Color3(1, 0.96, 0.9);
     this.headlamp.angle = 0.7;
-    this.headlamp.exponent = 2.8;
-    this.headlamp.falloffType = SpotLight.FALLOFF_GLTF;
+    this.headlamp.innerAngle = 0.28;
+    this.headlamp.exponent = 2.2;
+    this.headlamp.falloffType = SpotLight.FALLOFF_STANDARD;
 
     this.bindUi();
     this.bindInput();
