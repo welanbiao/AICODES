@@ -101,6 +101,62 @@
           <button type="button" class="about-close" data-testid="btn-about-close">关闭</button>
         </div>
       </section>
+
+      <section id="screen-login" class="screen modal-screen" data-testid="login-modal" hidden>
+        <div class="load-card about-card">
+          <p class="eyebrow">账号</p>
+          <h1>登录</h1>
+          <p class="load-msg">账号由管理员开通，数据保存在服务器</p>
+          <label class="field">
+            <span>账号</span>
+            <input data-testid="login-username" maxlength="16" autocomplete="username" />
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input data-testid="login-password" type="password" maxlength="64" autocomplete="current-password" />
+          </label>
+          <p class="gate-err" data-testid="login-error"></p>
+          <button type="button" class="primary-block" data-testid="btn-login-submit">登录</button>
+          <button type="button" class="about-close" data-testid="btn-login-close">关闭</button>
+        </div>
+      </section>
+
+      <section id="screen-admin" class="screen modal-screen" data-testid="admin-modal" hidden>
+        <div class="load-card about-card admin-card">
+          <p class="eyebrow">管理</p>
+          <h1>账号管理</h1>
+          <p class="load-msg">仅管理员可创建普通账号</p>
+          <label class="field">
+            <span>新账号</span>
+            <input data-testid="admin-username" maxlength="16" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input data-testid="admin-password" type="password" maxlength="64" autocomplete="new-password" />
+          </label>
+          <label class="field">
+            <span>昵称</span>
+            <input data-testid="admin-nickname" maxlength="12" autocomplete="off" />
+          </label>
+          <button type="button" class="primary-block" data-testid="btn-admin-create">添加普通账号</button>
+          <p class="gate-hint" data-testid="admin-tip"></p>
+          <p class="gate-err" data-testid="admin-error"></p>
+          <ul class="admin-list" data-testid="admin-user-list"></ul>
+          <button type="button" class="about-close" data-testid="btn-admin-close">关闭</button>
+        </div>
+      </section>
+
+      <section id="screen-import" class="screen modal-screen" data-testid="import-modal" hidden>
+        <div class="load-card about-card">
+          <p class="eyebrow">第六关 · 创世球</p>
+          <h1>导入模型</h1>
+          <p class="load-msg">选择自定义 GLB，将保存到你的账号并生成外环关卡</p>
+          <input class="visually-hidden" type="file" accept=".glb,model/gltf-binary" data-testid="import-file" />
+          <button type="button" class="primary-block" data-testid="btn-import-pick">选择 .glb 文件</button>
+          <p class="gate-hint" data-testid="import-status"></p>
+          <button type="button" class="about-close" data-testid="btn-import-close">关闭</button>
+        </div>
+      </section>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
