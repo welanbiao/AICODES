@@ -910,6 +910,10 @@ export class Game {
 
   private phoneWorldSpan() {
     const pack = this.packs.get("phone");
+    if (pack) {
+      pack.wrap.computeWorldMatrix(true);
+      for (const mesh of pack.meshes) mesh.computeWorldMatrix(true);
+    }
     const e = this.scene.getWorldExtends((m) => this.isPackPart(m, pack) && !!m.getTotalVertices());
     const s = e.max.subtract(e.min);
     return {
