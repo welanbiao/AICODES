@@ -2065,6 +2065,7 @@ export class Game {
     this.applyLook();
     this.updateLabels();
     this.syncHeadlamp();
+    if (this.portalPlus.length) facePortalPluses(this.portalPlus, this.fpsCam.position);
     if (this.phase !== "interior") this.clampPlayer();
   }
 
