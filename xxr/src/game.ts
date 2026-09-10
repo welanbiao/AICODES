@@ -631,7 +631,7 @@ export class Game {
       try {
         const loaded = await SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META[id].file, this.scene, (ev) => {
           fileP = loadProgress(ev);
-          if (this.phase === "fps" && !this.docked) {
+          if (this.phase === "fps" && !this.docked && !this.riding) {
             const n = this.packs.size + 1;
             const total = order.length;
             const pct = Math.round(fileP * 100);
@@ -639,6 +639,7 @@ export class Game {
           }
         });
         if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
+        await new Promise<void>((r) => requestAnimationFrame(() => r()));
         const pack = this.prepareLevelGlb(loaded, id);
         this.assignLevelWrap(id, pack);
         if (this.viewZoom !== 1 || this.phase === "interior") this.setZoomBase(pack.wrap);
@@ -646,7 +647,7 @@ export class Game {
         console.warn(`level ${id} failed`, err);
         toast(`${LEVEL_META[id].title} 加载失败`);
       }
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await new Promise<void>((r) => window.setTimeout(() => r(), 0));
     }
     this.loadingLevel = null;
     this.levelsReady = true;

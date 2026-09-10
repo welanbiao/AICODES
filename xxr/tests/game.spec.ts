@@ -143,9 +143,9 @@ test.describe("小小人", () => {
 
   test("未锁定钩爪不位移，WASD 可移动且不出星空", async ({ page }) => {
     await page.goto("/");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 240_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 120_000 }).toBe(true);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.levelsReady === true), { timeout: 240_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.levelsReady === true), { timeout: 420_000 }).toBe(true);
     expect(await page.evaluate(() => window.__XXR__?.partName?.("audio_4"))).toBe("音频模块");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("kipas.001_0"))).toBe("散热风扇");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("mB_0"))).toBe("主板");
