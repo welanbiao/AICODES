@@ -1427,18 +1427,17 @@ export class Game {
     mesh.overlayAlpha = 0.14;
     const level = this.levelRootOf(mesh);
     const info = this.phase === "fps" && level
-      ? {
-          name: LEVEL_META[level.id].title,
-          role: LEVEL_META[level.id].role,
-          material: LEVEL_META[level.id].material,
-          note: LEVEL_META[level.id].note,
-        }
-      : infoFor(this.resolveName(mesh));
+      ? this.packMeta(level.id)
+      : (() => {
+          const p = infoFor(this.resolveName(mesh));
+          return { name: p.name, role: p.role, material: p.material, note: p.note };
+        })();
+    const display = "name" in info ? info : { name: info.title, role: info.role, material: info.material, note: info.note };
     card.hidden = false;
-    card.innerHTML = `<h2>${info.name}</h2>
-      <p><strong>作用</strong>　${info.role}</p>
-      <p><strong>材料</strong>　${info.material}</p>
-      <p>${info.note}</p>`;
+    card.innerHTML = `<h2>${display.name}</h2>
+      <p><strong>作用</strong>　${display.role}</p>
+      <p><strong>材料</strong>　${display.material}</p>
+      <p>${display.note}</p>`;
     this.pulseScanner();
   }
 
