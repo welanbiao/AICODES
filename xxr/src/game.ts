@@ -852,10 +852,11 @@ export class Game {
     (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
     if (interior) {
       // 靠头灯照明：提高对直射光的响应，压低环境反射避免整片发白
-      mat.directIntensity = 1.25;
-      mat.environmentIntensity = 0.12;
-      mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.1);
-      mat.specularIntensity = Math.min(mat.specularIntensity ?? 1, 0.55);
+      mat.directIntensity = 1.55;
+      mat.environmentIntensity = 0.1;
+      mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.08);
+      mat.specularIntensity = Math.min(mat.specularIntensity ?? 1, 0.5);
+      mat.maxSimultaneousLights = Math.max(mat.maxSimultaneousLights || 0, 6);
       return;
     }
     mat.directIntensity = 1.55;
