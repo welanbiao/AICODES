@@ -1339,7 +1339,7 @@ export class Game {
   }
 
   private startExplode(pack: LevelPack | null = this.activePack()) {
-    if (!pack || pack.exploded) return;
+    if (!pack || pack.exploded || pack.kind === "portal") return;
     pack.exploded = true;
     pack.explodeGoal = 1;
     this.exploded = true;
