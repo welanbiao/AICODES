@@ -1274,7 +1274,7 @@ export class Game {
     this.nearExplode = false;
     this.phase = "fps";
     setPhase("fps");
-    $<HTMLElement>("#play-status").textContent = "小小人";
+    this.refreshPlayStatus();
     this.syncHandButtons();
     toast("已离开");
   }
