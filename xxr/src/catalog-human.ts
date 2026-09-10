@@ -42,6 +42,7 @@ export const HUMAN_CATALOG: Record<string, PartInfo> = {
   north_lashes: p("睫毛", "眼周细节", "细纤维", "上下眼睑的睫毛。"),
 };
 
+/** 按网格名 / 材质名匹配人体零件。越具体的规则越靠前。 */
 export const HUMAN_ALIASES: [RegExp, string][] = [
   [/mat_11-mouth/i, "connor_mouth"],
   [/mat_12-eyebrows/i, "connor_brows"],
@@ -50,15 +51,31 @@ export const HUMAN_ALIASES: [RegExp, string][] = [
   [/mat_2-eye_d/i, "connor_eyes"],
   [/mat_14-lashes/i, "connor_lashes"],
   [/mat_7-led/i, "connor_led"],
-  [/^Connor\.001(?:_|$)/i, "connor_shirt"],
-  [/^Connor\.004(?:_|$)/i, "connor_button"],
-  [/^Connor\.005(?:_|$)/i, "connor_tie"],
-  [/^Connor\.006(?:_|$)/i, "connor_jacket"],
-  [/^Connor\.007(?:_|$)/i, "connor_pants"],
-  [/^Connor\.008(?:_|$)/i, "connor_belt"],
-  [/^Connor\.009(?:_|$)/i, "connor_shoes"],
-  [/^Connor\.010(?:_|$)/i, "connor_lining"],
-  [/^Connor\.011(?:_|$)/i, "connor_cuff"],
+  [/Submesh_0_9/i, "connor_shirt"],
+  [/Submesh_0_8/i, "connor_button"],
+  [/Submesh_0_4/i, "connor_jacket"],
+  [/Submesh_0_22/i, "connor_belt"],
+  [/Submesh_0_19/i, "connor_shoes"],
+  [/Submesh_0_16/i, "connor_lining"],
+  [/Submesh_0_11/i, "connor_cuff"],
+  [/Material_001/i, "connor_tie"],
+  [/Material_006/i, "connor_pants"],
+  [/Connor\.001(?:[._]|$)/i, "connor_shirt"],
+  [/Connor\.002(?:[._]|$)/i, "connor_mouth"],
+  [/Connor\.003(?:[._]|$)/i, "connor_brows"],
+  [/Connor\.004(?:[._]|$)/i, "connor_button"],
+  [/Connor\.005(?:[._]|$)/i, "connor_tie"],
+  [/Connor\.006(?:[._]|$)/i, "connor_jacket"],
+  [/Connor\.007(?:[._]|$)/i, "connor_pants"],
+  [/Connor\.008(?:[._]|$)/i, "connor_belt"],
+  [/Connor\.009(?:[._]|$)/i, "connor_shoes"],
+  [/Connor\.010(?:[._]|$)/i, "connor_lining"],
+  [/Connor\.011(?:[._]|$)/i, "connor_cuff"],
+  [/Connor\.012(?:[._]|$)/i, "connor_hair"],
+  [/Connor\.013(?:[._]|$)/i, "connor_head"],
+  [/Connor\.014(?:[._]|$)/i, "connor_eyes"],
+  [/Connor\.015(?:[._]|$)/i, "connor_lashes"],
+  [/Connor\.016(?:[._]|$)/i, "connor_led"],
   [/Modelpart1_hair/i, "north_hair"],
   [/Modelpart1_body/i, "north_body"],
   [/Modelpart1_eyes/i, "north_eyes"],
@@ -69,3 +86,11 @@ export const HUMAN_ALIASES: [RegExp, string][] = [
   [/Modelpart1_top/i, "north_top"],
   [/Modelpart1_elashes/i, "north_lashes"],
 ];
+
+export function humanKeyFromText(text: string): string | null {
+  if (!text) return null;
+  for (const [re, key] of HUMAN_ALIASES) {
+    if (re.test(text)) return key;
+  }
+  return null;
+}
