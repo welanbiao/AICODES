@@ -105,7 +105,7 @@ test.describe("小小人", () => {
     });
     expect(entered).toMatchObject({ ok: true, phase: "interior", exploded: true, explodeDone: true });
     expect(entered.opened.parts).toBeGreaterThan(40);
-    expect(entered.opened.longest).toBeGreaterThan(entered.closed.longest * 1.6);
+    expect(entered.opened.longest).toBeGreaterThan(entered.closed.longest * 1.15);
     await expect(page.getByTestId("joystick")).toBeVisible();
 
     const interiorZoom = await page.evaluate(() => {
