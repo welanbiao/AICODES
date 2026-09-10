@@ -2242,7 +2242,7 @@ export class Game {
     }
     this.fpsCam.position.copyFrom(center);
     this.clampPlayer();
-    $<HTMLElement>("#play-status").textContent = LEVEL_META[pack.id].interior;
+    $<HTMLElement>("#play-status").textContent = this.packMeta(pack.id).interior;
     this.syncHandButtons();
     this.syncHeadlamp();
     toast("进入内部探索");
@@ -2250,7 +2250,7 @@ export class Game {
   }
 
   private startInteriorLoop(pack: LevelPack) {
-    if (pack.id === "phone" || !pack.animGroups.length) return;
+    if (pack.id === "phone" || pack.kind === "portal" || !pack.animGroups.length) return;
     this.stopInteriorLoop(pack);
     pack.looping = true;
     for (const g of pack.animGroups) {
