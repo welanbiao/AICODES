@@ -2075,6 +2075,8 @@ declare global {
       phase: string;
       fps: number;
       ready: boolean;
+      levelsReady?: boolean;
+      loadingLevel?: string | null;
       exploded: boolean;
       explodeDone?: boolean;
       docked?: string | null;
