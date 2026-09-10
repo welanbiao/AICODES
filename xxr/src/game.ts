@@ -1961,16 +1961,20 @@ export class Game {
     }
     if (this.phase === "docked" || this.pendingLevel) return;
     this.phoneAngle += dt * ORBIT_SPEED;
+    this.outerAngle += dt * OUTER_ORBIT_SPEED;
     const cam = this.fpsCam.position;
-    const place = (node: TransformNode | null, offset: number, y: number) => {
-      if (!node) return;
-      const a = this.phoneAngle + offset;
-      node.position.set(cam.x + Math.sin(a) * ORBIT_RADIUS, cam.y + y, cam.z + Math.cos(a) * ORBIT_RADIUS);
-    };
     for (const pack of this.packs.values()) {
-      place(pack.wrap, LEVEL_META[pack.id].orbit, LEVEL_META[pack.id].y);
+      const radius = pack.ring === "outer" ? OUTER_ORBIT_RADIUS : ORBIT_RADIUS;
+      const angle = (pack.ring === "outer" ? this.outerAngle : this.phoneAngle) + pack.orbit;
+      pack.wrap.position.set(cam.x + Math.sin(angle) * radius, cam.y + pack.y, cam.z + Math.cos(angle) * radius);
+      if (pack.kind === "portal") {
+        // 球体自转；加号另由 facePortalPluses 朝向玩家
+        pack.spin.rotation.y += dt * SPIN_SPEED * 0.65;
+      } else {
+        pack.spin.rotation.y += dt * SPIN_SPEED;
+      }
     }
-    for (const pack of this.packs.values()) pack.spin.rotation.y += dt * SPIN_SPEED;
+    if (this.portalPlus.length) facePortalPluses(this.portalPlus, this.fpsCam.position);
   }
 
   private projectLabel(el: HTMLElement, world: Vector3) {
