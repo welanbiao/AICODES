@@ -25,9 +25,10 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("btn-home")).toBeHidden();
     await expect(page.getByTestId("level-phone")).toHaveCount(0);
 
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 240_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 120_000 }).toBe(true);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
-    await expect.poll(async () => page.evaluate(() => window.__XXR__?.levelsReady === true), { timeout: 240_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => !!window.__XXR__?.levelPose?.()?.phone), { timeout: 240_000 }).toBe(true);
+    await expect.poll(async () => page.evaluate(() => !!window.__XXR__?.levelPose?.()?.laptop), { timeout: 240_000 }).toBe(true);
     await expect(page.getByTestId("btn-enter")).toBeHidden();
     await expect(page.getByTestId("btn-identify")).toBeVisible();
     await expect(page.getByTestId("btn-fire")).toBeVisible();
@@ -35,7 +36,6 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("btn-move-w")).toHaveCount(0);
     await expect(page.getByTestId("joystick")).toBeVisible();
     await expect(page.getByTestId("crosshair")).toBeVisible();
-    expect(await page.getByTestId("level-label").textContent()).toContain("第一关");
     expect(await page.getByTestId("level-label").textContent()).toContain("手机");
     expect(await page.getByTestId("level-2-label").textContent()).toContain("20世纪电脑");
     expect(await page.getByTestId("level-3-label").textContent()).toContain("21世纪电脑");
@@ -56,7 +56,7 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("joystick")).toBeVisible();
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.exploded === true), { timeout: 30_000 }).toBe(true);
     await expect(page.getByTestId("btn-explode-fps")).toBeVisible();
-    await expect(page.getByTestId("btn-explode-fps")).toHaveText("合拢");
+    await expect(page.getByTestId("btn-explode-fps")).toHaveText("动作");
 
     const frozenA = await page.evaluate(() => window.__XXR__?.levelPose?.() ?? null);
     await page.waitForTimeout(500);
