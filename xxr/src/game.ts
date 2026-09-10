@@ -1294,7 +1294,9 @@ export class Game {
     let n: Node | null = mesh;
     while (n) {
       for (const pack of this.packs.values()) {
-        if (n === pack.wrap || n.name === LEVEL_META[pack.id].wrap) return { id: pack.id, wrap: pack.wrap };
+      for (const pack of this.packs.values()) {
+        if (n === pack.wrap || n.name === pack.wrap.name) return { id: pack.id, wrap: pack.wrap };
+      }
       }
       n = n.parent;
     }
