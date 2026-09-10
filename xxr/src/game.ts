@@ -870,9 +870,12 @@ export class Game {
     spin.computeWorldMatrix(true);
     const b2 = this.scene.getWorldExtends((m) => isMine(m) && !!m.getTotalVertices());
     const center = b2.min.add(b2.max).scale(0.5);
-    if (glbRoot) {
+    {
       const inv = spin.getWorldMatrix().clone().invert();
-      glbRoot.position.subtractInPlace(Vector3.TransformCoordinates(center, inv));
+      const localCenter = Vector3.TransformCoordinates(center, inv);
+      for (const child of spin.getChildren()) {
+        if (child instanceof TransformNode) child.position.subtractInPlace(localCenter);
+      }
     }
     spin.computeWorldMatrix(true);
     if (id === "phone") {
