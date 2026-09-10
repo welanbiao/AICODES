@@ -647,19 +647,45 @@ export class Game {
     }
   }
 
+  setAuthSession(session: AuthSession | null) {
+    this.authSession = session;
+    if (this.worldReady) void this.refreshCustomLevels();
+  }
+
+  private packTitle(id: LevelId) {
+    return this.packs.get(id)?.title ?? (LEVEL_META[id as BuiltinLevelId]?.title ?? String(id));
+  }
+
+  private packMeta(id: LevelId) {
+    const pack = this.packs.get(id);
+    if (pack) {
+      return {
+        title: pack.title,
+        role: pack.role,
+        material: pack.material,
+        note: pack.note,
+        interior: pack.interior,
+      };
+    }
+    const meta = LEVEL_META[id as BuiltinLevelId];
+    return meta
+      ? { title: meta.title, role: meta.role, material: meta.material, note: meta.note, interior: meta.interior }
+      : { title: String(id), role: "自定义关卡", material: "用户模型", note: "", interior: `${id} 内部` };
+  }
+
   private refreshPlayStatus() {
     if (this.phase === "docked" && this.docked) {
-      $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[this.docked.id].title}`;
+      $<HTMLElement>("#play-status").textContent = `锁定 ${this.packTitle(this.docked.id)}`;
       return;
     }
     if (this.phase === "interior" && this.interiorId) {
-      $<HTMLElement>("#play-status").textContent = LEVEL_META[this.interiorId].interior;
+      $<HTMLElement>("#play-status").textContent = this.packMeta(this.interiorId).interior;
       return;
     }
     if (this.loadingLevel) {
-      const n = this.packs.size + 1;
-      const total = Object.keys(LEVEL_META).length;
-      $<HTMLElement>("#play-status").textContent = `加载 ${LEVEL_META[this.loadingLevel].title}（${n}/${total}）`;
+      const n = [...this.packs.values()].filter((p) => p.ring === "inner").length + 1;
+      const total = BUILTIN_LOAD_ORDER.length;
+      $<HTMLElement>("#play-status").textContent = `加载 ${this.packTitle(this.loadingLevel)}（${n}/${total}）`;
       return;
     }
     $<HTMLElement>("#play-status").textContent = this.levelsReady ? "小小人" : "小小人 · 加载关卡中";
@@ -673,30 +699,33 @@ export class Game {
     else if (id === "earbuds") this.lv3 = pack.wrap;
     else if (id === "connor") this.lv4 = pack.wrap;
     else if (id === "north") this.lv5 = pack.wrap;
+    else if (id === "portal") this.lv6 = pack.wrap;
   }
 
   private async loadLevelsSequentially() {
-    const order = Object.keys(LEVEL_META) as LevelId[];
-    for (const id of order) {
+    for (const id of BUILTIN_LOAD_ORDER) {
       if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
       this.loadingLevel = id;
       this.refreshPlayStatus();
-      let fileP = 0;
       try {
-        const loaded = await SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META[id].file, this.scene, (ev) => {
-          fileP = loadProgress(ev);
-          if (this.phase === "fps" && !this.docked && !this.riding) {
-            const n = this.packs.size + 1;
-            const total = order.length;
-            const pct = Math.round(fileP * 100);
-            $<HTMLElement>("#play-status").textContent = `加载 ${LEVEL_META[id].title}（${n}/${total} · ${pct}%）`;
-          }
-        });
-        if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
-        await new Promise<void>((r) => requestAnimationFrame(() => r()));
-        const pack = this.prepareLevelGlb(loaded, id);
-        this.assignLevelWrap(id, pack);
-        if (this.viewZoom !== 1 || this.phase === "interior") this.setZoomBase(pack.wrap);
+        if (id === "portal") {
+          this.createPortalLevel();
+        } else {
+          let fileP = 0;
+          const loaded = await SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META[id].file, this.scene, (ev) => {
+            fileP = loadProgress(ev);
+            if (this.phase === "fps" && !this.docked && !this.riding) {
+              const n = [...this.packs.values()].filter((p) => p.ring === "inner").length + 1;
+              const pct = Math.round(fileP * 100);
+              $<HTMLElement>("#play-status").textContent = `加载 ${LEVEL_META[id].title}（${n}/${BUILTIN_LOAD_ORDER.length} · ${pct}%）`;
+            }
+          });
+          if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
+          await new Promise<void>((r) => requestAnimationFrame(() => r()));
+          const pack = this.prepareLevelGlb(loaded, id);
+          this.assignLevelWrap(id, pack);
+          if (this.viewZoom !== 1 || this.phase === "interior") this.setZoomBase(pack.wrap);
+        }
       } catch (err) {
         console.warn(`level ${id} failed`, err);
         toast(`${LEVEL_META[id].title} 加载失败`);
@@ -707,6 +736,7 @@ export class Game {
     this.levelsReady = true;
     this.refreshPlayStatus();
     if (this.phase === "fps" && !this.docked) toast("关卡已就绪，瞄准后发射钩爪");
+    await this.refreshCustomLevels();
   }
 
   private prepareSkybox(loaded: ISceneLoaderAsyncResult) {
