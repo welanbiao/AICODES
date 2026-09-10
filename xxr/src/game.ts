@@ -37,15 +37,30 @@ import {
 import { infoFor, partKeyFromName, CATALOG } from "./catalog";
 import { CREDITS_TEXT } from "./credits";
 import { initAudio, unlockAudio, playSfx, stopAudio } from "./audio";
+import {
+  deleteMyModel,
+  fetchMyModelBuffer,
+  fileToBase64,
+  listMyModels,
+  loadAuthSession,
+  type AuthSession,
+  uploadMyModel,
+  type UserModel,
+} from "./api";
+import { buildPortalSphere, facePortalPluses, type PortalBuild } from "./portal";
 
 export type Phase = "loading" | "fps" | "docked" | "interior";
 
 type HandState = "holstered" | "flying" | "stuck" | "reeling";
-type LevelId = "phone" | "laptop" | "earbuds" | "connor" | "north";
+type BuiltinLevelId = "phone" | "laptop" | "earbuds" | "connor" | "north" | "portal";
+type LevelId = BuiltinLevelId | string;
 type LevelRef = { id: LevelId; wrap: TransformNode };
+type LevelKind = "normal" | "portal" | "custom";
+type LevelRing = "inner" | "outer";
 
 type LevelPack = {
   id: LevelId;
+  title: string;
   wrap: TransformNode;
   spin: TransformNode;
   meshes: AbstractMesh[];
@@ -62,10 +77,20 @@ type LevelPack = {
   explodeSec: number;
   animGroups: AnimationGroup[];
   looping: boolean;
+  ring: LevelRing;
+  orbit: number;
+  y: number;
+  kind: LevelKind;
+  plusRoots?: TransformNode[];
+  modelId?: string;
+  interior: string;
+  role: string;
+  material: string;
+  note: string;
 };
 
 const LEVEL_META: Record<
-  LevelId,
+  BuiltinLevelId,
   {
     title: string;
     wrap: string;
@@ -100,7 +125,7 @@ const LEVEL_META: Record<
     model: "laptopModel",
     file: "lumen_64_spark__computer.glb",
     y: 0.1,
-    orbit: (Math.PI * 2) / 5,
+    orbit: (Math.PI * 2) / 6,
     interior: "20世纪电脑内部",
     role: "蒸汽齿轮实验主机",
     material: "外露齿轮、灯管和机械锁扣的金属箱体。运算靠可见的传动机构完成，像一台会动的机械电脑。",
@@ -113,7 +138,7 @@ const LEVEL_META: Record<
     model: "earbudsModel",
     file: "computer.glb",
     y: 0.1,
-    orbit: (Math.PI * 4) / 5,
+    orbit: (Math.PI * 4) / 6,
     interior: "21世纪电脑内部",
     role: "新时代电脑主机",
     material: "承载电脑所有核心运算和硬件调度的“核心箱体”。包含CPU、主板、内存条、硬盘、电源、显卡、散热系统等关键组件。",
@@ -126,7 +151,7 @@ const LEVEL_META: Record<
     model: "connorModel",
     file: "connor_human.glb",
     y: 0.08,
-    orbit: (Math.PI * 6) / 5,
+    orbit: (Math.PI * 6) / 6,
     interior: "康纳内部",
     role: "CyberLife 派来的仿生人侦探",
     material: "仿生皮肤、液态聚合物肌肉与精密骨架。太阳穴有一枚状态 LED。",
@@ -139,18 +164,36 @@ const LEVEL_META: Record<
     model: "northModel",
     file: "north_human.glb",
     y: 0.08,
-    orbit: (Math.PI * 8) / 5,
+    orbit: (Math.PI * 8) / 6,
     interior: "诺斯内部",
     role: "耶利哥的仿生人革命者",
     material: "仿生皮肤与强化纤维组织。短发、作战上衣与赤手。",
     note: "靠近后会自动播放待机动画，看完可进入内部。",
   },
+  portal: {
+    title: "创世球",
+    wrap: "level-portal",
+    spin: "portalSpin",
+    model: "portalModel",
+    file: "",
+    y: 0.12,
+    orbit: (Math.PI * 10) / 6,
+    interior: "创世球内部",
+    role: "自定义关卡入口",
+    material: "深空球体与五个加号标记。",
+    note: "钩爪锁定后可导入自己的 GLB，生成外环关卡。",
+  },
 };
+
+const BUILTIN_LOAD_ORDER: BuiltinLevelId[] = ["phone", "laptop", "earbuds", "connor", "north", "portal"];
 
 const SKY_SIZE = 72;
 const PHONE_SPAN = 1.15;
 const ORBIT_RADIUS = 2.52;
+const OUTER_ORBIT_RADIUS = ORBIT_RADIUS * 2;
 const ORBIT_SPEED = 0.035;
+const OUTER_ORBIT_SPEED = ORBIT_SPEED * (2 / 3);
+const OUTER_Y = -0.95;
 const SPIN_SPEED = 0.125;
 const EXPLODE_SEC = 12;
 const STAND_DIST = 1.38;
