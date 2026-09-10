@@ -2028,6 +2028,19 @@ export class Game {
       levelPose: () => this.levelPose(),
       fov: () => this.fpsCam.fov,
       partName: (n: string) => infoFor(n).name,
+      partCatalog: (id?: string) => {
+        const pack = id ? this.packs.get(id as LevelId) : this.activePack();
+        if (!pack) return [] as { mesh: string; mat: string; resolved: string; name: string }[];
+        return pack.meshes.map((m) => {
+          const resolved = this.resolveName(m);
+          return {
+            mesh: m.name,
+            mat: m.material?.name ?? "",
+            resolved,
+            name: infoFor(resolved).name,
+          };
+        });
+      },
     };
   }
 }
