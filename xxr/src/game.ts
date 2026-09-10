@@ -1961,6 +1961,8 @@ export class Game {
     }
     this.interiorId = null;
     this.setSideLevelsVisible(true);
+    this.setPhoneInteriorLook(false);
+    this.applySceneTone("hub");
     if (resetExplode) {
       this.exploded = false;
       this.explodeDone = false;
