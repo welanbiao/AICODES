@@ -1570,7 +1570,7 @@ export class Game {
     setPhase("docked");
     const { stand, yaw } = this.standInFront(level.wrap);
     this.riding = { t: 0, from: this.fpsCam.position.clone(), to: stand, lookYaw: yaw };
-    $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[level.id].title}`;
+    $<HTMLElement>("#play-status").textContent = `锁定 ${this.packTitle(level.id)}`;
     this.syncHandButtons();
     playSfx("fire");
     window.setTimeout(() => {
