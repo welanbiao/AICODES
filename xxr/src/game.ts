@@ -1764,10 +1764,10 @@ export class Game {
     const interior = this.phase === "interior";
     const close = this.phase === "docked" || interior;
     if (interior && id === "phone") {
-      this.headlamp.intensity = 6.2;
-      this.headlamp.range = 18;
-      this.headlamp.angle = 1.12;
-      this.headlamp.exponent = 1.35;
+      this.headlamp.intensity = 9;
+      this.headlamp.range = 18 * Math.SQRT3;
+      this.headlamp.angle = 2 * Math.atan(Math.SQRT3 * Math.tan(1.12 / 2));
+      this.headlamp.exponent = 1.15;
       return;
     }
     if (close && id === "phone") {
