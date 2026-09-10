@@ -843,11 +843,14 @@ export class Game {
     const wrap = new TransformNode(wrapName, this.scene);
     const spin = new TransformNode(spinName, this.scene);
     spin.parent = wrap;
-    const glbRoot = loaded.meshes[0];
-    if (glbRoot) {
-      glbRoot.parent = spin;
-      glbRoot.name = modelName;
-    }
+    // 把导入结果的顶层节点全部挂到 spin（自定义 GLB 常有多根）
+    const attachTop = (node: Node) => {
+      if (!node.parent || node.parent === this.scene) node.parent = spin;
+    };
+    for (const mesh of loaded.meshes) attachTop(mesh);
+    for (const node of loaded.transformNodes ?? []) attachTop(node);
+    const glbRoot = loaded.meshes[0] ?? loaded.transformNodes?.[0] ?? null;
+    if (glbRoot) glbRoot.name = modelName;
 
     const isMine = (mesh: AbstractMesh) => {
       let n: Node | null = mesh;
