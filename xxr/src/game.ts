@@ -849,10 +849,11 @@ export class Game {
   private tunePhonePbr(mat: PBRMaterial, interior: boolean) {
     (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
     if (interior) {
-      mat.directIntensity = 0.62;
-      mat.environmentIntensity = 0.18;
-      mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.08);
-      mat.specularIntensity = Math.min(mat.specularIntensity ?? 1, 0.35);
+      // 靠头灯照明：提高对直射光的响应，压低环境反射避免整片发白
+      mat.directIntensity = 1.25;
+      mat.environmentIntensity = 0.12;
+      mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.1);
+      mat.specularIntensity = Math.min(mat.specularIntensity ?? 1, 0.55);
       return;
     }
     mat.directIntensity = 1.55;
@@ -881,11 +882,12 @@ export class Game {
 
   private applySceneTone(mode: "hub" | "phoneInterior") {
     if (mode === "phoneInterior") {
-      this.scene.environmentIntensity = 0.42;
-      this.scene.imageProcessingConfiguration.exposure = 0.78;
-      this.scene.imageProcessingConfiguration.contrast = 1.12;
-      this.hemi.intensity = 0.38;
-      this.sun.intensity = 0.18;
+      // 环境偏暗，让头灯锥光成为主光源
+      this.scene.environmentIntensity = 0.28;
+      this.scene.imageProcessingConfiguration.exposure = 0.98;
+      this.scene.imageProcessingConfiguration.contrast = 1.1;
+      this.hemi.intensity = 0.2;
+      this.sun.intensity = 0.06;
       return;
     }
     this.scene.environmentIntensity = 1.45;
