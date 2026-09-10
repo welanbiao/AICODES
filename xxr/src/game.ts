@@ -782,8 +782,35 @@ export class Game {
     this.refreshSkyBounds();
   }
 
-  private prepareLevelGlb(loaded: ISceneLoaderAsyncResult, id: LevelId): LevelPack {
-    const meta = LEVEL_META[id];
+  private prepareLevelGlb(
+    loaded: ISceneLoaderAsyncResult,
+    id: LevelId,
+    opts?: {
+      title?: string;
+      ring?: LevelRing;
+      orbit?: number;
+      y?: number;
+      kind?: LevelKind;
+      modelId?: string;
+      wrapName?: string;
+      spinName?: string;
+      modelName?: string;
+      role?: string;
+      material?: string;
+      note?: string;
+      interior?: string;
+    },
+  ): LevelPack {
+    const builtin = LEVEL_META[id as BuiltinLevelId];
+    const title = opts?.title ?? builtin?.title ?? String(id);
+    const wrapName = opts?.wrapName ?? builtin?.wrap ?? `level-${id}`;
+    const spinName = opts?.spinName ?? builtin?.spin ?? `${id}Spin`;
+    const modelName = opts?.modelName ?? builtin?.model ?? `${id}Model`;
+    const ring = opts?.ring ?? "inner";
+    const orbit = opts?.orbit ?? builtin?.orbit ?? 0;
+    const y = opts?.y ?? builtin?.y ?? 0.1;
+    const kind = opts?.kind ?? "normal";
+
     for (const group of loaded.animationGroups) {
       group.stop();
       group.reset();
@@ -798,13 +825,13 @@ export class Game {
       explodeGroup.goToFrame(explodeGroup.from);
     }
 
-    const wrap = new TransformNode(meta.wrap, this.scene);
-    const spin = new TransformNode(meta.spin, this.scene);
+    const wrap = new TransformNode(wrapName, this.scene);
+    const spin = new TransformNode(spinName, this.scene);
     spin.parent = wrap;
     const glbRoot = loaded.meshes[0];
     if (glbRoot) {
       glbRoot.parent = spin;
-      glbRoot.name = meta.model;
+      glbRoot.name = modelName;
     }
 
     const isMine = (mesh: AbstractMesh) => {
@@ -837,6 +864,7 @@ export class Game {
 
     const pack: LevelPack = {
       id,
+      title,
       wrap,
       spin,
       meshes: [],
@@ -853,6 +881,15 @@ export class Game {
       explodeSec: id === "phone" ? EXPLODE_SEC : this.clipSeconds(explodeGroup),
       animGroups: [...loaded.animationGroups],
       looping: false,
+      ring,
+      orbit,
+      y,
+      kind,
+      modelId: opts?.modelId,
+      interior: opts?.interior ?? builtin?.interior ?? `${title}内部`,
+      role: opts?.role ?? builtin?.role ?? "自定义关卡模型",
+      material: opts?.material ?? builtin?.material ?? "用户导入的 GLB",
+      note: opts?.note ?? builtin?.note ?? "靠近后可展开并进入内部探索。",
     };
 
     this.scene.meshes.forEach((m) => m.computeWorldMatrix(true));
@@ -862,7 +899,7 @@ export class Game {
       mesh.metadata = { ...(mesh.metadata ?? {}), xxr: "level" };
       pack.meshes.push(mesh);
       pack.restLocal.set(mesh.uniqueId, mesh.position.clone());
-      this.tuneLevelMaterial(mesh.material, id);
+      this.tuneLevelMaterial(mesh.material, id === "phone" ? "phone" : id === "connor" || id === "north" ? id : "laptop");
     }
 
     if (explodeGroup) {
@@ -872,11 +909,167 @@ export class Game {
         explodeGroup.pause();
       }
     }
-    wrap.position.set(0, meta.y, ORBIT_RADIUS);
+    wrap.position.set(0, y, ring === "outer" ? OUTER_ORBIT_RADIUS : ORBIT_RADIUS);
     pack.hubScale.copyFrom(wrap.scaling);
     this.captureNativeScale(wrap);
     this.packs.set(id, pack);
     return pack;
+  }
+
+  private createPortalLevel() {
+    const built: PortalBuild = buildPortalSphere(this.scene);
+    const meta = LEVEL_META.portal;
+    const pack: LevelPack = {
+      id: "portal",
+      title: meta.title,
+      wrap: built.wrap,
+      spin: built.spin,
+      meshes: built.meshes,
+      explodeGroup: null,
+      explodeNodes: [],
+      explodeRest: new Map(),
+      explodePose: new Map(),
+      restLocal: new Map(),
+      hubScale: new Vector3(1, 1, 1),
+      explodeT: 0,
+      explodeGoal: 0,
+      exploded: false,
+      explodeDone: true,
+      explodeSec: 1,
+      animGroups: [],
+      looping: false,
+      ring: "inner",
+      orbit: meta.orbit,
+      y: meta.y,
+      kind: "portal",
+      plusRoots: built.plusRoots,
+      interior: meta.interior,
+      role: meta.role,
+      material: meta.material,
+      note: meta.note,
+    };
+    for (const mesh of pack.meshes) {
+      pack.restLocal.set(mesh.uniqueId, mesh.position.clone());
+    }
+    this.portalPlus = built.plusRoots;
+    pack.wrap.position.set(0, meta.y, ORBIT_RADIUS);
+    pack.hubScale.copyFrom(pack.wrap.scaling);
+    this.captureNativeScale(pack.wrap);
+    this.packs.set("portal", pack);
+    this.assignLevelWrap("portal", pack);
+    return pack;
+  }
+
+  private clearCustomLevels() {
+    for (const [id, pack] of [...this.packs.entries()]) {
+      if (pack.kind !== "custom") continue;
+      for (const mesh of pack.meshes) mesh.dispose(false, true);
+      pack.spin.dispose();
+      pack.wrap.dispose();
+      this.packs.delete(id);
+    }
+  }
+
+  async refreshCustomLevels() {
+    this.clearCustomLevels();
+    const session = this.authSession ?? loadAuthSession();
+    if (!session || !this.worldReady) return;
+    this.authSession = session;
+    try {
+      const models = await listMyModels(session.token);
+      let i = 0;
+      for (const model of models) {
+        await this.spawnCustomLevel(session.token, model, i, models.length);
+        i += 1;
+      }
+    } catch (err) {
+      console.warn("custom levels", err);
+    }
+  }
+
+  private async spawnCustomLevel(token: string, model: UserModel, index: number, total: number) {
+    const id = `custom_${model.id}`;
+    if (this.packs.has(id)) return;
+    const buf = await fetchMyModelBuffer(token, model.id);
+    const blob = new Blob([buf], { type: "model/gltf-binary" });
+    const url = URL.createObjectURL(blob);
+    try {
+      const loaded = await SceneLoader.ImportMeshAsync("", "", url, this.scene);
+      const orbit = total > 0 ? (Math.PI * 2 * index) / total : 0;
+      this.prepareLevelGlb(loaded, id, {
+        title: model.name,
+        ring: "outer",
+        orbit,
+        y: OUTER_Y,
+        kind: "custom",
+        modelId: model.id,
+        wrapName: `level-${id}`,
+        spinName: `${id}Spin`,
+        modelName: `${id}Model`,
+        role: "用户自定义关卡",
+        material: "自行导入的 GLB 模型",
+        note: "外环关卡，逻辑与内环关卡相同。",
+        interior: `${model.name}内部`,
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  openPortalImport() {
+    const session = this.authSession ?? loadAuthSession();
+    if (!session) {
+      toast("请先登录账号");
+      document.querySelector<HTMLElement>('[data-testid="btn-login"]')?.click();
+      return;
+    }
+    this.authSession = session;
+    const modal = document.querySelector<HTMLElement>('[data-testid="import-modal"]');
+    if (modal) modal.hidden = false;
+  }
+
+  closePortalImport() {
+    const modal = document.querySelector<HTMLElement>('[data-testid="import-modal"]');
+    if (modal) modal.hidden = true;
+  }
+
+  async handlePortalFile(file: File) {
+    if (this.importBusy) return;
+    const session = this.authSession ?? loadAuthSession();
+    if (!session) {
+      toast("请先登录账号");
+      return;
+    }
+    if (!/\.glb$/i.test(file.name)) {
+      toast("请选择 .glb 文件");
+      return;
+    }
+    this.importBusy = true;
+    const tip = document.querySelector<HTMLElement>('[data-testid="import-status"]');
+    if (tip) tip.textContent = "正在上传…";
+    try {
+      const dataBase64 = await fileToBase64(file);
+      const name = file.name.replace(/\.glb$/i, "").slice(0, 32) || "自定义模型";
+      const model = await uploadMyModel(session.token, { name, filename: file.name, dataBase64 });
+      if (tip) tip.textContent = "上传成功，正在生成关卡…";
+      await this.refreshCustomLevels();
+      this.closePortalImport();
+      toast(`已生成外环关卡：${model.name}`);
+      this.dismount();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "上传失败";
+      if (tip) tip.textContent = msg;
+      toast(msg);
+    } finally {
+      this.importBusy = false;
+    }
+  }
+
+  async removeCustomModel(modelId: string) {
+    const session = this.authSession ?? loadAuthSession();
+    if (!session) return;
+    await deleteMyModel(session.token, modelId);
+    await this.refreshCustomLevels();
   }
 
   private clipSeconds(g: AnimationGroup | null) {
