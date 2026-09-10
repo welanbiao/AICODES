@@ -381,6 +381,21 @@ export class Game {
     if (aboutBtn) aboutBtn.onclick = () => this.openAbout();
     const aboutClose = document.querySelector('[data-testid="btn-about-close"]') as HTMLButtonElement | null;
     if (aboutClose) aboutClose.onclick = () => this.closeAbout();
+    const importClose = document.querySelector('[data-testid="btn-import-close"]') as HTMLButtonElement | null;
+    if (importClose) importClose.onclick = () => {
+      this.closePortalImport();
+      if (this.phase === "docked" && this.packs.get(this.docked?.id ?? "")?.kind === "portal") this.dismount();
+    };
+    const importPick = document.querySelector('[data-testid="btn-import-pick"]') as HTMLButtonElement | null;
+    const importFile = document.querySelector('[data-testid="import-file"]') as HTMLInputElement | null;
+    if (importPick && importFile) {
+      importPick.onclick = () => importFile.click();
+      importFile.onchange = () => {
+        const file = importFile.files?.[0];
+        if (file) void this.handlePortalFile(file);
+        importFile.value = "";
+      };
+    }
     this.fillAbout();
   }
 
