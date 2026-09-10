@@ -365,6 +365,8 @@ function strippedPartName(name: string) {
 export function partKeyFromName(name: string): string {
   const cleaned = cleanedPartName(name);
   const stripped = strippedPartName(name);
+  const human = humanKeyFromText(cleaned) ?? humanKeyFromText(stripped) ?? humanKeyFromText(name);
+  if (human) return human;
   const variants = [cleaned, stripped];
   for (const v of variants) {
     if (CATALOG[v]) return v;
