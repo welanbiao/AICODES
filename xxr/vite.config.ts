@@ -53,6 +53,10 @@ export default defineConfig({
     headers: {
       "Cache-Control": "no-cache",
     },
+    proxy: {
+      "/v1": { target: "http://127.0.0.1:8789", changeOrigin: true },
+      "/health": { target: "http://127.0.0.1:8789", changeOrigin: true },
+    },
   },
   preview: {
     host: true,
