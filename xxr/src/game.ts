@@ -1406,18 +1406,35 @@ export class Game {
   }
 
   private resolveName(mesh: AbstractMesh): string {
-    let n: Node | null = mesh;
+    const candidates: string[] = [];
+    const push = (name: string | null | undefined) => {
+      if (name && !candidates.includes(name)) candidates.push(name);
+    };
+    push(mesh.name);
+    const mat = mesh.material;
+    if (mat) {
+      push(mat.name);
+      if (mat instanceof MultiMaterial) {
+        for (const sub of mat.subMaterials) push(sub?.name);
+      }
+    }
+    let n: Node | null = mesh.parent;
+    while (n) {
+      push(n.name);
+      n = n.parent;
+    }
+
+    const genericKeys = new Set(["Object", "Cube", "Cylinder", "Plane", "Circle"]);
     let fallback = mesh.name;
     let generic: string | null = null;
-    const genericKeys = new Set(["Object", "Cube", "Cylinder", "Plane", "Circle"]);
-    while (n) {
-      const raw = partKeyFromName(n.name);
-      if (raw && raw !== "__root__" && !Object.values(LEVEL_META).some((m) => m.wrap === raw || m.spin === raw || m.model === raw)) {
-        fallback = n.name;
-        if (raw === "__screw__" || (raw in CATALOG && !genericKeys.has(raw))) return n.name;
-        if (raw in CATALOG) generic ??= n.name;
-      }
-      n = n.parent;
+    for (const name of candidates) {
+      const raw = partKeyFromName(name);
+      if (!raw || raw === "__root__") continue;
+      if (Object.values(LEVEL_META).some((m) => m.wrap === raw || m.spin === raw || m.model === raw)) continue;
+      if (Object.values(LEVEL_META).some((m) => m.wrap === name || m.spin === name || m.model === name)) continue;
+      fallback = name;
+      if (raw === "__screw__" || (raw in CATALOG && !genericKeys.has(raw))) return name;
+      if (raw in CATALOG) generic ??= name;
     }
     return generic ?? fallback;
   }
