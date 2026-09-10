@@ -267,8 +267,10 @@ export class Game {
     const hemi = new HemisphericLight("hemi", new Vector3(0.2, 1, 0.35), this.scene);
     hemi.intensity = 0.95;
     hemi.groundColor = new Color3(0.08, 0.09, 0.12);
+    this.hemi = hemi;
     const sun = new DirectionalLight("sun", new Vector3(-0.35, -1, 0.15), this.scene);
     sun.intensity = 0.55;
+    this.sun = sun;
 
     this.fpsCam = new UniversalCamera("fps", new Vector3(0, 0, 0), this.scene);
     this.fpsCam.minZ = 0.02;
