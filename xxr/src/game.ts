@@ -1149,8 +1149,9 @@ export class Game {
     const mesh = hit.pickedMesh;
     this.highlight = mesh;
     mesh.renderOverlay = true;
-    mesh.overlayColor = new Color3(0.24, 0.88, 0.78);
-    mesh.overlayAlpha = 0.35;
+    // 白色低透明叠加：只加亮，不改色相
+    mesh.overlayColor = new Color3(1, 1, 1);
+    mesh.overlayAlpha = 0.14;
     const level = this.levelRootOf(mesh);
     const info = this.phase === "fps" && level
       ? {
