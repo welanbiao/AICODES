@@ -846,6 +846,55 @@ export class Game {
     }
   }
 
+  private tunePhonePbr(mat: PBRMaterial, interior: boolean) {
+    (mat as PBRMaterial & { unlit?: boolean }).unlit = false;
+    if (interior) {
+      mat.directIntensity = 0.62;
+      mat.environmentIntensity = 0.18;
+      mat.emissiveIntensity = Math.min(mat.emissiveIntensity || 1, 0.08);
+      mat.specularIntensity = Math.min(mat.specularIntensity ?? 1, 0.35);
+      return;
+    }
+    mat.directIntensity = 1.55;
+    mat.environmentIntensity = 0.95;
+    if (!mat.metadata?.xxrPhoneBoost) {
+      mat.emissiveColor = mat.emissiveColor.add(new Color3(0.03, 0.03, 0.035));
+      mat.metadata = { ...(mat.metadata ?? {}), xxrPhoneBoost: true };
+    }
+    mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 0, 0.2);
+    mat.specularIntensity = mat.specularIntensity ?? 1;
+  }
+
+  private setPhoneInteriorLook(on: boolean) {
+    const pack = this.packs.get("phone");
+    if (!pack) return;
+    const apply = (mat: Material | null | undefined) => {
+      if (!mat) return;
+      if (mat instanceof MultiMaterial) {
+        for (const sub of mat.subMaterials) apply(sub);
+        return;
+      }
+      if (mat instanceof PBRMaterial) this.tunePhonePbr(mat, on);
+    };
+    for (const mesh of pack.meshes) apply(mesh.material);
+  }
+
+  private applySceneTone(mode: "hub" | "phoneInterior") {
+    if (mode === "phoneInterior") {
+      this.scene.environmentIntensity = 0.42;
+      this.scene.imageProcessingConfiguration.exposure = 0.78;
+      this.scene.imageProcessingConfiguration.contrast = 1.12;
+      this.hemi.intensity = 0.38;
+      this.sun.intensity = 0.18;
+      return;
+    }
+    this.scene.environmentIntensity = 1.45;
+    this.scene.imageProcessingConfiguration.exposure = 1.25;
+    this.scene.imageProcessingConfiguration.contrast = 1.08;
+    this.hemi.intensity = 0.95;
+    this.sun.intensity = 0.55;
+  }
+
   private capturingExplode = false;
 
   private captureExplodePoses(g: AnimationGroup, pack: LevelPack) {
