@@ -1759,9 +1759,29 @@ export class Game {
 
   private syncHeadlamp() {
     const id = this.activePack()?.id;
-    const close = this.phase === "docked" || this.phase === "interior";
-    this.headlamp.intensity = close && id && id !== "phone" ? 1.25 : 5.4;
-    this.headlamp.range = close && id && id !== "phone" ? 14 : 28;
+    const interior = this.phase === "interior";
+    const close = this.phase === "docked" || interior;
+    if (interior && id === "phone") {
+      this.headlamp.intensity = 0.72;
+      this.headlamp.range = 10;
+      this.headlamp.angle = 1.05;
+      return;
+    }
+    if (close && id === "phone") {
+      this.headlamp.intensity = 2.1;
+      this.headlamp.range = 16;
+      this.headlamp.angle = 0.98;
+      return;
+    }
+    if (close && id) {
+      this.headlamp.intensity = 1.25;
+      this.headlamp.range = 14;
+      this.headlamp.angle = 0.98;
+      return;
+    }
+    this.headlamp.intensity = 5.4;
+    this.headlamp.range = 28;
+    this.headlamp.angle = 0.98;
   }
 
   private clampToSky(p: Vector3) {
