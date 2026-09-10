@@ -41,6 +41,8 @@ test.describe("小小人", () => {
     expect(await page.getByTestId("level-3-label").textContent()).toContain("21世纪电脑");
     expect(await page.getByTestId("level-4-label").textContent()).toContain("康纳");
     expect(await page.getByTestId("level-5-label").textContent()).toContain("诺斯");
+    expect(await page.getByTestId("level-6-label").textContent()).toContain("创世球");
+    await expect(page.getByTestId("btn-login")).toBeVisible();
     expect(await page.locator(".credit").count()).toBe(0);
     expect(await page.evaluate(() => window.__XXR__?.hookOn)).toBe(false);
 

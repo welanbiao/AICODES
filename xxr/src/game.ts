@@ -1965,6 +1965,10 @@ export class Game {
       earbuds: pack(this.lv3),
       connor: pack(this.lv4),
       north: pack(this.lv5),
+      portal: pack(this.lv6),
+      customs: [...this.packs.values()]
+        .filter((p) => p.kind === "custom")
+        .map((p) => ({ id: p.id, title: p.title, ...pack(p.wrap)! })),
       spinY: this.phoneSpin?.rotation.y ?? 0,
     };
   }
