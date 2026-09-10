@@ -16,48 +16,59 @@ export type PortalBuild = {
   plusRoots: TransformNode[];
 };
 
-/** 第六关：一球 + 五个 ➕，旋转时 ➕ 始终朝向相机 */
+/** 原球体直径 1.05；立方体边长为其一半 */
+const CUBE_SIZE = 1.05 / 2;
+
+/** 第六关：科技灰立方体，六面各一 ➕ */
 export function buildPortalSphere(scene: Scene): PortalBuild {
   const wrap = new TransformNode("level-portal", scene);
   const spin = new TransformNode("portalSpin", scene);
   spin.parent = wrap;
 
-  const sphere = MeshBuilder.CreateSphere("portalSphere", { diameter: 1.05, segments: 28 }, scene);
-  sphere.parent = spin;
-  sphere.isPickable = true;
-  sphere.metadata = { ...(sphere.metadata ?? {}), xxr: "level" };
-  const ballMat = new PBRMaterial("portalBallMat", scene);
-  ballMat.albedoColor = new Color3(0.12, 0.16, 0.22);
-  ballMat.metallic = 0.35;
-  ballMat.roughness = 0.42;
-  ballMat.emissiveColor = new Color3(0.02, 0.08, 0.1);
-  sphere.material = ballMat;
+  const cube = MeshBuilder.CreateBox("portalCube", { size: CUBE_SIZE }, scene);
+  cube.parent = spin;
+  cube.isPickable = true;
+  cube.metadata = { ...(cube.metadata ?? {}), xxr: "level" };
+
+  const bodyMat = new PBRMaterial("portalCubeMat", scene);
+  bodyMat.albedoColor = new Color3(0.38, 0.4, 0.44);
+  bodyMat.metallic = 0.62;
+  bodyMat.roughness = 0.32;
+  bodyMat.emissiveColor = new Color3(0.04, 0.05, 0.06);
+  cube.material = bodyMat;
 
   const plusMat = new StandardMaterial("portalPlusMat", scene);
-  plusMat.diffuseColor = new Color3(0.22, 0.92, 0.78);
-  plusMat.emissiveColor = new Color3(0.12, 0.55, 0.48);
-  plusMat.specularColor = new Color3(0.2, 0.2, 0.22);
+  plusMat.diffuseColor = new Color3(0.55, 0.62, 0.7);
+  plusMat.emissiveColor = new Color3(0.18, 0.22, 0.28);
+  plusMat.specularColor = new Color3(0.35, 0.38, 0.42);
 
-  const dirs = [
+  const faces = [
     new Vector3(0, 1, 0),
-    new Vector3(0.95, 0.25, 0).normalize(),
-    new Vector3(-0.48, 0.25, 0.84).normalize(),
-    new Vector3(-0.48, 0.25, -0.84).normalize(),
-    new Vector3(0, -0.92, 0.18).normalize(),
+    new Vector3(0, -1, 0),
+    new Vector3(1, 0, 0),
+    new Vector3(-1, 0, 0),
+    new Vector3(0, 0, 1),
+    new Vector3(0, 0, -1),
   ];
 
-  const meshes: Mesh[] = [sphere];
+  const meshes: Mesh[] = [cube];
   const plusRoots: TransformNode[] = [];
-  const radius = 0.54;
+  const half = CUBE_SIZE / 2;
+  const lift = 0.012;
+  const barW = CUBE_SIZE * 0.42;
+  const barT = CUBE_SIZE * 0.1;
+  const barD = CUBE_SIZE * 0.06;
 
-  dirs.forEach((dir, i) => {
+  faces.forEach((normal, i) => {
     const root = new TransformNode(`portalPlus_${i}`, scene);
     root.parent = spin;
-    root.position.copyFrom(dir.scale(radius));
+    root.position.copyFrom(normal.scale(half + lift));
+    // 本地 +Z 朝外，使 ➕ 贴在该面上
+    root.lookAt(root.position.add(normal));
     plusRoots.push(root);
 
-    const barH = MeshBuilder.CreateBox(`portalPlusH_${i}`, { width: 0.28, height: 0.07, depth: 0.05 }, scene);
-    const barV = MeshBuilder.CreateBox(`portalPlusV_${i}`, { width: 0.07, height: 0.28, depth: 0.05 }, scene);
+    const barH = MeshBuilder.CreateBox(`portalPlusH_${i}`, { width: barW, height: barT, depth: barD }, scene);
+    const barV = MeshBuilder.CreateBox(`portalPlusV_${i}`, { width: barT, height: barW, depth: barD }, scene);
     barH.parent = root;
     barV.parent = root;
     barH.material = plusMat;
@@ -72,8 +83,7 @@ export function buildPortalSphere(scene: Scene): PortalBuild {
   return { wrap, spin, meshes, plusRoots };
 }
 
-export function facePortalPluses(plusRoots: TransformNode[], cameraPos: Vector3) {
-  for (const root of plusRoots) {
-    root.lookAt(cameraPos);
-  }
+/** 立方体面加号固定朝外，无需每帧朝向相机 */
+export function facePortalPluses(_plusRoots: TransformNode[], _cameraPos: Vector3) {
+  /* no-op */
 }
