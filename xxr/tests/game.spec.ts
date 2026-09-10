@@ -27,6 +27,7 @@ test.describe("小小人", () => {
 
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.ready === true), { timeout: 240_000 }).toBe(true);
     await expect.poll(async () => page.evaluate(() => window.__XXR__?.phase)).toBe("fps");
+    await expect.poll(async () => page.evaluate(() => window.__XXR__?.levelsReady === true), { timeout: 240_000 }).toBe(true);
     await expect(page.getByTestId("btn-enter")).toBeHidden();
     await expect(page.getByTestId("btn-identify")).toBeVisible();
     await expect(page.getByTestId("btn-fire")).toBeVisible();
