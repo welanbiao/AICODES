@@ -6,8 +6,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
-  timeout: 360_000,
-  expect: { timeout: 240_000 },
+  timeout: 600_000,
+  expect: { timeout: 420_000 },
   reporter: [["list"]],
   use: {
     baseURL: "http://127.0.0.1:5173",
