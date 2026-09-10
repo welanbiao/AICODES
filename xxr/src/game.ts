@@ -818,9 +818,7 @@ export class Game {
         mat.subSurface.isTranslucencyEnabled = false;
       }
       if (id === "phone") {
-        mat.directIntensity = 1.7;
-        mat.environmentIntensity = 1.15;
-        mat.emissiveColor = mat.emissiveColor.add(new Color3(0.04, 0.04, 0.045));
+        this.tunePhonePbr(mat, false);
         return;
       }
       if (id === "connor" || id === "north") {
