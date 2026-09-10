@@ -985,50 +985,58 @@ export class Game {
     }
   }
 
-  async refreshCustomLevels() {
+  async refreshCustomLevels(): Promise<{ ok: number; fail: number }> {
     this.clearCustomLevels();
     const session = this.authSession ?? loadAuthSession();
-    if (!session || !this.worldReady) return;
+    if (!session || !this.worldReady) return { ok: 0, fail: 0 };
     this.authSession = session;
+    let ok = 0;
+    let fail = 0;
     try {
       const models = await listMyModels(session.token);
       let i = 0;
       for (const model of models) {
-        await this.spawnCustomLevel(session.token, model, i, models.length);
+        try {
+          await this.spawnCustomLevel(session.token, model, i, models.length);
+          ok += 1;
+        } catch (err) {
+          fail += 1;
+          console.warn(`custom level ${model.id}`, err);
+          toast(`${model.name} 关卡生成失败`);
+        }
         i += 1;
       }
     } catch (err) {
       console.warn("custom levels", err);
+      toast("加载自定义关卡失败");
     }
+    return { ok, fail };
   }
 
   private async spawnCustomLevel(token: string, model: UserModel, index: number, total: number) {
     const id = `custom_${model.id}`;
     if (this.packs.has(id)) return;
     const buf = await fetchMyModelBuffer(token, model.id);
-    const blob = new Blob([buf], { type: "model/gltf-binary" });
-    const url = URL.createObjectURL(blob);
-    try {
-      const loaded = await SceneLoader.ImportMeshAsync("", "", url, this.scene);
-      const orbit = total > 0 ? (Math.PI * 2 * index) / total : 0;
-      this.prepareLevelGlb(loaded, id, {
-        title: model.name,
-        ring: "outer",
-        orbit,
-        y: OUTER_Y,
-        kind: "custom",
-        modelId: model.id,
-        wrapName: `level-${id}`,
-        spinName: `${id}Spin`,
-        modelName: `${id}Model`,
-        role: "用户自定义关卡",
-        material: "自行导入的 GLB 模型",
-        note: "外环关卡，逻辑与内环关卡相同。",
-        interior: `${model.name}内部`,
-      });
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    // File 带 .glb 后缀，避免 blob: URL 无扩展名导致 Babylon 选不中 glTF 插件
+    const file = new File([buf], model.filename || `${model.id}.glb`, { type: "model/gltf-binary" });
+    const loaded = await SceneLoader.ImportMeshAsync("", "", file, this.scene, undefined, ".glb");
+    if (!loaded.meshes.length) throw new Error("模型无网格");
+    const orbit = total > 0 ? (Math.PI * 2 * index) / total : 0;
+    this.prepareLevelGlb(loaded, id, {
+      title: model.name,
+      ring: "outer",
+      orbit,
+      y: OUTER_Y,
+      kind: "custom",
+      modelId: model.id,
+      wrapName: `level-${id}`,
+      spinName: `${id}Spin`,
+      modelName: `${id}Model`,
+      role: "用户自定义关卡",
+      material: "自行导入的 GLB 模型",
+      note: "外环关卡，逻辑与内环关卡相同。",
+      interior: `${model.name}内部`,
+    });
   }
 
   openPortalImport() {
