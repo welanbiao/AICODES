@@ -151,8 +151,28 @@ test.describe("小小人", () => {
     expect(await page.evaluate(() => window.__XXR__?.partName?.("battery"))).toContain("电池");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("Connor.013_mat_4-head_d.png_0"))).toBe("头部");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("Connor.016_mat_7-led.png_0"))).toBe("太阳穴指示灯");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Connor.006_Submesh_0_4_0"))).toBe("外套");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Submesh_0_4"))).toBe("外套");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Connor.001_Submesh_0_9_0"))).toBe("衬衫");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Material_006"))).toBe("长裤");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("LTBT44OJU70I6KCKJRCD1ZWUV_Modelpart1_hair_Material012_0"))).toBe("头发");
     expect(await page.evaluate(() => window.__XXR__?.partName?.("LTBT44OJU70I6KCKJRCD1ZWUV.007_Modelpart1_top_Material007_0"))).toBe("上衣");
+    expect(await page.evaluate(() => window.__XXR__?.partName?.("Modelpart1_hands_Material003"))).toBe("双手");
+
+    const humanParts = await page.evaluate(() => {
+      const dump = (id: string) => (window.__XXR__?.partCatalog?.(id) ?? []).map((p) => p.name);
+      return { connor: dump("connor"), north: dump("north") };
+    });
+    for (const name of humanParts.connor) {
+      expect(name).not.toBe("机内部件");
+      expect(name).not.toMatch(/^Object/i);
+    }
+    for (const name of humanParts.north) {
+      expect(name).not.toBe("机内部件");
+      expect(name).not.toMatch(/^Object/i);
+    }
+    expect(humanParts.connor).toEqual(expect.arrayContaining(["外套", "衬衫", "长裤", "头部", "太阳穴指示灯"]));
+    expect(humanParts.north).toEqual(expect.arrayContaining(["上衣", "头发", "双手", "头部"]));
 
     await page.evaluate(() => window.__XXR__?.setLook(0, -1.15));
     const lockedPos = await page.evaluate(() => window.__XXR__?.pos ?? [0, 0, 0]);
