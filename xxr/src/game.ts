@@ -1762,44 +1762,50 @@ export class Game {
   }
 
   private syncHeadlamp() {
-    // 世界空间对准准星：不挂在相机上，避免局部方向与瞄准点错位
-    const origin = this.fpsCam.globalPosition ?? this.fpsCam.position;
-    const fwd = this.fpsCam.getForwardRay(1).direction;
-    if (fwd.lengthSquared() > 1e-8) fwd.normalize();
-    else fwd.set(0, 0, 1);
+    const cam = this.fpsCam;
+    cam.getViewMatrix();
+    const origin = cam.globalPosition;
+    const fwd = cam.getForwardRay(1).direction.clone();
+    if (fwd.lengthSquared() < 1e-8) fwd.set(0, 0, 1);
+    else fwd.normalize();
+
+    // 每帧对准准星中心（世界空间），探照灯光锥跟随瞄准点
     this.headlamp.parent = null;
-    this.headlamp.position.copyFrom(origin);
-    this.headlamp.position.addInPlace(fwd.scale(0.05));
-    this.headlamp.direction.copyFrom(fwd);
+    this.headlamp.position.set(origin.x + fwd.x * 0.08, origin.y + fwd.y * 0.08, origin.z + fwd.z * 0.08);
+    this.headlamp.setDirectionToTarget(
+      new Vector3(origin.x + fwd.x * 80, origin.y + fwd.y * 80, origin.z + fwd.z * 80),
+    );
+
+    // 光斑直径 = 当前水平视场对应屏幕宽度的 2/3（随分辨率/FOV/捏合缩放自动变）
+    const outer = clamp(cam.fov * (2 / 3), 0.28, 2.6);
+    this.headlamp.angle = outer;
+    this.headlamp.innerAngle = outer * 0.42;
+    this.headlamp.falloffType = SpotLight.FALLOFF_STANDARD;
 
     const id = this.activePack()?.id;
     const interior = this.phase === "interior";
     const close = this.phase === "docked" || interior;
     if (interior && id === "phone") {
-      this.headlamp.intensity = 16;
-      this.headlamp.range = 24 * Math.SQRT2;
-      this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.72 / 2));
-      this.headlamp.exponent = 2.8;
+      this.headlamp.intensity = 26;
+      this.headlamp.range = 48;
+      this.headlamp.exponent = 1.6;
       return;
     }
     if (close && id === "phone") {
-      this.headlamp.intensity = 4.5;
-      this.headlamp.range = 16 * Math.SQRT2;
-      this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.78 / 2));
-      this.headlamp.exponent = 2.4;
+      this.headlamp.intensity = 8;
+      this.headlamp.range = 28;
+      this.headlamp.exponent = 1.8;
       return;
     }
     if (close && id) {
-      this.headlamp.intensity = 2.2;
-      this.headlamp.range = 14 * Math.SQRT2;
-      this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.85 / 2));
-      this.headlamp.exponent = 2.0;
+      this.headlamp.intensity = 3.5;
+      this.headlamp.range = 22;
+      this.headlamp.exponent = 1.8;
       return;
     }
-    this.headlamp.intensity = 5.4;
-    this.headlamp.range = 28 * Math.SQRT2;
-    this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.85 / 2));
-    this.headlamp.exponent = 2.2;
+    this.headlamp.intensity = 6.5;
+    this.headlamp.range = 40;
+    this.headlamp.exponent = 2.0;
   }
 
   private clampToSky(p: Vector3) {
