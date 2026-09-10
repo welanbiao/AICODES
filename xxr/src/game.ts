@@ -1901,10 +1901,15 @@ export class Game {
     this.setSideLevelsVisible(false, pack.id);
     this.phase = "interior";
     setPhase("interior");
+    if (pack.id === "phone") {
+      this.setPhoneInteriorLook(true);
+      this.applySceneTone("phoneInterior");
+    }
     this.fpsCam.position.copyFrom(center);
     this.clampPlayer();
     $<HTMLElement>("#play-status").textContent = LEVEL_META[pack.id].interior;
     this.syncHandButtons();
+    this.syncHeadlamp();
     toast("进入内部探索");
     this.startInteriorLoop(pack);
   }
