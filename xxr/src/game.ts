@@ -1426,18 +1426,18 @@ export class Game {
     mesh.overlayColor = new Color3(1, 1, 1);
     mesh.overlayAlpha = 0.14;
     const level = this.levelRootOf(mesh);
-    const info = this.phase === "fps" && level
-      ? this.packMeta(level.id)
-      : (() => {
-          const p = infoFor(this.resolveName(mesh));
-          return { name: p.name, role: p.role, material: p.material, note: p.note };
-        })();
-    const display = "name" in info ? info : { name: info.title, role: info.role, material: info.material, note: info.note };
+    const info =
+      this.phase === "fps" && level
+        ? (() => {
+            const m = this.packMeta(level.id);
+            return { name: m.title, role: m.role, material: m.material, note: m.note };
+          })()
+        : infoFor(this.resolveName(mesh));
     card.hidden = false;
-    card.innerHTML = `<h2>${display.name}</h2>
-      <p><strong>作用</strong>　${display.role}</p>
-      <p><strong>材料</strong>　${display.material}</p>
-      <p>${display.note}</p>`;
+    card.innerHTML = `<h2>${info.name}</h2>
+      <p><strong>作用</strong>　${info.role}</p>
+      <p><strong>材料</strong>　${info.material}</p>
+      <p>${info.note}</p>`;
     this.pulseScanner();
   }
 
