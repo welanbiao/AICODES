@@ -180,7 +180,7 @@ const LEVEL_META: Record<
     orbit: (Math.PI * 10) / 6,
     interior: "创世球内部",
     role: "自定义关卡入口",
-    material: "深空球体与五个加号标记。",
+    material: "科技灰立方体，六个面各有加号标记。",
     note: "钩爪锁定后可导入自己的 GLB，生成外环关卡。",
   },
 };
