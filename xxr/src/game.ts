@@ -205,6 +205,8 @@ export class Game {
   private canvas: HTMLCanvasElement;
   private fpsCam!: UniversalCamera;
   private headlamp!: SpotLight;
+  private hemi!: HemisphericLight;
+  private sun!: DirectionalLight;
   private arms: Arms | null = null;
   private exploded = false;
   private keys = new Set<string>();
