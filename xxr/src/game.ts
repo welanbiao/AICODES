@@ -845,7 +845,7 @@ export class Game {
     spin.parent = wrap;
     // 把导入结果的顶层节点全部挂到 spin（自定义 GLB 常有多根）
     const attachTop = (node: Node) => {
-      if (!node.parent || node.parent === this.scene) node.parent = spin;
+      if (!node.parent) node.parent = spin;
     };
     for (const mesh of loaded.meshes) attachTop(mesh);
     for (const node of loaded.transformNodes ?? []) attachTop(node);
