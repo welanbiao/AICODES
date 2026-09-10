@@ -53,7 +53,13 @@
         <section id="screen-play" class="screen overlay" data-testid="screen-play" hidden>
           <div class="top-bar">
             <span id="play-status">小小人</span>
-            <button type="button" class="about-btn" data-testid="btn-about">?</button>
+            <div class="top-actions">
+              <span class="user-chip" data-testid="user-chip">未登录</span>
+              <button type="button" class="about-btn" data-testid="btn-login">登录</button>
+              <button type="button" class="about-btn" data-testid="btn-admin" hidden>账号</button>
+              <button type="button" class="about-btn" data-testid="btn-logout" hidden>退出</button>
+              <button type="button" class="about-btn" data-testid="btn-about">?</button>
+            </div>
           </div>
           <div class="crosshair" data-testid="crosshair"></div>
           <aside id="identify-card" class="card" data-testid="identify-card" hidden></aside>
@@ -62,6 +68,8 @@
           <div class="float-label muted" data-testid="level-3-label">21世纪电脑</div>
           <div class="float-label muted" data-testid="level-4-label">康纳</div>
           <div class="float-label muted" data-testid="level-5-label">诺斯</div>
+          <div class="float-label muted" data-testid="level-6-label">创世球</div>
+          <div data-testid="outer-labels"></div>
           <div class="play-actions">
             <div class="hook-orb" data-testid="hook-orb">
               <div class="half-left">
