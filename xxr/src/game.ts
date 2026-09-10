@@ -1776,29 +1776,29 @@ export class Game {
     const close = this.phase === "docked" || interior;
     if (interior && id === "phone") {
       this.headlamp.intensity = 16;
-      this.headlamp.range = 24;
-      this.headlamp.angle = 0.72;
-      this.headlamp.exponent = 3.4;
+      this.headlamp.range = 24 * Math.SQRT2;
+      this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.72 / 2));
+      this.headlamp.exponent = 2.8;
       return;
     }
     if (close && id === "phone") {
       this.headlamp.intensity = 4.5;
-      this.headlamp.range = 16;
-      this.headlamp.angle = 0.78;
-      this.headlamp.exponent = 2.6;
+      this.headlamp.range = 16 * Math.SQRT2;
+      this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.78 / 2));
+      this.headlamp.exponent = 2.4;
       return;
     }
     if (close && id) {
       this.headlamp.intensity = 2.2;
-      this.headlamp.range = 14;
-      this.headlamp.angle = 0.85;
-      this.headlamp.exponent = 2.2;
+      this.headlamp.range = 14 * Math.SQRT2;
+      this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.85 / 2));
+      this.headlamp.exponent = 2.0;
       return;
     }
     this.headlamp.intensity = 5.4;
-    this.headlamp.range = 28;
-    this.headlamp.angle = 0.85;
-    this.headlamp.exponent = 2.4;
+    this.headlamp.range = 28 * Math.SQRT2;
+    this.headlamp.angle = 2 * Math.atan(Math.SQRT2 * Math.tan(0.85 / 2));
+    this.headlamp.exponent = 2.2;
   }
 
   private clampToSky(p: Vector3) {
