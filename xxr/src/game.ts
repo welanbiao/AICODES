@@ -2192,9 +2192,13 @@ export class Game {
     this.docked = level;
     this.phase = "docked";
     setPhase("docked");
-    $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[level.id].title}`;
+    $<HTMLElement>("#play-status").textContent = `锁定 ${this.packTitle(level.id)}`;
     this.syncHandButtons();
     const pack = this.packs.get(level.id);
+    if (pack?.kind === "portal") {
+      this.openPortalImport();
+      return;
+    }
     if (pack && !pack.exploded) this.startExplode(pack);
     else this.tryAutoExplode();
   }
