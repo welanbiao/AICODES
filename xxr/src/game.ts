@@ -988,7 +988,7 @@ export class Game {
     this.applyLook();
     this.phase = "fps";
     setPhase("fps");
-    $<HTMLElement>("#play-status").textContent = "小小人";
+    this.refreshPlayStatus();
     this.syncHandButtons();
     toast("已返回星空中心");
   }
