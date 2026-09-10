@@ -2006,7 +2006,6 @@ export class Game {
       const angle = (pack.ring === "outer" ? this.outerAngle : this.phoneAngle) + pack.orbit;
       pack.wrap.position.set(cam.x + Math.sin(angle) * radius, cam.y + pack.y, cam.z + Math.cos(angle) * radius);
       if (pack.kind === "portal") {
-        // 球体自转；加号另由 facePortalPluses 朝向玩家
         pack.spin.rotation.y += dt * SPIN_SPEED * 0.65;
       } else {
         pack.spin.rotation.y += dt * SPIN_SPEED;
