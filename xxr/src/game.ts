@@ -1638,7 +1638,7 @@ export class Game {
 
   private tryAutoExplode() {
     const pack = this.phase === "docked" ? this.activePack() : null;
-    if (!pack) {
+    if (!pack || pack.kind === "portal") {
       this.nearExplode = false;
       return;
     }
