@@ -220,6 +220,8 @@ export class Game {
   private handFlight = 0;
   private highlight: AbstractMesh | null = null;
   private worldReady = false;
+  private levelsReady = false;
+  private loadingLevel: LevelId | null = null;
   private riding: { t: number; from: Vector3; to: Vector3; lookYaw: number; lookPitch?: number } | null = null;
   private pendingPart: AbstractMesh | null = null;
   private explodeDone = false;
@@ -1269,7 +1271,7 @@ export class Game {
     const explodeBtn = $<HTMLButtonElement>('[data-testid="btn-explode-fps"]');
     const pack = this.activePack();
     const canFold = !!pack && (pack.exploded || pack.explodeT > 0.02);
-    explodeBtn.textContent = "合拢";
+    explodeBtn.textContent = "动作";
     explodeBtn.hidden = !canFold;
     const canEnter = !!pack && pack.explodeDone && this.phase === "docked";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;

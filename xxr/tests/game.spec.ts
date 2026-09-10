@@ -36,8 +36,8 @@ test.describe("小小人", () => {
     await expect(page.getByTestId("crosshair")).toBeVisible();
     expect(await page.getByTestId("level-label").textContent()).toContain("第一关");
     expect(await page.getByTestId("level-label").textContent()).toContain("手机");
-    expect(await page.getByTestId("level-2-label").textContent()).toContain("旧电脑");
-    expect(await page.getByTestId("level-3-label").textContent()).toContain("新电脑");
+    expect(await page.getByTestId("level-2-label").textContent()).toContain("20世纪电脑");
+    expect(await page.getByTestId("level-3-label").textContent()).toContain("21世纪电脑");
     expect(await page.getByTestId("level-4-label").textContent()).toContain("康纳");
     expect(await page.getByTestId("level-5-label").textContent()).toContain("诺斯");
     expect(await page.locator(".credit").count()).toBe(0);
