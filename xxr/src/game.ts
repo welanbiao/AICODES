@@ -539,72 +539,30 @@ export class Game {
     try {
       let skyP = 0;
       let armsP = 0;
-      let phoneP = 0;
-      let laptopP = 0;
-      let pcP = 0;
-      let connorP = 0;
-      let northP = 0;
-      const bump = () =>
-        this.setLoad(
-          skyP * 0.06 + armsP * 0.08 + phoneP * 0.22 + laptopP * 0.16 + pcP * 0.14 + connorP * 0.17 + northP * 0.17,
-        );
+      const bumpBoot = () => this.setLoad(0.08 + skyP * 0.52 + armsP * 0.4);
 
       const skyJob = SceneLoader.ImportMeshAsync("", "/models/", "skybox.glb", this.scene, (ev) => {
         skyP = loadProgress(ev);
-        bump();
-      });
-      const phoneJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.phone.file, this.scene, (ev) => {
-        phoneP = loadProgress(ev);
-        bump();
-      });
-      const laptopJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.laptop.file, this.scene, (ev) => {
-        laptopP = loadProgress(ev);
-        bump();
-      });
-      const pcJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.earbuds.file, this.scene, (ev) => {
-        pcP = loadProgress(ev);
-        bump();
-      });
-      const connorJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.connor.file, this.scene, (ev) => {
-        connorP = loadProgress(ev);
-        bump();
-      });
-      const northJob = SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META.north.file, this.scene, (ev) => {
-        northP = loadProgress(ev);
-        bump();
+        bumpBoot();
       });
       const armsJob = loadFpsArms(this.scene, this.fpsCam, (ev) => {
         armsP = loadProgress(ev);
-        bump();
+        bumpBoot();
       }).catch((err) => {
         console.warn("fps_arms.glb failed, using fallback arms", err);
         return createArms(this.scene, this.fpsCam);
       });
 
-      const [skyRes, phoneRes, laptopRes, pcRes, connorRes, northRes, arms] = await Promise.all([
-        skyJob,
-        phoneJob,
-        laptopJob,
-        pcJob,
-        connorJob,
-        northJob,
-        armsJob,
-      ]);
+      const [skyRes, arms] = await Promise.all([skyJob, armsJob]);
       this.arms = arms;
       this.prepareSkybox(skyRes);
-      this.phoneWrap = this.prepareLevelGlb(phoneRes, "phone").wrap;
-      this.phoneSpin = this.packs.get("phone")?.spin ?? null;
-      this.lv2 = this.prepareLevelGlb(laptopRes, "laptop").wrap;
-      this.lv3 = this.prepareLevelGlb(pcRes, "earbuds").wrap;
-      this.lv4 = this.prepareLevelGlb(connorRes, "connor").wrap;
-      this.lv5 = this.prepareLevelGlb(northRes, "north").wrap;
       this.look.yaw = 0;
       this.look.pitch = -0.08;
       this.fpsCam.position.set(0, 0, 0);
       this.applyLook();
       this.scene.activeCamera = this.fpsCam;
       this.arms.root.setEnabled(true);
-      if (this.arms) holsterHook(this.arms);
+      holsterHook(this.arms);
 
       const env = this.scene.createDefaultEnvironment({
         createGround: false,
@@ -625,13 +583,75 @@ export class Game {
       this.worldReady = true;
       this.phase = "fps";
       setPhase("fps");
-      $<HTMLElement>("#play-status").textContent = "小小人";
       this.syncHandButtons();
-      toast("瞄准关卡后发射钩爪");
+      this.refreshPlayStatus();
+      toast("已进入星空，正在加载关卡…");
+      void this.loadLevelsSequentially();
     } catch (err) {
       console.error(err);
       toast("模型加载失败");
     }
+  }
+
+  private refreshPlayStatus() {
+    if (this.phase === "docked" && this.docked) {
+      $<HTMLElement>("#play-status").textContent = `锁定 ${LEVEL_META[this.docked.id].title}`;
+      return;
+    }
+    if (this.phase === "interior" && this.interiorId) {
+      $<HTMLElement>("#play-status").textContent = LEVEL_META[this.interiorId].interior;
+      return;
+    }
+    if (this.loadingLevel) {
+      const n = this.packs.size + 1;
+      const total = Object.keys(LEVEL_META).length;
+      $<HTMLElement>("#play-status").textContent = `加载 ${LEVEL_META[this.loadingLevel].title}（${n}/${total}）`;
+      return;
+    }
+    $<HTMLElement>("#play-status").textContent = this.levelsReady ? "小小人" : "小小人 · 加载关卡中";
+  }
+
+  private assignLevelWrap(id: LevelId, pack: LevelPack) {
+    if (id === "phone") {
+      this.phoneWrap = pack.wrap;
+      this.phoneSpin = pack.spin;
+    } else if (id === "laptop") this.lv2 = pack.wrap;
+    else if (id === "earbuds") this.lv3 = pack.wrap;
+    else if (id === "connor") this.lv4 = pack.wrap;
+    else if (id === "north") this.lv5 = pack.wrap;
+  }
+
+  private async loadLevelsSequentially() {
+    const order = Object.keys(LEVEL_META) as LevelId[];
+    for (const id of order) {
+      if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
+      this.loadingLevel = id;
+      this.refreshPlayStatus();
+      let fileP = 0;
+      try {
+        const loaded = await SceneLoader.ImportMeshAsync("", "/models/", LEVEL_META[id].file, this.scene, (ev) => {
+          fileP = loadProgress(ev);
+          if (this.phase === "fps" && !this.docked) {
+            const n = this.packs.size + 1;
+            const total = order.length;
+            const pct = Math.round(fileP * 100);
+            $<HTMLElement>("#play-status").textContent = `加载 ${LEVEL_META[id].title}（${n}/${total} · ${pct}%）`;
+          }
+        });
+        if ((window as Window & { __XXR_GEN?: number }).__XXR_GEN !== this.gen) return;
+        const pack = this.prepareLevelGlb(loaded, id);
+        this.assignLevelWrap(id, pack);
+        if (this.viewZoom !== 1 || this.phase === "interior") this.setZoomBase(pack.wrap);
+      } catch (err) {
+        console.warn(`level ${id} failed`, err);
+        toast(`${LEVEL_META[id].title} 加载失败`);
+      }
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    }
+    this.loadingLevel = null;
+    this.levelsReady = true;
+    this.refreshPlayStatus();
+    if (this.phase === "fps" && !this.docked) toast("关卡已就绪，瞄准后发射钩爪");
   }
 
   private prepareSkybox(loaded: ISceneLoaderAsyncResult) {
