@@ -187,7 +187,7 @@ const LEVEL_META: Record<
 
 const BUILTIN_LOAD_ORDER: BuiltinLevelId[] = ["phone", "laptop", "earbuds", "connor", "north", "portal"];
 
-const SKY_SIZE = 72;
+const SKY_SIZE = 216;
 const PHONE_SPAN = 1.15;
 const ORBIT_RADIUS = 2.52;
 const OUTER_ORBIT_RADIUS = ORBIT_RADIUS * 2;
