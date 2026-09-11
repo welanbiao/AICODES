@@ -670,7 +670,21 @@ export class Game {
 
   setAuthSession(session: AuthSession | null) {
     this.authSession = session;
+    if (!session) {
+      this.customLoadGen += 1;
+      this.customLoadQueue = [];
+      this.customLoading = false;
+      this.setCustomLoadProgress(null);
+      this.clearCustomLevels();
+      return;
+    }
     if (this.worldReady) void this.refreshCustomLevels();
+  }
+
+  private setCustomLoadProgress(msg: string | null) {
+    this.customLoadMsg = msg;
+    if (msg) $<HTMLElement>("#play-status").textContent = msg;
+    else this.refreshPlayStatus();
   }
 
   private packTitle(id: LevelId) {
