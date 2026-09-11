@@ -400,9 +400,6 @@ h1 {
   bottom: calc(16px * var(--ui) + env(safe-area-inset-bottom));
   width: calc(var(--orb) / 2 + var(--ring) + var(--mini) / 2);
   height: calc(var(--orb) / 2 + var(--ring) + var(--mini) / 2);
-  overflow: visible;
-  max-width: calc(100% - 10px * var(--ui) - env(safe-area-inset-right));
-  max-height: calc(100% - 16px * var(--ui) - env(safe-area-inset-bottom));
 }
 
 .act-stack {
