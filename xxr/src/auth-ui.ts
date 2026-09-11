@@ -70,7 +70,7 @@ export class AuthUi {
     const btnLogin = $('[data-testid="btn-login"]') as HTMLButtonElement | null;
     const btnLogout = $('[data-testid="btn-logout"]') as HTMLButtonElement | null;
     const btnAdmin = $('[data-testid="btn-admin"]') as HTMLButtonElement | null;
-    if (chip) chip.textContent = session ? `${session.user.nickname}` : "未登录";
+    if (chip) chip.textContent = session ? `${session.user.nickname}` : "";
     if (btnLogin) btnLogin.hidden = !!session;
     if (btnLogout) btnLogout.hidden = !session;
     if (btnAdmin) btnAdmin.hidden = !(session?.user.isAdmin || session?.user.role === "admin");
