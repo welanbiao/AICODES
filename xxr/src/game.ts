@@ -1788,6 +1788,9 @@ export class Game {
     explodeBtn.hidden = !canFold;
     const canEnter = !!pack && pack.explodeDone && this.phase === "docked" && pack.kind !== "portal";
     $<HTMLButtonElement>('[data-testid="btn-enter"]').hidden = !canEnter;
+    const canUnlink = !!pack && pack.kind === "custom" && this.phase === "docked";
+    const unlinkBtn = document.querySelector('[data-testid="btn-unlink-custom"]') as HTMLButtonElement | null;
+    if (unlinkBtn) unlinkBtn.hidden = !canUnlink;
     const joy = $<HTMLElement>("#joystick");
     if (joy) joy.hidden = !playable(this.phase);
   }
