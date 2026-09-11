@@ -1086,9 +1086,9 @@ export class Game {
   ) {
     const id = `custom_${model.id}`;
     if (this.packs.has(id)) return;
-    onProgress?.(`下载 ${model.name}`);
+    onProgress?.(`加载 ${model.name}`);
     const buf = await fetchMyModelBuffer(token, model.id, (ratio) => {
-      onProgress?.(`下载 ${model.name} ${Math.round(ratio * 100)}%`);
+      onProgress?.(`加载 ${model.name} ${Math.round(ratio * 100)}%`);
     });
     onProgress?.(`解析 ${model.name}`);
     const file = new File([buf], model.filename || `${model.id}.glb`, { type: "model/gltf-binary" });
@@ -1188,8 +1188,8 @@ export class Game {
       const model = await uploadMyModel(session.token, { name, filename: file.name, dataBase64 });
       this.closePortalImport();
       this.dismount();
-      this.setCustomLoadProgress(`下载 ${model.name}…`);
-      toast("已上传，正在后台加载关卡");
+      this.setCustomLoadProgress(`加载 ${model.name}…`);
+      toast("已添加，正在后台加载关卡");
       this.enqueueCustomLoad(model);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "上传失败";
@@ -1203,7 +1203,7 @@ export class Game {
   async unlinkDockedCustom() {
     const pack = this.activePack();
     if (!pack || pack.kind !== "custom" || !pack.modelId) return;
-    if (!window.confirm(`删除关卡「${pack.title}」？\n仅解除与账号的关联，不删除服务器文件。`)) return;
+    if (!window.confirm(`删除关卡「${pack.title}」？`)) return;
     await this.removeCustomModel(pack.modelId);
   }
 
@@ -1224,7 +1224,7 @@ export class Game {
       }
       this.relayoutOuterOrbits();
       this.syncHandButtons();
-      toast("已删除关卡关联");
+      toast("已删除关卡");
     } catch (e) {
       toast(e instanceof Error ? e.message : "删除失败");
     }

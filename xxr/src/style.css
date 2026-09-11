@@ -487,21 +487,25 @@ h1 {
 }
 
 .act-stack [data-testid="btn-explode-fps"] {
+  /* 35° */
   left: calc(0.181 * var(--ring));
   bottom: calc(var(--orb) / 2 + 0.574 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-enter"] {
-  left: calc(0.658 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.94 * var(--ring) - var(--mini) / 2);
+  /* 58° */
+  left: calc(0.47 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.848 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-unlink-custom"] {
-  left: calc(0.95 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 1.05 * var(--ring) - var(--mini) / 2);
+  /* 82° */
+  left: calc(0.861 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.99 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-dismount"] {
+  /* 105° */
   left: calc(1.259 * var(--ring));
   bottom: calc(var(--orb) / 2 + 0.966 * var(--ring) - var(--mini) / 2);
 }
