@@ -162,7 +162,11 @@ export async function deleteMyModel(token: string, modelId: string) {
   await readJson<{ error?: string }>(res);
 }
 
-export async function fetchMyModelBuffer(token: string, modelId: string): Promise<ArrayBuffer> {
+export async function fetchMyModelBuffer(
+  token: string,
+  modelId: string,
+  onProgress?: (ratio: number) => void,
+): Promise<ArrayBuffer> {
   const res = await fetch(`${API_BASE}/v1/me/models/${encodeURIComponent(modelId)}/file`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -176,7 +180,29 @@ export async function fetchMyModelBuffer(token: string, modelId: string): Promis
     }
     throw new Error(msg);
   }
-  return res.arrayBuffer();
+  const total = Number(res.headers.get("content-length") || 0);
+  if (!res.body || !onProgress) return res.arrayBuffer();
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      received += value.length;
+      if (total > 0) onProgress(Math.min(1, received / total));
+      else onProgress(0);
+    }
+  }
+  if (total <= 0) onProgress(1);
+  const out = new Uint8Array(received);
+  let offset = 0;
+  for (const c of chunks) {
+    out.set(c, offset);
+    offset += c.length;
+  }
+  return out.buffer;
 }
 
 export function fileToBase64(file: File): Promise<string> {
