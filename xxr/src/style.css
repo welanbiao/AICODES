@@ -392,8 +392,8 @@ h1 {
 .play-actions {
   --orb: calc(128px * var(--ui) * 8 / 9);
   --mini: calc(48px * var(--ui) * 8 / 9);
-  /* 半径含按钮半宽 + 间隙，保证均分弧上圆形不重叠、不贴边 */
-  --ring: calc(var(--orb) / 2 + var(--mini) / 2 + 80px * var(--ui));
+  /* 贴近发射球；弧弦 ≥ mini，五钮均分不重叠、不越界 */
+  --ring: calc(var(--orb) / 2 + var(--mini) / 2 + 16px * var(--ui));
   pointer-events: none;
   position: absolute;
   right: calc(10px * var(--ui) + env(safe-area-inset-right));
@@ -483,19 +483,19 @@ h1 {
 }
 
 /*
-  弧角：从正左起逆时针，整体偏 24°；五钮均分 18°（24/42/60/78/96），
-  收在左上象限附近，避免贴右缘；left = (1-cosθ)*ring
+  弧角：从正左起逆时针，整体偏 12°；五钮均分 24°，
+  left = (1 - cosθ) * ring，bottom = orb/2 + sinθ * ring - mini/2
 */
 .act-stack [data-testid="btn-home"] {
-  /* 24° */
-  left: calc(0.087 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.407 * var(--ring) - var(--mini) / 2);
+  /* 12° */
+  left: calc(0.022 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.208 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-explode-fps"] {
-  /* 42° */
-  left: calc(0.257 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.669 * var(--ring) - var(--mini) / 2);
+  /* 36° */
+  left: calc(0.191 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.588 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-enter"] {
@@ -505,15 +505,15 @@ h1 {
 }
 
 .act-stack [data-testid="btn-unlink-custom"] {
-  /* 78° */
-  left: calc(0.792 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.978 * var(--ring) - var(--mini) / 2);
+  /* 84° */
+  left: calc(0.896 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.995 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-dismount"] {
-  /* 96° */
-  left: calc(1.105 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.995 * var(--ring) - var(--mini) / 2);
+  /* 108° */
+  left: calc(1.309 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.951 * var(--ring) - var(--mini) / 2);
 }
 
 .float-label {
