@@ -1754,6 +1754,31 @@ export class Game {
   }
 
   dismount() {
+    if (this.phase === "interior") {
+      const level = this.docked;
+      this.exitInterior(true);
+      this.restoreNativeScales();
+      this.viewZoom = 1;
+      this.applyViewFov();
+      if (level) {
+        this.alignOrbitTo(level);
+        const { stand, yaw } = this.standInFront(level.wrap);
+        this.fpsCam.position.copyFrom(stand);
+        this.look.yaw = yaw;
+        this.applyLook();
+        this.clampPlayer();
+      }
+      this.docked = null;
+      this.pendingLevel = null;
+      this.nearExplode = false;
+      this.phase = "fps";
+      setPhase("fps");
+      this.refreshPlayStatus();
+      this.syncHandButtons();
+      this.syncHeadlamp();
+      toast("已离开");
+      return;
+    }
     if (this.phase !== "docked" || !this.docked) return;
     this.alignOrbitTo(this.docked);
     this.restoreNativeScales();
