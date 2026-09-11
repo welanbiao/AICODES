@@ -483,7 +483,7 @@ h1 {
 }
 
 /*
-  弧角：从偏下起逆时针；五钮均分 30°（-20°–100°），返回贴近底边，
+  弧角：从偏下起逆时针；五钮均分 33°（-20°–112°），返回贴近底边，
   left = (1 - cosθ) * ring，bottom = orb/2 + sinθ * ring - mini/2
 */
 .act-stack [data-testid="btn-home"] {
@@ -493,27 +493,27 @@ h1 {
 }
 
 .act-stack [data-testid="btn-explode-fps"] {
-  /* 10° */
-  left: calc(0.015 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.174 * var(--ring) - var(--mini) / 2);
+  /* 13° */
+  left: calc(0.026 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.222 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-enter"] {
-  /* 40° */
-  left: calc(0.234 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.643 * var(--ring) - var(--mini) / 2);
+  /* 46° */
+  left: calc(0.305 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.719 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-unlink-custom"] {
-  /* 70° */
-  left: calc(0.658 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.940 * var(--ring) - var(--mini) / 2);
+  /* 79° */
+  left: calc(0.809 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.982 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-dismount"] {
-  /* 100° */
-  left: calc(1.174 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.985 * var(--ring) - var(--mini) / 2);
+  /* 112° */
+  left: calc(1.375 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.927 * var(--ring) - var(--mini) / 2);
 }
 
 /* 进入模型内部后不显示离开 */
