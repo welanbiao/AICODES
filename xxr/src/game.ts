@@ -381,6 +381,8 @@ export class Game {
     $<HTMLButtonElement>('[data-testid="btn-fire"]').onclick = () => this.fireHand();
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').onclick = () => this.dismount();
     $<HTMLButtonElement>('[data-testid="btn-enter"]').onclick = () => this.enterInterior();
+    const unlinkBtn = document.querySelector('[data-testid="btn-unlink-custom"]') as HTMLButtonElement | null;
+    if (unlinkBtn) unlinkBtn.onclick = () => void this.unlinkDockedCustom();
     const aboutBtn = document.querySelector('[data-testid="btn-about"]') as HTMLButtonElement | null;
     if (aboutBtn) aboutBtn.onclick = () => this.openAbout();
     const aboutClose = document.querySelector('[data-testid="btn-about-close"]') as HTMLButtonElement | null;
