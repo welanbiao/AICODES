@@ -392,8 +392,8 @@ h1 {
 .play-actions {
   --orb: calc(128px * var(--ui) * 8 / 9);
   --mini: calc(48px * var(--ui) * 8 / 9);
-  /* 半径含按钮半宽 + 间隙，保证均分弧上互不重叠、不越界 */
-  --ring: calc(var(--orb) / 2 + var(--mini) / 2 + 50px * var(--ui));
+  /* 半径含按钮半宽 + 间隙，保证均分弧上圆形不重叠、不贴边 */
+  --ring: calc(var(--orb) / 2 + var(--mini) / 2 + 80px * var(--ui));
   pointer-events: none;
   position: absolute;
   right: calc(10px * var(--ui) + env(safe-area-inset-right));
