@@ -116,11 +116,10 @@ export function deleteMyModel(token, modelId) {
   const store = readMeta();
   const idx = store.models.findIndex((m) => m.id === modelId && m.userId === user.id);
   if (idx < 0) throw new Error("模型不存在");
-  const [removed] = store.models.splice(idx, 1);
+  store.models.splice(idx, 1);
   writeMeta(store);
-  const filePath = path.join(MODELS_DIR, user.id, `${removed.id}.glb`);
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  return { ok: true };
+  // 仅解除与账号的关联，保留磁盘上的 .glb 文件
+  return { ok: true, unlinked: true };
 }
 
 export function readMyModelFile(token, modelId) {

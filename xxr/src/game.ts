@@ -1075,16 +1075,16 @@ export class Game {
     }
     this.importBusy = true;
     const tip = document.querySelector<HTMLElement>('[data-testid="import-status"]');
-    if (tip) tip.textContent = "正在上传…";
+    if (tip) tip.textContent = "正在添加…";
     try {
       const dataBase64 = await fileToBase64(file);
       const name = file.name.replace(/\.glb$/i, "").slice(0, 32) || "自定义模型";
       const model = await uploadMyModel(session.token, { name, filename: file.name, dataBase64 });
-      if (tip) tip.textContent = "上传成功，正在生成关卡…";
+      if (tip) tip.textContent = "添加成功，正在生成关卡…";
       const result = await this.refreshCustomLevels();
       const spawned = this.packs.has(`custom_${model.id}`);
       if (!spawned) {
-        const msg = result.fail ? "模型已保存，但关卡生成失败（请刷新后重试）" : "模型已保存，关卡未生成";
+        const msg = result.fail ? "模型已添加，但关卡生成失败（请刷新后重试）" : "模型已保存，关卡未生成";
         if (tip) tip.textContent = msg;
         toast(msg);
         return;
