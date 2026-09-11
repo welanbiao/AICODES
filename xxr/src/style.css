@@ -483,31 +483,31 @@ h1 {
 }
 
 /*
-  弧角：从正左起逆时针，整体偏 12°；五钮均分 24°，
+  弧角：从正左起逆时针贴底；五钮均分 27°（0°–108°），
   left = (1 - cosθ) * ring，bottom = orb/2 + sinθ * ring - mini/2
 */
 .act-stack [data-testid="btn-home"] {
-  /* 12° */
-  left: calc(0.022 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.208 * var(--ring) - var(--mini) / 2);
+  /* 0° */
+  left: 0;
+  bottom: calc(var(--orb) / 2 - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-explode-fps"] {
-  /* 36° */
-  left: calc(0.191 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.588 * var(--ring) - var(--mini) / 2);
+  /* 27° */
+  left: calc(0.109 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.454 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-enter"] {
-  /* 60° */
-  left: calc(0.5 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.866 * var(--ring) - var(--mini) / 2);
+  /* 54° */
+  left: calc(0.412 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.809 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-unlink-custom"] {
-  /* 84° */
-  left: calc(0.896 * var(--ring));
-  bottom: calc(var(--orb) / 2 + 0.995 * var(--ring) - var(--mini) / 2);
+  /* 81° */
+  left: calc(0.844 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 0.988 * var(--ring) - var(--mini) / 2);
 }
 
 .act-stack [data-testid="btn-dismount"] {
