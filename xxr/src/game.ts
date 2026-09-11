@@ -285,6 +285,10 @@ export class Game {
   private authSession: AuthSession | null = null;
   private portalPlus: TransformNode[] = [];
   private importBusy = false;
+  private customLoadMsg: string | null = null;
+  private customLoadGen = 0;
+  private customLoadQueue: UserModel[] = [];
+  private customLoading = false;
   private skyRoot: TransformNode | null = null;
   private skyMin = new Vector3(-30, -30, -30);
   private skyMax = new Vector3(30, 30, 30);
