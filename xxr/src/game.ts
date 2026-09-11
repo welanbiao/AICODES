@@ -709,6 +709,10 @@ export class Game {
   }
 
   private refreshPlayStatus() {
+    if (this.customLoadMsg) {
+      $<HTMLElement>("#play-status").textContent = this.customLoadMsg;
+      return;
+    }
     if (this.phase === "docked" && this.docked) {
       $<HTMLElement>("#play-status").textContent = `锁定 ${this.packTitle(this.docked.id)}`;
       return;
