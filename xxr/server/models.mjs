@@ -2,6 +2,7 @@
  * 用户自定义 GLB 模型（关联账号）
  * 元数据：server/data/user-models.json
  * 文件：server/data/models/{userId}/{modelId}.glb
+ * 删除接口仅解除账号关联，不删除磁盘文件。
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
