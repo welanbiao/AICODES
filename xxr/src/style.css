@@ -496,6 +496,11 @@ h1 {
   bottom: calc(var(--orb) / 2 + 0.94 * var(--ring) - var(--mini) / 2);
 }
 
+.act-stack [data-testid="btn-unlink-custom"] {
+  left: calc(0.95 * var(--ring));
+  bottom: calc(var(--orb) / 2 + 1.05 * var(--ring) - var(--mini) / 2);
+}
+
 .act-stack [data-testid="btn-dismount"] {
   left: calc(1.259 * var(--ring));
   bottom: calc(var(--orb) / 2 + 0.966 * var(--ring) - var(--mini) / 2);
