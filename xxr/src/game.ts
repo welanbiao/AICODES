@@ -422,7 +422,7 @@ export class Game {
           this.closeAbout();
           return;
         }
-        if (this.phase === "docked") this.dismount();
+        if (this.phase === "docked" || this.phase === "interior") this.dismount();
       }
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
