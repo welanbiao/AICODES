@@ -1805,6 +1805,7 @@ export class Game {
   }
 
   private syncHandButtons() {
+    // 仅锁定在模型外时显示离开；进入内部后隐藏
     $<HTMLButtonElement>('[data-testid="btn-dismount"]').hidden = this.phase !== "docked";
     const explodeBtn = $<HTMLButtonElement>('[data-testid="btn-explode-fps"]');
     const pack = this.activePack();
