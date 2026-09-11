@@ -1008,26 +1008,58 @@ export class Game {
   private clearCustomLevels() {
     for (const [id, pack] of [...this.packs.entries()]) {
       if (pack.kind !== "custom") continue;
-      for (const mesh of pack.meshes) mesh.dispose(false, true);
-      pack.spin.dispose();
-      pack.wrap.dispose();
+      this.disposeCustomPack(pack);
       this.packs.delete(id);
     }
   }
 
+  private disposeCustomPack(pack: LevelPack) {
+    for (const mesh of pack.meshes) mesh.dispose(false, true);
+    pack.spin.dispose();
+    pack.wrap.dispose();
+  }
+
+  private relayoutOuterOrbits() {
+    const customs = [...this.packs.values()].filter((p) => p.kind === "custom");
+    const n = customs.length;
+    customs.forEach((pack, i) => {
+      pack.orbit = n > 0 ? (Math.PI * 2 * i) / n : 0;
+    });
+  }
+
   async refreshCustomLevels(): Promise<{ ok: number; fail: number }> {
-    this.clearCustomLevels();
     const session = this.authSession ?? loadAuthSession();
-    if (!session || !this.worldReady) return { ok: 0, fail: 0 };
+    if (!session || !this.worldReady) {
+      if (!session) this.clearCustomLevels();
+      return { ok: 0, fail: 0 };
+    }
     this.authSession = session;
+    const gen = ++this.customLoadGen;
     let ok = 0;
     let fail = 0;
     try {
       const models = await listMyModels(session.token);
+      if (gen !== this.customLoadGen) return { ok: 0, fail: 0 };
+      const want = new Set(models.map((m) => m.id));
+      for (const [id, pack] of [...this.packs.entries()]) {
+        if (pack.kind !== "custom") continue;
+        if (!pack.modelId || !want.has(pack.modelId)) {
+          if (this.docked?.id === id) this.dismount();
+          this.disposeCustomPack(pack);
+          this.packs.delete(id);
+        }
+      }
+      const missing = models.filter((m) => !this.packs.has(`custom_${m.id}`));
       let i = 0;
-      for (const model of models) {
+      for (const model of missing) {
+        if (gen !== this.customLoadGen) return { ok, fail };
         try {
-          await this.spawnCustomLevel(session.token, model, i, models.length);
+          await this.spawnCustomLevel(session.token, model, models.length, (msg) => {
+            if (gen === this.customLoadGen) {
+              const step = `${i + 1}/${missing.length}`;
+              this.setCustomLoadProgress(`${msg}（${step}）`);
+            }
+          });
           ok += 1;
         } catch (err) {
           fail += 1;
@@ -1036,22 +1068,38 @@ export class Game {
         }
         i += 1;
       }
+      this.relayoutOuterOrbits();
     } catch (err) {
       console.warn("custom levels", err);
       toast("加载自定义关卡失败");
+    } finally {
+      if (gen === this.customLoadGen) this.setCustomLoadProgress(null);
     }
     return { ok, fail };
   }
 
-  private async spawnCustomLevel(token: string, model: UserModel, index: number, total: number) {
+  private async spawnCustomLevel(
+    token: string,
+    model: UserModel,
+    totalHint: number,
+    onProgress?: (msg: string) => void,
+  ) {
     const id = `custom_${model.id}`;
     if (this.packs.has(id)) return;
-    const buf = await fetchMyModelBuffer(token, model.id);
-    // File 带 .glb 后缀，避免 blob: URL 无扩展名导致 Babylon 选不中 glTF 插件
+    onProgress?.(`下载 ${model.name}`);
+    const buf = await fetchMyModelBuffer(token, model.id, (ratio) => {
+      onProgress?.(`下载 ${model.name} ${Math.round(ratio * 100)}%`);
+    });
+    onProgress?.(`解析 ${model.name}`);
     const file = new File([buf], model.filename || `${model.id}.glb`, { type: "model/gltf-binary" });
-    const loaded = await SceneLoader.ImportMeshAsync("", "", file, this.scene, undefined, ".glb");
+    const loaded = await SceneLoader.ImportMeshAsync("", "", file, this.scene, (ev) => {
+      const p = loadProgress(ev);
+      onProgress?.(`加载 ${model.name} ${Math.round(p * 100)}%`);
+    }, ".glb");
     if (!loaded.meshes.length) throw new Error("模型无网格");
-    const orbit = total > 0 ? (Math.PI * 2 * index) / total : 0;
+    const existing = [...this.packs.values()].filter((p) => p.kind === "custom").length;
+    const total = Math.max(totalHint, existing + 1);
+    const orbit = (Math.PI * 2 * existing) / total;
     this.prepareLevelGlb(loaded, id, {
       title: model.name,
       ring: "outer",
@@ -1064,9 +1112,43 @@ export class Game {
       modelName: `${id}Model`,
       role: "用户自定义关卡",
       material: "自行导入的 GLB 模型",
-      note: "外环关卡，逻辑与内环关卡相同。",
+      note: "外环关卡，逻辑与内环关卡相同。锁定后可删除关联。",
       interior: `${model.name}内部`,
     });
+  }
+
+  private enqueueCustomLoad(model: UserModel) {
+    if (this.customLoadQueue.some((m) => m.id === model.id) || this.packs.has(`custom_${model.id}`)) return;
+    this.customLoadQueue.push(model);
+    void this.drainCustomLoadQueue();
+  }
+
+  private async drainCustomLoadQueue() {
+    if (this.customLoading) return;
+    this.customLoading = true;
+    const gen = this.customLoadGen;
+    const session = this.authSession ?? loadAuthSession();
+    try {
+      while (this.customLoadQueue.length) {
+        if (gen !== this.customLoadGen || !session) break;
+        const model = this.customLoadQueue.shift()!;
+        if (this.packs.has(`custom_${model.id}`)) continue;
+        try {
+          await this.spawnCustomLevel(session.token, model, this.customLoadQueue.length + 1, (msg) => {
+            if (gen === this.customLoadGen) this.setCustomLoadProgress(msg);
+          });
+          this.relayoutOuterOrbits();
+          toast(`外环关卡已就绪：${model.name}`);
+        } catch (err) {
+          console.warn(`custom level ${model.id}`, err);
+          toast(`${model.name} 关卡生成失败`);
+        }
+      }
+    } finally {
+      this.customLoading = false;
+      if (gen === this.customLoadGen && !this.customLoadQueue.length) this.setCustomLoadProgress(null);
+      if (this.customLoadQueue.length && gen === this.customLoadGen) void this.drainCustomLoadQueue();
+    }
   }
 
   openPortalImport() {
@@ -1099,23 +1181,16 @@ export class Game {
     }
     this.importBusy = true;
     const tip = document.querySelector<HTMLElement>('[data-testid="import-status"]');
-    if (tip) tip.textContent = "正在添加…";
+    if (tip) tip.textContent = "正在上传…";
     try {
       const dataBase64 = await fileToBase64(file);
       const name = file.name.replace(/\.glb$/i, "").slice(0, 32) || "自定义模型";
       const model = await uploadMyModel(session.token, { name, filename: file.name, dataBase64 });
-      if (tip) tip.textContent = "添加成功，正在生成关卡…";
-      const result = await this.refreshCustomLevels();
-      const spawned = this.packs.has(`custom_${model.id}`);
-      if (!spawned) {
-        const msg = result.fail ? "模型已添加，但关卡生成失败（请刷新后重试）" : "模型已保存，关卡未生成";
-        if (tip) tip.textContent = msg;
-        toast(msg);
-        return;
-      }
       this.closePortalImport();
-      toast(`已生成外环关卡：${model.name}`);
       this.dismount();
+      this.setCustomLoadProgress(`下载 ${model.name}…`);
+      toast("已上传，正在后台加载关卡");
+      this.enqueueCustomLoad(model);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "上传失败";
       if (tip) tip.textContent = msg;
@@ -1125,11 +1200,34 @@ export class Game {
     }
   }
 
+  async unlinkDockedCustom() {
+    const pack = this.activePack();
+    if (!pack || pack.kind !== "custom" || !pack.modelId) return;
+    if (!window.confirm(`删除关卡「${pack.title}」？\n仅解除与账号的关联，不删除服务器文件。`)) return;
+    await this.removeCustomModel(pack.modelId);
+  }
+
   async removeCustomModel(modelId: string) {
     const session = this.authSession ?? loadAuthSession();
     if (!session) return;
-    await deleteMyModel(session.token, modelId);
-    await this.refreshCustomLevels();
+    const id = `custom_${modelId}`;
+    try {
+      await deleteMyModel(session.token, modelId);
+      if (this.docked?.id === id || this.interiorId === id) {
+        if (this.phase === "interior") this.exitInterior(true);
+        if (this.phase === "docked" || this.docked?.id === id) this.dismount();
+      }
+      const pack = this.packs.get(id);
+      if (pack) {
+        this.disposeCustomPack(pack);
+        this.packs.delete(id);
+      }
+      this.relayoutOuterOrbits();
+      this.syncHandButtons();
+      toast("已删除关卡关联");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "删除失败");
+    }
   }
 
   private clipSeconds(g: AnimationGroup | null) {
