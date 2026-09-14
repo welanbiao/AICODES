@@ -8,3 +8,5 @@ playwright/.cache
 *.local
 .env
 server/data
+apk/*.apk
+

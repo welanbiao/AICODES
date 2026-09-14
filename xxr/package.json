@@ -11,13 +11,19 @@
     "convert": "node scripts/convert-fbx.mjs",
     "compress-models": "node scripts/compress-models.mjs",
     "test": "playwright test",
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --headed",
+    "cap:sync": "npm run build && npx cap sync android",
+    "apk:debug": "npm run cap:sync && cd android && .\\gradlew.bat assembleDebug",
+    "apk:release": "npm run cap:sync && cd android && .\\gradlew.bat assembleRelease"
   },
   "dependencies": {
     "@babylonjs/core": "^8.32.0",
-    "@babylonjs/loaders": "^8.32.0"
+    "@babylonjs/loaders": "^8.32.0",
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
     "@playwright/test": "^1.55.0",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
