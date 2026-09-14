@@ -1,12 +1,37 @@
 ---
-description: Always use SSH for git; auto-commit, merge, and push after changes
+description: Auto-git once per user turn over SSH; business commit titles; safe sync
 alwaysApply: true
 ---
 
-# Git: SSH + auto commit / merge / push
+# Git: 一轮任务一次提交 + SSH 推送
 
-- Use SSH remotes only (`git@github.com:...`). Never switch origin back to HTTPS.
-- Rely on `core.sshCommand` / Git's bundled SSH (`C:/Program Files/Git/usr/bin/ssh.exe`).
-- After any commit or finished task: `git pull --no-rebase` then **always** `git push` over SSH. Never leave local commits unpushed.
-- Do not commit secrets (`.env`, credentials, keys, tokens).
-- If the stop/afterFileEdit auto-git hook already committed and pushed, do not create a duplicate empty commit.
+本仓库启用自动 Git。用户每发一条需求、你改完代码后，**整轮只提交一次**，再 pull / push。
+
+## 必须遵守
+
+1. **一轮一次提交**：同一条用户消息里改了多个文件，放进**同一个 commit**，禁止每改一个文件就提交一次。
+2. **业务向标题**：commit 标题用中文、从产品/业务角度写清「做了什么」，让用户扫一眼能懂。  
+   - 好：`为恋综模拟器加入每日签到与连续奖励`  
+   - 差：`auto: foo.ts`、`update`、`fix`、纯文件名列表
+3. **远程只用 SSH**：`git@github.com:...`，不要改回 HTTPS。SSH 走 Git 自带：`C:/Program Files/Git/usr/bin/ssh.exe`（`core.sshCommand` / `GIT_SSH_COMMAND`）。
+4. **提交后同步**：`git pull --no-rebase`，再 `git push`。禁止 `--force` / `reset --hard`（除非用户明文要求）。
+5. **不提交机密**：`.env`、密钥、token、`credentials.json`、证书等一律不进库。
+6. **空提交**：没有改动或 hook 已提交并推送时，不要再造空 commit。
+
+## 推荐流程（优先你主动做）
+
+改完并通过基本自检后，在回复用户之前：
+
+1. 把本轮业务标题写入 `.cursor/hooks/pending-commit-msg.txt`（一行标题即可）。
+2. `git add` 本轮相关文件 → **一次** `git commit`（标题与上一步一致）→ `git pull --no-rebase` → `git push`。
+3. 若 `stop` 钩子的 `auto-git.ps1` 已经提交/推送成功，不要重复提交。
+
+## 钩子分工
+
+- **`stop`**：`auto-git.ps1` 兜底——若工作区仍有未提交改动，批量提交一次并推送；优先读 `pending-commit-msg.txt`。
+- **`afterFileEdit`：不跑 auto-git**（避免「改一个文件提交一次」）。
+
+## 冲突与失败
+
+- pull 出现冲突：停下来说明冲突文件，不要强推、不要硬重置。
+- push 失败：保留本地 commit，向用户说明原因后再处理。

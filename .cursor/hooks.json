@@ -33,10 +33,6 @@
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1",
         "timeout": 8
-      },
-      {
-        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/auto-git.ps1",
-        "timeout": 120
       }
     ]
   }
