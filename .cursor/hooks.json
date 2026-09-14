@@ -19,6 +19,13 @@
         "timeout": 8
       }
     ],
+    "beforeShellExecution": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/guard-git-write.ps1",
+        "timeout": 15,
+        "matcher": "git(\\.exe)?\\s"
+      }
+    ],
     "stop": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/dismiss-win-dialog.ps1",

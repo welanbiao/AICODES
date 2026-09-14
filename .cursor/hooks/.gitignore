@@ -1,2 +1,5 @@
 auto-git.lock
 pending-commit-msg.txt
+auto-git.log
+auto-git-status.json
+commit-msg.tmp

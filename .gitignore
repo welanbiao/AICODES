@@ -1,0 +1,30 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+credentials.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.secret
+id_rsa
+id_dsa
+id_ed25519
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Editor swap files
+*.swp
+*.swo
+*~
+
+# Accidental Git helper dumps
+.git-err.txt
+.git-out.txt

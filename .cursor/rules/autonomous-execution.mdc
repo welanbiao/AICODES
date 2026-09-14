@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## 直接做，不要问
 
-- 不要问「要不要提交 / 推送 / 安装 / 重启 / 继续？」——默认做。
+- 不要问「要不要提交 / 推送 / 安装 / 重启 / 继续？」——默认做。Git 提交由 stop 钩子整轮一次完成；你只写 `.cursor/hooks/pending-commit-msg.txt`，不要自己 `git commit` / `git push`。
 - 不要问「用 A 还是 B？」除非两种方案会永久改变产品方向且无法回退。
 - Shell、网络、Git、文件读写、安装依赖、跑测试、关错误弹窗：该用就用。
 - Cursor / Auto-review 弹出审批时：对合理操作主动申请通过并继续，不要停在「请你点同意」。
