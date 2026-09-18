@@ -129,9 +129,40 @@ function Get-GitLines {
     return @($raw | ForEach-Object { "$_".TrimEnd("`r") } | Where-Object { $_ })
 }
 
+function ConvertFrom-GitPorcelainPath([string]$raw) {
+    $path = $raw.Trim().Trim('"')
+    if (-not $path -or $path -notmatch '\\[0-7]{3}') { return $path }
+
+    $bytes = New-Object System.Collections.Generic.List[byte]
+    $i = 0
+    while ($i -lt $path.Length) {
+        if ($path[$i] -eq '\' -and ($i + 3) -lt $path.Length) {
+            $oct = $path.Substring($i + 1, 3)
+            if ($oct -match '^[0-7]{3}$') {
+                $bytes.Add([Convert]::ToByte($oct, 8))
+                $i += 4
+                continue
+            }
+        }
+        if ($path[$i] -eq '\' -and ($i + 1) -lt $path.Length) {
+            switch ($path[$i + 1]) {
+                '"' { $bytes.Add(34); $i += 2; continue }
+                '\' { $bytes.Add(92); $i += 2; continue }
+                'n' { $bytes.Add(10); $i += 2; continue }
+                't' { $bytes.Add(9); $i += 2; continue }
+            }
+        }
+        foreach ($b in [System.Text.Encoding]::UTF8.GetBytes([string]$path[$i])) {
+            $bytes.Add($b)
+        }
+        $i += 1
+    }
+    return [System.Text.Encoding]::UTF8.GetString($bytes.ToArray())
+}
+
 function Unstage-BlockedIndex {
-    foreach ($path in (Get-GitLines -GitArgs @('diff', '--cached', '--name-only'))) {
-        $path = $path.Trim().Trim('"')
+    foreach ($path in (Get-GitLines -GitArgs @('-c', 'core.quotepath=false', 'diff', '--cached', '--name-only'))) {
+        $path = ConvertFrom-GitPorcelainPath $path
         if (-not $path) { continue }
         if (Test-BlockedPath $path) {
             Write-Log "unstage-secret $path"
@@ -140,26 +171,32 @@ function Unstage-BlockedIndex {
     }
 }
 
+function Unstage-OversizedIndex {
+    foreach ($path in (Get-GitLines -GitArgs @('-c', 'core.quotepath=false', 'diff', '--cached', '--name-only'))) {
+        $path = ConvertFrom-GitPorcelainPath $path
+        if (-not $path) { continue }
+        $full = Join-Path $repoRoot $path
+        if (-not (Test-Path -LiteralPath $full -PathType Leaf)) { continue }
+        try {
+            if ((Get-Item -LiteralPath $full).Length -gt $maxFileBytes) {
+                Write-Log "unstage-oversize $path"
+                git restore --staged -- $path 2>$null | Out-Null
+            }
+        } catch { }
+    }
+}
+
 function Get-ChangedPaths {
     $paths = @()
-    foreach ($line in (Get-GitLines -GitArgs @('status', '--porcelain'))) {
+    foreach ($line in (Get-GitLines -GitArgs @('-c', 'core.quotepath=false', 'status', '--porcelain'))) {
         if ($line.Length -lt 4) { continue }
         $raw = $line.Substring(3)
         if ($raw -match ' -> ') { $raw = ($raw -split ' -> ')[-1] }
-        $path = $raw.Trim().Trim('"')
+        $path = ConvertFrom-GitPorcelainPath $raw
         if (-not $path) { continue }
         if (Test-BlockedPath $path) {
             Write-Log "skip-secret $path"
             continue
-        }
-        $full = Join-Path $repoRoot $path
-        if (Test-Path -LiteralPath $full -PathType Leaf) {
-            try {
-                if ((Get-Item -LiteralPath $full).Length -gt $maxFileBytes) {
-                    Write-Log "skip-oversize $path"
-                    continue
-                }
-            } catch { }
         }
         $paths += $path
     }
@@ -289,14 +326,14 @@ try {
     $paths = @(@(Get-ChangedPaths) | ForEach-Object { $_ })
     Write-Log ("stage-candidates {0}" -f $paths.Count)
     if ($paths.Count -gt 0) {
-        foreach ($path in $paths) {
-            Write-Log "add $path"
-            $add = Invoke-GitCapture -GitArgs @('add', '--', $path)
-            if ($add.Code -ne 0) { Write-Log "add-failed $path $($add.Output)" }
-        }
+        # Let Git discover paths itself so CJK / quoted porcelain names cannot break `git add`.
+        Write-Log 'add -A'
+        $add = Invoke-GitCapture -GitArgs @('add', '-A')
+        if ($add.Code -ne 0) { Write-Log "add-failed $($add.Output)" }
         Unstage-BlockedIndex
+        Unstage-OversizedIndex
 
-        $staged = @(Get-GitLines -GitArgs @('diff', '--cached', '--name-only'))
+        $staged = @(Get-GitLines -GitArgs @('-c', 'core.quotepath=false', 'diff', '--cached', '--name-only'))
         if ($staged.Count -gt 0) {
             $msg = Get-CommitMessageText $staged
             $script:usedMessage = ($msg -split '\r?\n' | Where-Object { $_.Trim() } | Select-Object -First 1)

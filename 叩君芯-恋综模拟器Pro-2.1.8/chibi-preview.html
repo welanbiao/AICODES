@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人设 3D 小人预览</title>
+<link rel="stylesheet" href="chibi.css">
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(165deg, #fdf2f8, #eef2ff 50%, #ecfeff);
+    color: #1e293b;
+  }
+  h1 { text-align: center; font-size: 18px; margin: 20px 0 8px; }
+  p.sub { text-align: center; color: #64748b; font-size: 12px; margin: 0 0 20px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    max-width: 920px;
+    margin: 0 auto 40px;
+    padding: 0 16px;
+  }
+  .card {
+    background: rgba(255,255,255,0.86);
+    border-radius: 16px;
+    padding: 16px 8px 14px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+  }
+  .stage {
+    height: 170px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .name { font-weight: 700; font-size: 14px; margin-top: 8px; }
+  .tags { font-size: 11px; color: #64748b; margin-top: 4px; }
+</style>
+</head>
+<body>
+<h1>人设 3D 小人</h1>
+<p class="sub">简略 Q 版模型 · 会轻微左右转头</p>
+<div class="grid" id="grid"></div>
+<script>
+const FIGURE_PRESETS = {
+  '程砚白': { id: 'cyb', gender: 'm', hair: 'short-neat', acc: 'glasses', pose: 'upright',
+    tags: '爹系 · 出品人', accent: '#4A90D9',
+    colors: { skin: '#f0c9ad', hair: '#1a1818', top: '#1e3a5f', top2: '#f4f1ea', bottom: '#152238', shoe: '#111111' } },
+  '季临洲': { id: 'jlz', gender: 'm', hair: 'fluffy', acc: 'earbuds', pose: 'bounce',
+    tags: '年下 · 主舞', accent: '#F5A623',
+    colors: { skin: '#f6d7bf', hair: '#3a2418', hair2: '#d4a574', top: '#f5a623', top2: '#fff7e8', bottom: '#2d2a28', shoe: '#f5a623' } },
+  '温以舟': { id: 'wyz', gender: 'm', hair: 'medium', acc: 'coat', pose: 'cool',
+    tags: '禁欲 · 导演', accent: '#7B68EE',
+    colors: { skin: '#efccb4', hair: '#2a2430', top: '#2b2144', top2: '#16101f', bottom: '#1c1824', shoe: '#121014' } },
+  '许南枝': { id: 'xnz', gender: 'm', hair: 'bangs', acc: 'camera', pose: 'shy',
+    tags: '社恐 · 摄影师', accent: '#66BB6A',
+    colors: { skin: '#f4d4bc', hair: '#4a3728', top: '#6b8f71', top2: '#e8e0d0', bottom: '#5c5348', shoe: '#3d3830' } },
+  '顾西': { id: 'gx', gender: 'm', hair: 'spiky', acc: 'headset', pose: 'smirk',
+    tags: '毒舌 · 电竞', accent: '#E57373',
+    colors: { skin: '#f0c8ae', hair: '#1a1a1a', top: '#c44545', top2: '#1a1a1a', bottom: '#2a2a2a', shoe: '#e57373' } },
+  '沈兰因': { id: 'sly', gender: 'f', hair: 'long', acc: 'clip', pose: 'elegant',
+    tags: '清冷 · 音乐人', accent: '#EC4899',
+    colors: { skin: '#f7d9c8', hair: '#2c2230', top: '#f4e8ef', top2: '#ec4899', bottom: '#c98aa8', shoe: '#f8d4e4' } },
+  '女主': { id: 'player', gender: 'f', hair: 'long-soft', acc: 'ribbon', pose: 'bounce',
+    tags: '玩家', accent: '#be185d',
+    colors: { skin: '#f6d5c4', hair: '#5a3a32', top: '#f9a8d4', top2: '#ffffff', bottom: '#fce7f3', shoe: '#be185d' } }
+};
+
+function build(name) {
+  var p = FIGURE_PRESETS[name];
+  var c = p.colors;
+  var style = [
+    '--chibi-skin:' + c.skin, '--chibi-hair:' + c.hair, '--chibi-hair2:' + (c.hair2 || c.hair),
+    '--chibi-top:' + c.top, '--chibi-top2:' + c.top2, '--chibi-bottom:' + c.bottom,
+    '--chibi-shoe:' + c.shoe, '--chibi-accent:' + p.accent
+  ].join(';');
+  return '<div class="chibi chibi-lg chibi-' + p.id + ' hair-' + p.hair + ' acc-' + p.acc +
+    ' pose-' + p.pose + (p.gender === 'f' ? ' chibi-f' : ' chibi-m') + '" style="' + style + '">' +
+    '<div class="chibi-shadow"></div><div class="chibi-rig">' +
+    '<div class="chibi-hair-back"></div><div class="chibi-leg l"></div><div class="chibi-leg r"></div>' +
+    '<div class="chibi-skirt"></div><div class="chibi-coat"></div>' +
+    '<div class="chibi-torso"><span class="chibi-collar"></span><span class="chibi-detail"></span></div>' +
+    '<div class="chibi-arm l"></div><div class="chibi-arm r"></div>' +
+    '<div class="chibi-head"><div class="chibi-ear l"></div><div class="chibi-ear r"></div>' +
+    '<div class="chibi-face"><i class="chibi-brow l"></i><i class="chibi-brow r"></i>' +
+    '<i class="chibi-eye l"></i><i class="chibi-eye r"></i><i class="chibi-blush l"></i><i class="chibi-blush r"></i>' +
+    '<i class="chibi-mouth"></i></div>' +
+    '<div class="chibi-hair-front"></div><div class="chibi-hair-side l"></div><div class="chibi-hair-side r"></div>' +
+    '<div class="chibi-acc"></div></div></div></div>';
+}
+
+document.getElementById('grid').innerHTML = Object.keys(FIGURE_PRESETS).map(function (name) {
+  var p = FIGURE_PRESETS[name];
+  return '<div class="card" style="--guest-color:' + p.accent + '"><div class="stage">' + build(name) +
+    '</div><div class="name">' + name + '</div><div class="tags">' + p.tags + '</div></div>';
+}).join('');
+</script>
+</body>
+</html>

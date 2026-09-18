@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>存档诊断 · 心动信号</title>
+<style>
+  body { font-family: "Segoe UI", "PingFang SC", sans-serif; background:#14080c; color:#f4e6c8; margin:0; padding:24px; }
+  .card { max-width:560px; margin:0 auto; border:1px solid rgba(201,162,39,.4); padding:18px; background:#1a0b10; }
+  h1 { font-size:18px; letter-spacing:.12em; margin:0 0 12px; }
+  pre { white-space:pre-wrap; word-break:break-all; background:#0c0608; padding:12px; font-size:12px; line-height:1.5; }
+  .ok { color:#86efac; } .bad { color:#fda4af; } .warn { color:#fde68a; }
+  a, button { color:#1c0a10; background:linear-gradient(180deg,#ead08a,#c9a227); border:0; padding:10px 14px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block; margin:6px 6px 0 0; }
+  p { font-size:13px; line-height:1.55; color:rgba(244,230,200,.85); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>存档诊断</h1>
+    <p>本页与游戏同域（127.0.0.1:5178），用于查看 localStorage 是否还在。不会删除任何存档。</p>
+    <pre id="out">读取中…</pre>
+    <a id="go" href="./%E6%81%8B%E7%BB%BC%E6%A8%A1%E6%8B%9F%E5%99%A8Pro.html">打开游戏</a>
+  </div>
+<script>
+(function () {
+  function mask(k) {
+    k = String(k || '');
+    if (k.length < 10) return k ? '(有值·已遮罩)' : '';
+    return k.slice(0, 5) + '…' + k.slice(-4) + ' (len=' + k.length + ')';
+  }
+  var main = null, launch = null, avatar = null;
+  try { main = localStorage.getItem('heart_signal_v2'); } catch (e) {}
+  try { launch = localStorage.getItem('heart_signal_v2_launch'); } catch (e) {}
+  try { avatar = localStorage.getItem('heart_signal_v2_avatar'); } catch (e) {}
+  var launchObj = null;
+  try { launchObj = launch ? JSON.parse(launch) : null; } catch (e) {}
+  var mainObj = null;
+  try { mainObj = main ? JSON.parse(main) : null; } catch (e) {}
+  var lines = [];
+  lines.push('origin: ' + location.origin);
+  lines.push('href: ' + location.href);
+  lines.push('');
+  lines.push('主存档 heart_signal_v2: ' + (main ? (main.length + ' bytes') : '无'));
+  if (mainObj) {
+    lines.push('  gameStarted: ' + !!mainObj.gameStarted);
+    lines.push('  playerName: ' + (mainObj.playerName || ''));
+    lines.push('  currentDay: ' + (mainObj.currentDay != null ? mainObj.currentDay : ''));
+    lines.push('  hasApiKey: ' + !!String(mainObj.apiKey || '').trim());
+  }
+  lines.push('');
+  lines.push('启动缓存 heart_signal_v2_launch: ' + (launch ? (launch.length + ' bytes') : '无'));
+  if (launchObj) {
+    lines.push('  playerName: ' + (launchObj.playerName || ''));
+    lines.push('  playerAge: ' + (launchObj.playerAge || ''));
+    lines.push('  playerJob: ' + (launchObj.playerJob || ''));
+    lines.push('  playerTraits: ' + (launchObj.playerTraits || ''));
+    lines.push('  apiModel: ' + (launchObj.apiModel || ''));
+    lines.push('  apiBaseUrl: ' + (launchObj.apiBaseUrl || ''));
+    lines.push('  apiKey: ' + mask(launchObj.apiKey));
+  }
+  lines.push('');
+  lines.push('头像缓存 heart_signal_v2_avatar: ' + (avatar && avatar.indexOf('data:') === 0 ? ('有 (len=' + avatar.length + ')') : '无'));
+  lines.push('');
+  if (!main) {
+    lines.push('结论: 主进度存档不存在。若你记得以前玩过，多半是：');
+    lines.push('  1) 曾执行过清空主存档的预填脚本；或');
+    lines.push('  2) 以前用 file:// 打开，现在用 http://127.0.0.1:5178，浏览器存档互不相通。');
+  } else if (!mainObj || !mainObj.gameStarted) {
+    lines.push('结论: 有主存档但未标记已开局，会停在配置页。');
+  } else {
+    lines.push('结论: 主存档仍在，进入游戏应能恢复。');
+  }
+  document.getElementById('out').textContent = lines.join('\n');
+})();
+</script>
+</body>
+</html>
