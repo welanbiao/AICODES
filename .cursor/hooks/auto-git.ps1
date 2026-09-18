@@ -39,8 +39,27 @@ if (-not $repoRoot) {
 $repoRoot = $repoRoot.Trim()
 Set-Location $repoRoot
 
-$ssh = 'C:/Program Files/Git/usr/bin/ssh.exe'
-if (Test-Path -LiteralPath $ssh) {
+function Get-GitSshPath {
+    $candidates = [System.Collections.Generic.List[string]]::new()
+    foreach ($p in @(
+        'C:/Program Files/Git/usr/bin/ssh.exe',
+        'D:/Program Files/Git/usr/bin/ssh.exe'
+    )) { $candidates.Add($p) }
+    try {
+        $gitCmd = (Get-Command git -ErrorAction SilentlyContinue).Source
+        if ($gitCmd) {
+            $gitRoot = Split-Path (Split-Path $gitCmd -Parent) -Parent
+            $candidates.Add((Join-Path $gitRoot 'usr/bin/ssh.exe'))
+        }
+    } catch { }
+    foreach ($c in $candidates) {
+        if ($c -and (Test-Path -LiteralPath $c)) { return $c }
+    }
+    return $null
+}
+
+$ssh = Get-GitSshPath
+if ($ssh) {
     $env:GIT_SSH_COMMAND = "`"$ssh`" -o BatchMode=yes"
 }
 
