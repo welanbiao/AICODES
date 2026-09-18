@@ -28,7 +28,3 @@ ehthumbs.db
 # Accidental Git helper dumps
 .git-err.txt
 .git-out.txt
-
-# Nested standalone repo — tracked separately at git@github.com:welanbiao/zongcai-lu-yanci.git
-# Adding this directory would create a gitlink/submodule pointer, not the project files.
-/总裁/
