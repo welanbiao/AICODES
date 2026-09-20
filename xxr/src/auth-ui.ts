@@ -104,7 +104,11 @@ export class AuthUi {
       this.closeLogin();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "登录失败";
-      if (err) err.textContent = /fetch|network|Failed/i.test(msg) ? "无法连接服务器，请先运行 npm run server" : msg;
+      if (err) {
+        err.textContent = /fetch|network|Failed/i.test(msg)
+          ? "普通账号需连接服务器；管理员账号可离线登录（kjxgl）"
+          : msg;
+      }
     } finally {
       if (btn) btn.disabled = false;
     }

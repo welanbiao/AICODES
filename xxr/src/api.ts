@@ -1,5 +1,22 @@
+import {
+  localDeleteModel,
+  localFetchModelBuffer,
+  localListModels,
+  localUploadModel,
+} from "./local-models";
+
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 const AUTH_KEY = "xxr_auth";
+
+/** 打包进 APP 的内置管理员（不走后台）。 */
+export const LOCAL_ADMIN = {
+  id: "u_local_admin",
+  username: "kjxgl",
+  password: "kjx.123",
+  nickname: "管理员",
+} as const;
+
+const LOCAL_ADMIN_TOKEN = "xxr_local_admin_v1";
 
 export type AuthUser = {
   id: string;
@@ -23,6 +40,36 @@ export type UserModel = {
   createdAt: number;
   url: string;
 };
+
+export function isLocalAdminToken(token: string) {
+  return token === LOCAL_ADMIN_TOKEN;
+}
+
+export function isAdminUser(user: AuthUser | null | undefined) {
+  return !!(user && (user.isAdmin || user.role === "admin"));
+}
+
+function localAdminUser(): AuthUser {
+  return {
+    id: LOCAL_ADMIN.id,
+    username: LOCAL_ADMIN.username,
+    nickname: LOCAL_ADMIN.nickname,
+    role: "admin",
+    isAdmin: true,
+    createdAt: 0,
+  };
+}
+
+function toUserModel(m: { id: string; name: string; filename: string; size: number; createdAt: number }): UserModel {
+  return {
+    id: m.id,
+    name: m.name,
+    filename: m.filename,
+    size: m.size,
+    createdAt: m.createdAt,
+    url: `local://${m.id}`,
+  };
+}
 
 export function loadAuthSession(): AuthSession | null {
   try {
@@ -48,10 +95,21 @@ async function readJson<T>(res: Response): Promise<T> {
 }
 
 export async function loginAccount(username: string, password: string) {
+  const name = String(username || "").trim();
+  const pass = String(password || "");
+  if (!name || !pass) throw new Error("请输入账号和密码");
+
+  // 内置管理员：本地校验，不请求后台
+  if (name.toLowerCase() === LOCAL_ADMIN.username.toLowerCase() && pass === LOCAL_ADMIN.password) {
+    const session: AuthSession = { token: LOCAL_ADMIN_TOKEN, user: localAdminUser() };
+    saveAuthSession(session);
+    return session;
+  }
+
   const res = await fetch(`${API_BASE}/v1/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username: name, password: pass }),
   });
   const data = await readJson<{ token?: string; user?: AuthUser }>(res);
   if (!data.token || !data.user) throw new Error("响应无效");
@@ -61,6 +119,7 @@ export async function loginAccount(username: string, password: string) {
 }
 
 export async function fetchMe(token: string): Promise<AuthUser> {
+  if (isLocalAdminToken(token)) return localAdminUser();
   const res = await fetch(`${API_BASE}/v1/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -70,6 +129,10 @@ export async function fetchMe(token: string): Promise<AuthUser> {
 }
 
 export async function logoutAccount(token: string) {
+  if (isLocalAdminToken(token)) {
+    saveAuthSession(null);
+    return;
+  }
   try {
     await fetch(`${API_BASE}/v1/auth/logout`, {
       method: "POST",
@@ -86,6 +149,7 @@ export async function logoutAccount(token: string) {
 }
 
 export async function adminListUsers(token: string): Promise<AuthUser[]> {
+  if (isLocalAdminToken(token)) return [localAdminUser()];
   const res = await fetch(`${API_BASE}/v1/admin/users`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -94,6 +158,7 @@ export async function adminListUsers(token: string): Promise<AuthUser[]> {
 }
 
 export async function adminCreateUser(token: string, username: string, password: string, nickname: string) {
+  if (isLocalAdminToken(token)) throw new Error("打包版仅内置管理员，普通账号需连接服务器创建");
   const res = await fetch(`${API_BASE}/v1/admin/users`, {
     method: "POST",
     headers: {
@@ -108,6 +173,7 @@ export async function adminCreateUser(token: string, username: string, password:
 }
 
 export async function adminResetPassword(token: string, userId: string, password: string) {
+  if (isLocalAdminToken(token)) throw new Error("打包版仅内置管理员，普通账号需连接服务器管理");
   const res = await fetch(`${API_BASE}/v1/admin/users/${encodeURIComponent(userId)}/password`, {
     method: "PUT",
     headers: {
@@ -122,6 +188,7 @@ export async function adminResetPassword(token: string, userId: string, password
 }
 
 export async function adminDeleteUser(token: string, userId: string) {
+  if (isLocalAdminToken(token)) throw new Error("打包版仅内置管理员，普通账号需连接服务器管理");
   const res = await fetch(`${API_BASE}/v1/admin/users/${encodeURIComponent(userId)}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
@@ -130,6 +197,10 @@ export async function adminDeleteUser(token: string, userId: string) {
 }
 
 export async function listMyModels(token: string): Promise<UserModel[]> {
+  if (isLocalAdminToken(token)) {
+    const models = await localListModels();
+    return models.map(toUserModel);
+  }
   const res = await fetch(`${API_BASE}/v1/me/models`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -141,6 +212,10 @@ export async function uploadMyModel(
   token: string,
   payload: { name: string; filename: string; dataBase64: string },
 ): Promise<UserModel> {
+  if (isLocalAdminToken(token)) {
+    const model = await localUploadModel(payload);
+    return toUserModel(model);
+  }
   const res = await fetch(`${API_BASE}/v1/me/models`, {
     method: "POST",
     headers: {
@@ -155,6 +230,10 @@ export async function uploadMyModel(
 }
 
 export async function deleteMyModel(token: string, modelId: string) {
+  if (isLocalAdminToken(token)) {
+    await localDeleteModel(modelId);
+    return;
+  }
   const res = await fetch(`${API_BASE}/v1/me/models/${encodeURIComponent(modelId)}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
@@ -167,6 +246,9 @@ export async function fetchMyModelBuffer(
   modelId: string,
   onProgress?: (ratio: number) => void,
 ): Promise<ArrayBuffer> {
+  if (isLocalAdminToken(token)) {
+    return localFetchModelBuffer(modelId, onProgress);
+  }
   const res = await fetch(`${API_BASE}/v1/me/models/${encodeURIComponent(modelId)}/file`, {
     headers: { Authorization: `Bearer ${token}` },
   });
