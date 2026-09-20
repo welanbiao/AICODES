@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+.vscode/
+_verify*
+_*.png
+_*.html

@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>心动信号·暗涌 — 上手引导</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.2.6/chinese-simplified-400.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.2.6/chinese-simplified-500.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.2.6/chinese-simplified-600.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.2.6/chinese-simplified-700.min.css">
+<style>
+:root {
+  --pink: #f472b6;
+  --pink-dark: #be185d;
+  --text: #1a1a1a;
+  --text-muted: #64748b;
+  --bg: #f0f4f8;
+  --card: rgba(255, 255, 255, 0.92);
+  --sidebar-w: 46px;
+  --radius: 16px;
+  --font: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+@media (max-width: 639px) {
+  :root { --sidebar-w: 0px; }
+}
+@media (min-width: 640px) {
+  :root { --sidebar-w: 112px; }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font);
+  background: linear-gradient(165deg, #fdf2f8 0%, var(--bg) 42%, #e0f2fe 100%);
+  color: var(--text);
+  line-height: 1.65;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wizard-shell { display: flex; width: 100%; height: 100dvh; height: 100vh; }
+
+/* ---- 侧边栏：手机隐藏，正文全宽 ---- */
+.wizard-sidebar {
+  flex-shrink: 0;
+  width: var(--sidebar-w);
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(244, 114, 182, 0.12);
+  display: flex;
+  flex-direction: column;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+@media (max-width: 639px) {
+  .wizard-sidebar { display: none; }
+}
+.sidebar-brand {
+  padding: 6px 4px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(244, 114, 182, 0.08);
+  margin-bottom: 6px;
+}
+.sidebar-brand .brand-name,
+.sidebar-brand .brand-game { display: none; }
+@media (min-width: 640px) {
+  .sidebar-brand .brand-name {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--pink-dark);
+    letter-spacing: 0.06em;
+  }
+  .sidebar-brand .brand-game {
+    display: block;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+}
+.sidebar-progress {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pink), #fb7185);
+  padding: 3px 7px;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
+.sidebar-item {
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  padding: 6px 2px; border: none; background: transparent; border-radius: 10px;
+  cursor: pointer; font-family: inherit; width: 100%;
+}
+.sidebar-item:active { background: rgba(244, 114, 182, 0.08); }
+.sidebar-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: #94a3b8; background: #fff;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  transition: all 0.2s ease;
+}
+.sidebar-label {
+  display: none;
+  font-size: 9px; font-weight: 600; color: #94a3b8;
+  text-align: center; line-height: 1.2; margin-top: 3px;
+}
+@media (min-width: 640px) {
+  .sidebar-label { display: block; }
+  .sidebar-item { gap: 2px; padding: 7px 4px; }
+}
+.sidebar-item.done .sidebar-dot {
+  background: #ecfdf5; border-color: #6ee7b7; color: #047857;
+}
+.sidebar-item.active .sidebar-dot {
+  background: linear-gradient(135deg, var(--pink), #fb7185);
+  border-color: transparent; color: #fff;
+  box-shadow: 0 3px 12px rgba(190, 24, 93, 0.28);
+}
+.sidebar-item.active .sidebar-label { color: var(--pink-dark); }
+
+/* ---- 主区 ---- */
+.wizard-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
+.wizard-header {
+  flex-shrink: 0;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 18px 12px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(244, 114, 182, 0.1);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.header-step-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pink-dark);
+  background: rgba(252, 231, 243, 0.9);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+@media (min-width: 640px) {
+  .header-step-badge { display: none; }
+}
+.header-progress {
+  flex: 1;
+  height: 4px;
+  background: rgba(244, 114, 182, 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.header-top .header-progress { margin-bottom: 0; }
+.header-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pink), #fb7185);
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+.wizard-header h1 {
+  font-size: 18px; font-weight: 700; color: var(--pink-dark);
+  line-height: 1.35;
+}
+.wizard-header p {
+  font-size: 13px; color: var(--text-muted); margin-top: 4px;
+}
+
+/* 顶部板块导航 — 横向滚动，快速跳转 */
+.top-nav-wrap {
+  margin: 12px -18px 0;
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(244, 114, 182, 0.1);
+}
+.top-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 18px 2px;
+}
+.top-nav::-webkit-scrollbar { display: none; }
+.top-nav-chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  line-height: 1.2;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.top-nav-chip:active { transform: scale(0.97); }
+.top-nav-chip.done {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+.top-nav-chip.active {
+  background: linear-gradient(135deg, var(--pink), #fb7185);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(190, 24, 93, 0.28);
+}
+
+.wizard-body {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 16px 18px 20px;
+}
+.wizard-slide {
+  animation: slide-in 0.3s ease;
+  max-width: 520px;
+  margin: 0 auto;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-card {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.98);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  box-shadow: 0 4px 24px rgba(190, 24, 93, 0.07);
+}
+
+/* Hero */
+.hero-card { text-align: center; padding: 4px 0 0; }
+.hero-badge {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  color: var(--pink-dark); background: rgba(244, 114, 182, 0.12);
+  padding: 5px 16px; border-radius: 999px; letter-spacing: 0.05em; margin-bottom: 14px;
+}
+.hero-title {
+  font-size: 22px; font-weight: 700; color: var(--pink-dark);
+  letter-spacing: 0.03em; margin-bottom: 6px; line-height: 1.3;
+}
+.hero-sub { font-size: 14px; color: #475569; margin-bottom: 12px; }
+.version-tag {
+  display: inline-block; font-size: 12px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, #64748b, #475569);
+  padding: 4px 14px; border-radius: 999px; margin-bottom: 16px;
+}
+.hero-desc {
+  font-size: 14px; color: #334155; text-align: left; line-height: 1.7;
+  padding: 14px 16px; background: #f8fafc;
+  border-radius: 12px; border: 1px solid #e2e8f0;
+}
+.hero-desc strong { color: var(--pink-dark); font-weight: 600; }
+.slide-cta {
+  text-align: center; font-size: 14px; font-weight: 600; color: var(--pink-dark);
+  margin-top: 16px; padding: 12px; background: rgba(252, 231, 243, 0.55); border-radius: 12px;
+}
+
+/* 文案层级 */
+.action-lead {
+  font-size: 16px; font-weight: 700; color: #0f172a;
+  margin-bottom: 10px; line-height: 1.5;
+}
+.action-lead em { font-style: normal; color: var(--pink-dark); }
+.action-sub {
+  font-size: 14px; color: #475569; margin-bottom: 16px; line-height: 1.65;
+}
+.douyin-line {
+  font-size: 14px; color: var(--pink-dark); font-weight: 600;
+  margin-bottom: 14px; line-height: 1.5;
+}
+.finish-meta {
+  margin-top: 14px; font-size: 13px; color: var(--text-muted);
+}
+
+/* 步骤列表 — 单列全宽 */
+.action-steps { display: flex; flex-direction: column; gap: 10px; }
+.action-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.action-step-num {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--pink), #fb7185);
+  color: #fff; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.action-step-body { flex: 1; min-width: 0; }
+.action-step-title {
+  font-size: 15px; font-weight: 700; color: #1e293b;
+  margin-bottom: 4px; line-height: 1.4;
+}
+.action-step-desc {
+  font-size: 14px; color: #64748b; line-height: 1.6;
+}
+.action-step-desc strong { color: var(--pink-dark); font-weight: 600; }
+.action-step-desc code {
+  font-size: 0.92em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(244, 114, 182, 0.1);
+  color: var(--pink-dark);
+}
+
+.slide-tip {
+  font-size: 13px; color: var(--pink-dark);
+  background: rgba(252, 231, 243, 0.8);
+  border-left: 3px solid var(--pink);
+  padding: 12px 14px; border-radius: 0 10px 10px 0;
+  margin-top: 16px; line-height: 1.6;
+}
+.slide-foot {
+  text-align: center; font-size: 13px; color: var(--text-muted);
+  margin-top: 16px; padding-top: 4px;
+}
+
+/* 信息面板 — 单列堆叠，替代左右分栏 */
+.info-stack { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.info-panel {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+.info-panel-accent { border-left: 4px solid var(--pink); }
+.info-panel-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.info-panel-icon { font-size: 20px; line-height: 1; }
+.info-panel-head h4 {
+  font-size: 15px; font-weight: 700; color: var(--pink-dark); line-height: 1.35;
+}
+.info-panel p {
+  font-size: 14px; color: #475569; line-height: 1.65;
+}
+.info-panel p + p { margin-top: 8px; }
+.info-panel-note {
+  font-size: 13px; color: #64748b; margin-top: 10px;
+  padding-top: 10px; border-top: 1px dashed #e2e8f0;
+}
+
+/* 浏览器推荐 — 单列 */
+.pick-stack { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 16px; }
+.pick-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+.pick-card-icon { font-size: 32px; line-height: 1; flex-shrink: 0; }
+.pick-card-body { flex: 1; min-width: 0; }
+.pick-card-name { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 2px; }
+.pick-card-tag { font-size: 13px; color: var(--pink-dark); font-weight: 500; }
+
+/* 模型选项 — 单列卡片 */
+.model-stack { display: flex; flex-direction: column; gap: 10px; }
+.model-card {
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.model-card.recommended {
+  border-color: rgba(244, 114, 182, 0.45);
+  background: linear-gradient(135deg, rgba(252,231,243,0.5), #fff);
+}
+.model-card.model-card-warn {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.55), #fff);
+}
+.model-card.model-card-warn .model-card-desc { color: #b45309; font-weight: 500; }
+.model-card-name {
+  font-size: 14px; font-weight: 700; color: var(--pink-dark);
+  margin-bottom: 4px; word-break: break-all;
+}
+.model-card-desc { font-size: 14px; color: #64748b; line-height: 1.55; }
+
+/* 示意图 */
+.illus {
+  width: 100%; border-radius: 12px; overflow: hidden;
+  border: 1px solid #e2e8f0; background: #fff;
+  box-shadow: 0 2px 12px rgba(190, 24, 93, 0.05);
+  margin: 14px 0 6px;
+}
+.illus-caption { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.illus-inner { padding: 14px; }
+
+.illus-folder-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px; border-radius: 12px; margin-bottom: 8px;
+  font-size: 14px; line-height: 1.6;
+}
+.illus-folder-item:last-child { margin-bottom: 0; }
+.illus-folder-item .folder-text { flex: 1; min-width: 0; }
+.illus-folder-item .folder-hint {
+  display: block; margin-top: 4px;
+  font-size: 13px; font-weight: 600; opacity: 0.9;
+}
+.illus-folder-item.highlight {
+  background: linear-gradient(135deg, rgba(252,231,243,0.95), #fff);
+  border: 2px solid rgba(244, 114, 182, 0.45);
+  font-weight: 700; color: var(--pink-dark);
+}
+.illus-folder-item.muted {
+  color: var(--text-muted); background: #f8fafc; font-size: 13px;
+}
+.illus-folder-icon { font-size: 22px; flex-shrink: 0; line-height: 1.2; }
+
+.illus-mock { background: linear-gradient(165deg, #fdf2f8, #fff); text-align: center; }
+.illus-mock .badge {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  color: var(--pink-dark); background: rgba(244, 114, 182, 0.12);
+  padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+}
+.illus-mock .title { font-size: 17px; font-weight: 700; color: var(--pink-dark); margin-bottom: 6px; }
+.illus-mock .sub { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+.illus-fake-input {
+  width: 100%; padding: 12px; border: 1px solid rgba(244, 114, 182, 0.35);
+  border-radius: 10px; color: #94a3b8; font-size: 14px; margin-bottom: 12px; background: #fff;
+}
+.illus-fake-btn {
+  width: 100%; padding: 13px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--pink), #fb7185);
+  color: #fff; font-weight: 600; font-size: 15px;
+}
+
+.illus-game {
+  background: url('photo/bg_day_clear.jpg') center/cover;
+  min-height: 160px; padding: 12px; border-radius: 12px;
+}
+.illus-game .chip {
+  display: inline-block; padding: 4px 10px; margin: 0 4px 4px 0;
+  background: rgba(255,255,255,0.94); border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+
+.illus-api-block {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0; background: #fff;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+.illus-api-block:last-of-type { margin-bottom: 0; }
+.illus-api-block h4 {
+  font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--pink-dark);
+  padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
+}
+.illus-api-block .action-steps { gap: 8px; }
+.illus-api-block .action-step { padding: 12px; border-radius: 10px; }
+.illus-api-block a { color: var(--pink-dark); font-weight: 600; word-break: break-all; }
+
+.illus-timeline {
+  display: flex; flex-direction: column; gap: 0;
+  margin: 12px 0 4px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+.illus-timeline-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  font-size: 15px; color: #334155; line-height: 1.65;
+}
+.illus-timeline-item:not(:last-child) { padding-bottom: 16px; }
+.illus-timeline-rail {
+  flex-shrink: 0; width: 20px; display: flex; flex-direction: column; align-items: center;
+  padding-top: 5px;
+}
+.illus-timeline-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--pink); box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.22);
+}
+.illus-timeline-line {
+  flex: 1; width: 2px; min-height: 20px;
+  background: rgba(244, 114, 182, 0.22); margin-top: 6px;
+}
+.illus-timeline-text { flex: 1; min-width: 0; padding-top: 0; }
+
+.faq-item {
+  border: 1px solid #e2e8f0; border-radius: 12px;
+  margin-bottom: 8px; overflow: hidden; background: #fff;
+}
+.faq-item summary {
+  padding: 14px 16px; font-size: 14px; font-weight: 600;
+  cursor: pointer; list-style: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item[open] summary { color: var(--pink-dark); background: rgba(252, 231, 243, 0.45); }
+.faq-item p { padding: 0 16px 14px; font-size: 14px; color: #475569; line-height: 1.6; }
+
+.finish-card { text-align: center; padding: 20px 8px; }
+.finish-card .emoji { font-size: 44px; margin-bottom: 12px; }
+.finish-card h2 { font-size: 20px; font-weight: 700; color: var(--pink-dark); margin-bottom: 10px; }
+.finish-card p { font-size: 15px; color: #475569; line-height: 1.6; }
+
+.wizard-footer {
+  flex-shrink: 0; display: flex; gap: 10px;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(244, 114, 182, 0.1);
+}
+.wizard-btn {
+  flex: 1; padding: 14px 16px; border-radius: 12px;
+  font-family: inherit; font-size: 16px; font-weight: 600;
+  cursor: pointer; border: none;
+}
+.wizard-btn:active { transform: scale(0.98); }
+.wizard-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.wizard-btn-prev {
+  flex: 0.7; background: #f8fafc; color: #475569;
+  border: 1px solid #e2e8f0;
+}
+.wizard-btn-next {
+  background: linear-gradient(135deg, var(--pink), #fb7185);
+  color: #fff; box-shadow: 0 3px 14px rgba(190, 24, 93, 0.22);
+}
+</style>
+</head>
+<body>
+
+<div class="wizard-shell">
+  <aside class="wizard-sidebar" id="sidebar" aria-label="学习进度"></aside>
+  <div class="wizard-main">
+    <header class="wizard-header">
+      <div class="header-top">
+        <div class="header-progress" aria-hidden="true"><div class="header-progress-fill" id="header-progress-fill"></div></div>
+        <span class="header-step-badge" id="header-step-badge">1 / 16</span>
+      </div>
+      <h1 id="slide-title">上手引导</h1>
+      <p id="slide-subtitle">《心动信号·暗涌》</p>
+      <div class="top-nav-wrap">
+        <nav class="top-nav" id="top-nav" aria-label="板块快速导航"></nav>
+      </div>
+    </header>
+    <div class="wizard-body" id="wizard-body"></div>
+    <footer class="wizard-footer">
+      <button type="button" class="wizard-btn wizard-btn-prev" id="btn-prev" disabled>上一步</button>
+      <button type="button" class="wizard-btn wizard-btn-next" id="btn-next">开始上手</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+var GUIDE_CONFIG = {
+  assistantDouyin: '@待补充',
+  gameFileName: '恋综模拟器Pro.html',
+  version: '2.2.0',
+  gameTitle: '《心动信号·暗涌》'
+};
+
+var STEPS = [
+  {
+    id: 'welcome',
+    label: '介绍',
+    title: '安装与上手引导',
+    subtitle: '叩君芯 · 恋综模拟器',
+    nextLabel: '开始上手',
+    html:
+      '<div class="slide-card">' +
+        '<div class="hero-card">' +
+          '<span class="hero-badge">✦ KOUJUNXIN · 叩君芯 ✦</span>' +
+          '<h2 class="hero-title">' + GUIDE_CONFIG.gameTitle + '</h2>' +
+          '<p class="hero-sub">恋综模拟器 · 沉浸式 AI 录制体验</p>' +
+          '<span class="version-tag">当前版本 v' + GUIDE_CONFIG.version + '</span>' +
+          '<p class="hero-desc">' +
+            '你是恋综特邀嘉宾，在「栖心小筑」别墅录制 <strong>15 天</strong>，和六位嘉宾互动，找出谁从很久以前就暗恋你。<br><br>' +
+            '接下来是<strong>零基础安装教程</strong>。不用一次看完——<strong>每页只做一件事</strong>，做完点「下一步」就行。' +
+          '</p>' +
+        '</div>' +
+        '<p class="slide-cta">↓ 点下方「开始上手」，从保存群文件开始</p>' +
+      '</div>'
+  },
+  {
+    id: 'save-zip',
+    label: '存文件',
+    title: '把群文件存到手机',
+    subtitle: '这一页只做这一件事',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">你要做的事：<em>从抖音会员群把压缩包保存到手机</em></p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step">' +
+            '<span class="action-step-num">1</span>' +
+            '<div class="action-step-body">' +
+              '<p class="action-step-title">打开抖音会员群</p>' +
+              '<p class="action-step-desc">找到小助理发的游戏压缩包（一般是 .zip 结尾）</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="action-step">' +
+            '<span class="action-step-num">2</span>' +
+            '<div class="action-step-body">' +
+              '<p class="action-step-title">点「保存到手机」</p>' +
+              '<p class="action-step-desc">等它下载完成，<strong>不要</strong>只在聊天里预览一下就关掉</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="action-step">' +
+            '<span class="action-step-num">3</span>' +
+            '<div class="action-step-body">' +
+              '<p class="action-step-title">去文件管理确认</p>' +
+              '<p class="action-step-desc">打开手机「<strong>文件管理</strong>」→ 看「<strong>今天</strong>」或「<strong>最近</strong>」保存的文件，zip 应该就在里面</p>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide-tip">看到 zip 文件了就对了。下一页教你怎么解压。</p>' +
+        '<p class="slide-foot">做完上面三步 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'unzip',
+    label: '解压',
+    title: '解压压缩包',
+    subtitle: '用 QQ 浏览器操作',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">你要做的事：<em>用 QQ 浏览器把 zip 解压成文件夹</em></p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step"><span class="action-step-num">1</span><div class="action-step-body">' +
+            '<p class="action-step-title">打开 QQ 浏览器</p>' +
+            '<p class="action-step-desc">手机玩推荐全程用它</p>' +
+          '</div></div>' +
+          '<div class="action-step"><span class="action-step-num">2</span><div class="action-step-body">' +
+            '<p class="action-step-title">点底部「文件」</p>' +
+            '<p class="action-step-desc">在「今天 / 最近」里找到刚才存的 zip</p>' +
+          '</div></div>' +
+          '<div class="action-step"><span class="action-step-num">3</span><div class="action-step-body">' +
+            '<p class="action-step-title">点 zip → 选「解压」</p>' +
+            '<p class="action-step-desc">解压到一个文件夹，等进度走完</p>' +
+          '</div></div>' +
+        '</div>' +
+        '<p class="slide-tip">电脑用户：右键 zip →「解压到当前文件夹」，然后用 Edge 打开游戏。</p>' +
+        '<p class="slide-foot">解压完成 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'open-file',
+    label: '打开',
+    title: '打开哪个文件？',
+    subtitle: '文件夹里东西很多，别点错',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">你要做的事：<em>打开下面这个文件进入游戏</em></p>' +
+        '<p class="action-sub">解压后会看到好几个文件和文件夹，<strong>只有标红这一个</strong>是要点的：</p>' +
+        '<div class="illus"><div class="illus-inner">' +
+          '<div class="illus-folder-item muted"><span class="illus-folder-icon">📁</span><span class="folder-text">music 文件夹 — 游戏音乐，<strong>别删</strong></span></div>' +
+          '<div class="illus-folder-item muted"><span class="illus-folder-icon">📁</span><span class="folder-text">photo 文件夹 — 游戏图片，<strong>别删</strong></span></div>' +
+          '<div class="illus-folder-item highlight"><span class="illus-folder-icon">📄</span><span class="folder-text">' + GUIDE_CONFIG.gameFileName + '<span class="folder-hint">← 点这个进入游戏</span></span></div>' +
+          '<div class="illus-folder-item muted"><span class="illus-folder-icon">📄</span><span class="folder-text">guide.html — 就是你现在看的这份引导</span></div>' +
+        '</div></div>' +
+        '<p class="slide-tip">整个文件夹要留在手机里，不要只复制一个 html 文件走。music 和 photo 必须和游戏文件在一起。</p>' +
+        '<p class="slide-foot">用 QQ 浏览器打开 ' + GUIDE_CONFIG.gameFileName + ' → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'browser',
+    label: '浏览器',
+    title: '用什么浏览器打开游戏？',
+    subtitle: '选对了才玩得顺',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">打开 <em>' + GUIDE_CONFIG.gameFileName + '</em> 时，用这个：</p>' +
+        '<div class="pick-stack">' +
+          '<div class="pick-card">' +
+            '<span class="pick-card-icon">📱</span>' +
+            '<div class="pick-card-body">' +
+              '<p class="pick-card-name">QQ 浏览器</p>' +
+              '<p class="pick-card-tag">手机用这个</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="pick-card">' +
+            '<span class="pick-card-icon">🌐</span>' +
+            '<div class="pick-card-body">' +
+              '<p class="pick-card-name">Microsoft Edge</p>' +
+              '<p class="pick-card-tag">电脑用这个</p>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="action-sub">微信、抖音<strong>里面</strong>直接点开的那种浏览器，容易白屏卡顿，不要用。</p>' +
+        '<p class="slide-foot">打开游戏后会先看到暗号页 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'open-way',
+    label: '别踩坑',
+    title: '正确打开方式（很重要）',
+    subtitle: '背景图 / 音乐加载不出，多半是这一步错了',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">游戏里的<strong>别墅背景、嘉宾头像、BGM</strong>都在同目录的 <code>photo</code>、<code>music</code> 文件夹里。打开方式不对，就会<strong>白屏、没图、没声音</strong>。</p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step"><span class="action-step-num">✓</span><div class="action-step-body">' +
+            '<p class="action-step-title">手机 · 正确做法</p>' +
+            '<p class="action-step-desc">' +
+              '① 先把 zip <strong>完整解压</strong>成一个文件夹<br>' +
+              '② 打开 <strong>QQ 浏览器</strong> → 底部「<strong>文件</strong>」<br>' +
+              '③ 进入解压后的文件夹 → 点 <strong>' + GUIDE_CONFIG.gameFileName + '</strong><br>' +
+              '④ 确认文件夹里同时有 <strong>photo</strong>、<strong>music</strong> 和两个 html' +
+            '</p>' +
+          '</div></div>' +
+          '<div class="action-step"><span class="action-step-num">✓</span><div class="action-step-body">' +
+            '<p class="action-step-title">电脑 · 正确做法</p>' +
+            '<p class="action-step-desc">' +
+              '① 右键 zip →「解压到当前文件夹」<br>' +
+              '② 用 <strong>Edge</strong> 打开解压目录里的 <strong>' + GUIDE_CONFIG.gameFileName + '</strong><br>' +
+              '③ 不要只复制一个 html 到桌面，<strong>photo / music 必须跟着走</strong>' +
+            '</p>' +
+          '</div></div>' +
+          '<div class="action-step"><span class="action-step-num">✕</span><div class="action-step-body">' +
+            '<p class="action-step-title">这些做法容易出问题</p>' +
+            '<p class="action-step-desc">' +
+              '• 在 QQ 浏览器里对 zip 点「<strong>预览</strong>」而不是「解压」<br>' +
+              '• 在抖音 / 微信 / QQ 聊天里<strong>直接预览</strong>压缩包或 html<br>' +
+              '• 从「最近下载」里预览 zip，还没解压就点开游戏<br>' +
+              '• 只把 ' + GUIDE_CONFIG.gameFileName + ' 单独拷走，<strong>photo、music 没在同一文件夹</strong><br>' +
+              '• 用文件管理器「在线预览 / 压缩包内打开」html' +
+            '</p>' +
+          '</div></div>' +
+        '</div>' +
+        '<p class="slide-tip">' +
+          '自检：进游戏后如果别墅背景是空白、嘉宾没头像、没有背景音乐——<strong>先关掉页面</strong>，回到 QQ 浏览器「文件」里，确认是从<strong>解压后的完整文件夹</strong>打开的，再试一次。' +
+        '</p>' +
+        '<p class="slide-foot">确认打开方式没问题 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'cipher',
+    label: '暗号',
+    title: '输入暗号',
+    subtitle: '首次打开游戏会看到',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">你要做的事：<em>输入小助理给的 12 位暗号</em></p>' +
+        '<p class="douyin-line" id="douyin-line"></p>' +
+        '<div class="illus illus-mock"><div class="illus-inner">' +
+          '<span class="badge">✦ KOUJUNXIN ✦</span>' +
+          '<p class="title">小芯肝与叩君芯的专属暗号</p>' +
+          '<p class="sub">输入今日 12 位暗号</p>' +
+          '<div class="illus-fake-input" style="letter-spacing:0.12em;text-align:center;">············</div>' +
+          '<div class="illus-fake-btn">进入心动信号</div>' +
+        '</div></div>' +
+        '<p class="illus-caption">示例界面 · 非真实暗号</p>' +
+        '<p class="slide-tip">本机验证过一次，以后不用再输。换手机要找小助理重新要暗号。</p>' +
+        '<p class="slide-foot">输入暗号进入游戏 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'launch',
+    label: '启动',
+    title: '启动页 · 填你的资料',
+    subtitle: '暗号通过后看到',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">你要做的事：<em>填名字 + 配好 API</em></p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step"><span class="action-step-num">1</span><div class="action-step-body">' +
+            '<p class="action-step-title">填你的名字</p>' +
+            '<p class="action-step-desc">必填。年龄、职业、头像等可选，填了 AI 会更贴合你的角色</p>' +
+          '</div></div>' +
+          '<div class="action-step"><span class="action-step-num">2</span><div class="action-step-body">' +
+            '<p class="action-step-title">填 API 地址、Key、模型</p>' +
+            '<p class="action-step-desc">下一页教你怎么获取，这里先知道要填这三项</p>' +
+          '</div></div>' +
+          '<div class="action-step"><span class="action-step-num">3</span><div class="action-step-body">' +
+            '<p class="action-step-title">点「验证密钥」</p>' +
+            '<p class="action-step-desc">看到 ✓ 成功后再点「进入录制」</p>' +
+          '</div></div>' +
+        '</div>' +
+        '<p class="slide-foot">填完启动页 → 点「下一步」看 API 教程</p>' +
+      '</div>'
+  },
+  {
+    id: 'api',
+    label: 'API',
+    title: 'API 密钥怎么获取？',
+    subtitle: '选 A 或 B，走一条路就行',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">游戏靠 AI 推剧情，需要一把「钥匙」</p>' +
+        '<div class="illus-api-block">' +
+          '<h4>路径 A · DeepSeek 官方（推荐）</h4>' +
+          '<div class="action-steps">' +
+            '<div class="action-step"><span class="action-step-num">1</span><div class="action-step-body"><p class="action-step-desc">打开 <a href="https://platform.deepseek.com/sign_in" target="_blank" rel="noopener">platform.deepseek.com</a> 注册登录</p></div></div>' +
+            '<div class="action-step"><span class="action-step-num">2</span><div class="action-step-body"><p class="action-step-desc">创建 API Key（一串 sk- 开头），充值几块钱余额</p></div></div>' +
+            '<div class="action-step"><span class="action-step-num">3</span><div class="action-step-body"><p class="action-step-desc">游戏里点「<strong>DeepSeek 官方</strong>」，Key 粘贴进去，点验证</p></div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="illus-api-block">' +
+          '<h4>路径 B · ModelScope 备用</h4>' +
+          '<div class="action-steps">' +
+            '<div class="action-step"><span class="action-step-num">1</span><div class="action-step-body"><p class="action-step-desc">打开 <a href="https://www.modelscope.cn/" target="_blank" rel="noopener">modelscope.cn</a> 注册</p></div></div>' +
+            '<div class="action-step"><span class="action-step-num">2</span><div class="action-step-body"><p class="action-step-desc">个人中心复制 Access Token</p></div></div>' +
+            '<div class="action-step"><span class="action-step-num">3</span><div class="action-step-body"><p class="action-step-desc">游戏里点「<strong>ModelScope</strong>」，Token 填 Key 框，模型选 ModelScope 分组</p></div></div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide-foot">配好 API → 点「下一步」选模型</p>' +
+      '</div>'
+  },
+  {
+    id: 'model',
+    label: '模型',
+    title: '选哪个模型？',
+    subtitle: '启动页里下拉选择',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">推荐这样选：</p>' +
+        '<div class="model-stack">' +
+          '<div class="model-card recommended">' +
+            '<p class="model-card-name">deepseek-v4-flash</p>' +
+            '<p class="model-card-desc">✅ 首选，API 费用友好、叙事质量好</p>' +
+          '</div>' +
+          '<div class="model-card">' +
+            '<p class="model-card-name">deepseek-v4-pro</p>' +
+            '<p class="model-card-desc">质量更高，API 费用与 flash 接近</p>' +
+          '</div>' +
+          '<div class="model-card model-card-warn">' +
+            '<p class="model-card-name">deepseek-chat</p>' +
+            '<p class="model-card-desc">虽可节省 API 费用，但叙事质量明显不足，强烈勿选</p>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide-tip">先选 DeepSeek 官方或 ModelScope，下方模型列表只会显示对应平台的型号。请勿因省 API 费用而选 chat。</p>' +
+        '<p class="slide-foot">选好模型、验证通过 → 点「下一步」学怎么玩</p>' +
+      '</div>'
+  },
+  {
+    id: 'main-ui',
+    label: '主界面',
+    title: '进游戏后认一认',
+    subtitle: '主界面长这样',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">主界面就认这三件事</p>' +
+        '<div class="illus illus-game"><span class="chip">📅 Day 1</span><span class="chip">日间</span><span class="chip">1F_客厅</span></div>' +
+        '<p class="illus-caption">示例画面</p>' +
+        '<div class="action-steps" style="margin-top:14px;">' +
+          '<div class="action-step"><span class="action-step-num">拖</span><div class="action-step-body"><p class="action-step-title">拖动背景</p><p class="action-step-desc">探索别墅各区域</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">点</span><div class="action-step-body"><p class="action-step-title">顶部场景标签</p><p class="action-step-desc">切换镜头看别处，你的人不会瞬移</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">▼</span><div class="action-step-body"><p class="action-step-title">叙事条</p><p class="action-step-desc">点「展开叙事」可回看完整剧情记录</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">☰</span><div class="action-step-body"><p class="action-step-title">左侧五个按钮</p><p class="action-step-desc">嘉宾 · CP榜 · 成就 · 手机 · 导演留言</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">⚙</span><div class="action-step-body"><p class="action-step-title">顶部右侧齿轮</p><p class="action-step-desc">一个调弹幕（开关/速度/透明度），一个调游戏（BGM/音量/界面缩放）</p></div></div>' +
+        '</div>' +
+        '<p class="slide-tip">刚进游戏会有简短操作引导，跟着点一遍更快熟悉。</p>' +
+        '<p class="slide-foot">认完界面 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'director',
+    label: '任务',
+    title: '你的核心任务',
+    subtitle: '导演留言 · 每日任务',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">游戏目标：<em>15 天里找出暗恋你多年的那位嘉宾</em></p>' +
+        '<p class="action-sub">Day1 进别墅后会收到导演私信，告诉你这个特殊任务。<strong>杀青日只有一次提交机会</strong>，猜错就没有重来了。</p>' +
+        '<div class="info-stack">' +
+          '<div class="info-panel info-panel-accent">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">📋</span><h4>点左侧「导演留言」</h4></div>' +
+            '<p>所有任务卡和导演通知都在这里，按时间倒序排列。</p>' +
+            '<p>📋 每日任务 · 📢 导演留言 · 🔒 仅你可见 · 📢 全体可见</p>' +
+            '<p class="info-panel-note">有新留言时会自动弹出，读完点确认关闭</p>' +
+          '</div>' +
+          '<div class="info-panel">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">💡</span><h4>怎么找暗恋者？</h4></div>' +
+            '<p>多和嘉宾互动、查看资料、注意 CP 榜变化和剧情细节。</p>' +
+            '<p>谁对你特别、谁在表演好感，要靠你自己判断——游戏不会直接告诉你答案。</p>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide-foot">了解任务 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'tools',
+    label: '侧栏',
+    title: '左侧三个常用面板',
+    subtitle: '嘉宾 · CP榜 · 成就',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">主界面左上角，这三个最常用</p>' +
+        '<div class="info-stack">' +
+          '<div class="info-panel info-panel-accent">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">☰</span><h4>嘉宾资料</h4></div>' +
+            '<p>六位嘉宾的姓名、职业、标签都在这里。</p>' +
+            '<p>嘉宾<strong>第一次开口</strong>时会自动弹出资料卡，点右上角 ✕ 关闭即可，没有确认按钮。</p>' +
+            '<p class="info-panel-note">随时可再点「嘉宾」回看资料</p>' +
+          '</div>' +
+          '<div class="info-panel">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">★</span><h4>CP 观众支持榜</h4></div>' +
+            '<p>显示「嘉宾 × 你」的观众票数排名，前三名会高亮。</p>' +
+            '<p>你的选择和互动会影响票数涨跌，也是观察谁更受观众支持的一个参考。</p>' +
+          '</div>' +
+          '<div class="info-panel">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">🏆</span><h4>成就清单</h4></div>' +
+            '<p>共 21 个成就，达成条件后会<strong>自动解锁</strong>。</p>' +
+            '<p>解锁时屏幕中央会弹出金框卡片，可以点「查看成就清单」回看进度。</p>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide-foot">记住了 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'talk',
+    label: '说话',
+    title: '两种说话方式',
+    subtitle: '回复是快捷功能，不是私聊',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">现场人多，想对某人说一句，<em>不用每次手动打名字</em></p>' +
+        '<p class="action-sub">两种方式在场的人<strong>都能听到</strong>，区别只是：你要不要指定「对谁说」。</p>' +
+        '<div class="info-stack">' +
+          '<div class="info-panel info-panel-accent">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">💬</span><h4>气泡「回复」— 快捷点名</h4></div>' +
+            '<p>点嘉宾气泡下的「回复」，会自动帮你填好「对 TA 说：」，省得自己在输入框里打名字。</p>' +
+            '<p>可以同时对好几个人各写一条，再一起发送。</p>' +
+            '<p class="info-panel-note">适合：想明确跟某人说话，但懒得每次喊名字</p>' +
+          '</div>' +
+          '<div class="info-panel">' +
+            '<div class="info-panel-head"><span class="info-panel-icon">📢</span><h4>底部「对大家说…」</h4></div>' +
+            '<p>不指定对象，直接说你想说的。AI 按剧情决定谁接话。</p>' +
+            '<p class="info-panel-note">适合：群聊、向在场所有人表态</p>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide-tip">没有「回复」的话，每次找某人说话都得在输入框写「某某，……」，人多了非常麻烦——所以才做了这个快捷功能。</p>' +
+        '<p class="slide-foot">搞懂了 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'pace',
+    label: '节奏',
+    title: '剧情怎么推进？',
+    subtitle: '每天三个时段',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">每天按这个节奏玩</p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step"><span class="action-step-num">1</span><div class="action-step-body"><p class="action-step-title">打字 → 发送 → 等 AI 回复</p><p class="action-step-desc">发送后气泡会消失，等剧情回来再继续</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">2</span><div class="action-step-body"><p class="action-step-title">出现「→ 继续」就点完</p><p class="action-step-desc">同一段剧情可能分好几节，一段一段看，不要漏点</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">3</span><div class="action-step-body"><p class="action-step-title">走完 日间→傍晚→夜间 才能「下一天」</p><p class="action-step-desc">没走完点下一天会弹窗提醒；按钮在输入框上方</p></div></div>' +
+        '</div>' +
+        '<div class="info-panel" style="margin-top:14px;">' +
+          '<div class="info-panel-head"><span class="info-panel-icon">⭐</span><h4>Day 15 · 杀青日</h4></div>' +
+          '<p>最后一天会进入杀青评选，你需要<strong>提交一位嘉宾的名字</strong>作为暗恋者猜测。</p>' +
+          '<p class="info-panel-note">只有一次机会，提交前务必想清楚</p>' +
+        '</div>' +
+        '<p class="slide-tip">日历会标注重要节点（如分房、心动选择等），留意导演任务即可。</p>' +
+        '<p class="slide-foot">了解节奏 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'phone-chat',
+    label: '聊天',
+    title: '手机里发消息',
+    subtitle: '不会立刻回复',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">点左侧「📱 手机」打开浮窗</p>' +
+        '<p class="action-sub">手机可以<strong>拖动</strong>位置，也可以<strong>最小化</strong>到侧边，不挡画面。桌面有两个 App：聊天、微博。</p>' +
+        '<p class="action-lead" style="margin-top:16px;">聊天 App · 发完不会秒回</p>' +
+        '<div class="illus-timeline">' +
+          '<div class="illus-timeline-item"><div class="illus-timeline-rail"><span class="illus-timeline-dot"></span><span class="illus-timeline-line"></span></div><span class="illus-timeline-text">在手机里给嘉宾发消息</span></div>' +
+          '<div class="illus-timeline-item"><div class="illus-timeline-rail"><span class="illus-timeline-dot"></span><span class="illus-timeline-line"></span></div><span class="illus-timeline-text"><strong>回到主界面</strong>，再发一轮剧情对话</span></div>' +
+          '<div class="illus-timeline-item"><div class="illus-timeline-rail"><span class="illus-timeline-dot"></span></div><span class="illus-timeline-text">AI 处理完后，手机里才会收到回复</span></div>' +
+        '</div>' +
+        '<p class="slide-tip">聊天不是微信，别在主界面等回复——先推进剧情，再回手机看。</p>' +
+        '<p class="slide-foot">明白了 → 点「下一步」看微博</p>' +
+      '</div>'
+  },
+  {
+    id: 'phone-weibo',
+    label: '微博',
+    title: '手机 · 微博',
+    subtitle: '有大号和小号',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">微博可以切换<strong>大号</strong>（公开）和<strong>小号</strong>（匿名）</p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step"><span class="action-step-num">发</span><div class="action-step-body"><p class="action-step-title">发帖 / 评论 / 转发前选账号</p><p class="action-step-desc">入口在「我」主页底部，或发帖界面的身份下拉</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">看</span><div class="action-step-body"><p class="action-step-title">推荐流、热搜、消息通知</p><p class="action-step-desc">顶栏有「消息」看回复；热搜和 CP 榜会联动</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">等</span><div class="action-step-body"><p class="action-step-title">嘉宾回复也要靠主界面推进</p><p class="action-step-desc">发微博后回主界面发一轮剧情，AI 才会安排嘉宾在微博互动</p></div></div>' +
+        '</div>' +
+        '<p class="slide-foot">了解微博 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'autosave',
+    label: '存档',
+    title: '进度会自动保存',
+    subtitle: '换设备前先看这页',
+    html:
+      '<div class="slide-card">' +
+        '<p class="action-lead">游戏进度存在<strong>本机浏览器</strong>里</p>' +
+        '<div class="action-steps">' +
+          '<div class="action-step"><span class="action-step-num">✓</span><div class="action-step-body"><p class="action-step-title">自动存档</p><p class="action-step-desc">每轮剧情结束后都会保存，关掉浏览器再打开还能接着玩</p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">!</span><div class="action-step-body"><p class="action-step-title">别清缓存</p><p class="action-step-desc">清理浏览器数据、换手机、换浏览器，进度<strong>带不走</strong></p></div></div>' +
+          '<div class="action-step"><span class="action-step-num">↺</span><div class="action-step-body"><p class="action-step-title">想重开一局</p><p class="action-step-desc">顶部状态栏有「清空记录重玩」，会删掉本机所有进度</p></div></div>' +
+        '</div>' +
+        '<p class="slide-tip">启动页的 API Key 也会缓存在本机，方便下次直接进游戏。</p>' +
+        '<p class="slide-foot">记住了 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'faq',
+    label: 'FAQ',
+    title: '遇到问题？',
+    subtitle: '先看这几条',
+    html:
+      '<div class="slide-card">' +
+        '<details class="faq-item"><summary>验证密钥失败</summary><p>检查 API 地址、Key、模型是不是同一条路径配的。DeepSeek 看看余额够不够。</p></details>' +
+        '<details class="faq-item"><summary>背景图 / 头像 / 音乐加载不出来</summary><p>几乎总是<strong>打开方式不对</strong>：请回到引导里「别踩坑」那一页。必须<strong>完整解压</strong>，用 QQ 浏览器「文件」进入文件夹再打开 ' + GUIDE_CONFIG.gameFileName + '；不要用 zip 预览模式，不要只复制 html。photo、music 文件夹必须和游戏文件在同一目录。</p></details>' +
+        '<details class="faq-item"><summary>页面空白 / 按钮没反应</summary><p>先检查是否完整解压、是否用 QQ 浏览器或 Edge 从文件夹内打开 ' + GUIDE_CONFIG.gameFileName + '（见「别踩坑」页）。仍不行再换浏览器或重启 QQ 浏览器后重试。</p></details>' +
+        '<details class="faq-item"><summary>找不到压缩包</summary><p>文件管理 → 今天 / 最近保存的文件。不要在「下载」里死找，抖音群文件保存位置因手机而异。</p></details>' +
+        '<details class="faq-item"><summary>手机消息没人回</summary><p>正常的。先回主界面发一轮剧情，再打开手机看。</p></details>' +
+        '<details class="faq-item"><summary>嘉宾资料卡关不掉</summary><p>只有右上角 ✕，没有确认按钮。首次出场自动弹出，关掉即可继续。</p></details>' +
+        '<details class="faq-item"><summary>下一天点不了 / 弹窗说时段未完成</summary><p>当天必须完整经历日间、傍晚、夜间三个时段，继续推进剧情直到时段切换。</p></details>' +
+        '<details class="faq-item"><summary>进度突然没了</summary><p>多半是清了浏览器缓存或换了浏览器。进度只存在本机，无法云端恢复。</p></details>' +
+        '<details class="faq-item"><summary>AI 回复很慢或中断了</summary><p>等网络稳定后重试；API 余额不足也会导致失败。别在回复过程中刷新页面。</p></details>' +
+        '<details class="faq-item"><summary>还有问题</summary><p id="faq-help">抖音私信小助理，或翻会员群聊天记录看别人怎么解决的。</p></details>' +
+        '<p class="slide-foot">看完 → 点「下一步」</p>' +
+      '</div>'
+  },
+  {
+    id: 'finish',
+    label: '完成',
+    title: '准备好了',
+    subtitle: '可以开始录制了',
+    nextLabel: '完成',
+    html:
+      '<div class="slide-card">' +
+        '<div class="finish-card">' +
+          '<div class="emoji">💗</div>' +
+          '<h2>引导完成</h2>' +
+          '<p>现在打开 <strong>' + GUIDE_CONFIG.gameFileName + '</strong>，输入暗号，开始你的 15 天吧。</p>' +
+          '<p class="finish-meta">' + GUIDE_CONFIG.gameTitle + ' · v' + GUIDE_CONFIG.version + ' · 叩君芯</p>' +
+        '</div>' +
+      '</div>'
+  }
+];
+
+(function () {
+  var current = 0;
+  var sidebar = document.getElementById('sidebar');
+  var body = document.getElementById('wizard-body');
+  var titleEl = document.getElementById('slide-title');
+  var subtitleEl = document.getElementById('slide-subtitle');
+  var btnPrev = document.getElementById('btn-prev');
+  var btnNext = document.getElementById('btn-next');
+  var progressFill = document.getElementById('header-progress-fill');
+  var stepBadge = document.getElementById('header-step-badge');
+  var topNav = document.getElementById('top-nav');
+
+  if (GUIDE_CONFIG.assistantDouyin && GUIDE_CONFIG.assistantDouyin !== '@待补充') {
+    STEPS.forEach(function (s) {
+      if (s.id === 'faq') {
+        s.html = s.html.replace(
+          '抖音私信小助理，或翻会员群聊天记录看别人怎么解决的。',
+          '抖音搜 ' + GUIDE_CONFIG.assistantDouyin + ' 私信小助理，或翻会员群聊天记录。'
+        );
+      }
+    });
+  }
+
+  function renderSidebar() {
+    sidebar.innerHTML =
+      '<div class="sidebar-brand">' +
+        '<span class="brand-name">KOUJUNXIN</span>' +
+        '<span class="brand-game">叩君芯</span>' +
+        '<span class="sidebar-progress">' + (current + 1) + ' / ' + STEPS.length + '</span>' +
+      '</div>' +
+      '<nav class="sidebar-nav">' +
+      STEPS.map(function (step, i) {
+        var cls = 'sidebar-item';
+        if (i === current) cls += ' active';
+        else if (i < current) cls += ' done';
+        return '<button type="button" class="' + cls + '" data-idx="' + i + '">' +
+          '<span class="sidebar-dot">' + (i < current ? '✓' : (i + 1)) + '</span>' +
+          '<span class="sidebar-label">' + step.label + '</span></button>';
+      }).join('') +
+      '</nav>';
+
+    sidebar.querySelectorAll('.sidebar-item').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        goTo(parseInt(btn.getAttribute('data-idx'), 10));
+      });
+    });
+    var activeBtn = sidebar.querySelector('.sidebar-item.active');
+    if (activeBtn) activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function renderTopNav() {
+    if (!topNav) return;
+    topNav.innerHTML = STEPS.map(function (step, i) {
+      var cls = 'top-nav-chip';
+      if (i === current) cls += ' active';
+      else if (i < current) cls += ' done';
+      return '<button type="button" class="' + cls + '" data-idx="' + i + '" aria-current="' + (i === current ? 'step' : 'false') + '">' + step.label + '</button>';
+    }).join('');
+
+    topNav.querySelectorAll('.top-nav-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        goTo(parseInt(btn.getAttribute('data-idx'), 10));
+      });
+    });
+
+    var activeChip = topNav.querySelector('.top-nav-chip.active');
+    if (activeChip) {
+      activeChip.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  function renderSlide() {
+    var step = STEPS[current];
+    titleEl.textContent = step.title;
+    subtitleEl.textContent = step.subtitle;
+    body.innerHTML = '<div class="wizard-slide">' + step.html + '</div>';
+
+    var douyinLine = document.getElementById('douyin-line');
+    if (douyinLine) douyinLine.textContent = '小助理抖音：' + GUIDE_CONFIG.assistantDouyin;
+
+    btnPrev.disabled = current === 0;
+    if (progressFill) {
+      progressFill.style.width = Math.round(((current + 1) / STEPS.length) * 100) + '%';
+    }
+    if (stepBadge) {
+      stepBadge.textContent = (current + 1) + ' / ' + STEPS.length;
+    }
+    if (current === STEPS.length - 1) {
+      btnNext.textContent = step.nextLabel || '完成';
+    } else if (step.nextLabel) {
+      btnNext.textContent = step.nextLabel;
+    } else {
+      btnNext.textContent = '下一步';
+    }
+    renderSidebar();
+    renderTopNav();
+  }
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= STEPS.length) return;
+    current = idx;
+    renderSlide();
+    body.scrollTop = 0;
+  }
+
+  btnPrev.addEventListener('click', function () { goTo(current - 1); });
+  btnNext.addEventListener('click', function () {
+    if (current < STEPS.length - 1) goTo(current + 1);
+  });
+
+  renderSlide();
+})();
+</script>
+</body>
+</html>
