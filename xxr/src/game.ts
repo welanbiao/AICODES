@@ -41,6 +41,7 @@ import {
   deleteMyModel,
   fetchMyModelBuffer,
   fileToBase64,
+  isAdminUser,
   listMyModels,
   loadAuthSession,
   type AuthSession,
@@ -1154,8 +1155,12 @@ export class Game {
   openPortalImport() {
     const session = this.authSession ?? loadAuthSession();
     if (!session) {
-      toast("请先登录账号");
+      toast("请先用管理员账号登录");
       document.querySelector<HTMLElement>('[data-testid="btn-login"]')?.click();
+      return;
+    }
+    if (!isAdminUser(session.user)) {
+      toast("仅管理员可导入模型");
       return;
     }
     this.authSession = session;
@@ -1172,7 +1177,11 @@ export class Game {
     if (this.importBusy) return;
     const session = this.authSession ?? loadAuthSession();
     if (!session) {
-      toast("请先登录账号");
+      toast("请先用管理员账号登录");
+      return;
+    }
+    if (!isAdminUser(session.user)) {
+      toast("仅管理员可导入模型");
       return;
     }
     if (!/\.glb$/i.test(file.name)) {
@@ -1181,7 +1190,7 @@ export class Game {
     }
     this.importBusy = true;
     const tip = document.querySelector<HTMLElement>('[data-testid="import-status"]');
-    if (tip) tip.textContent = "正在上传…";
+    if (tip) tip.textContent = "正在保存到本地…";
     try {
       const dataBase64 = await fileToBase64(file);
       const name = file.name.replace(/\.glb$/i, "").slice(0, 32) || "自定义模型";
@@ -1189,10 +1198,10 @@ export class Game {
       this.closePortalImport();
       this.dismount();
       this.setCustomLoadProgress(`加载 ${model.name}…`);
-      toast("已添加，正在后台加载关卡");
+      toast("已本地保存，正在加载关卡");
       this.enqueueCustomLoad(model);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "上传失败";
+      const msg = e instanceof Error ? e.message : "保存失败";
       if (tip) tip.textContent = msg;
       toast(msg);
     } finally {

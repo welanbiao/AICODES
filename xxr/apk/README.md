@@ -46,4 +46,7 @@ npm run apk:release
 
 - 包名：`com.xxr.xiaoxiaoren`
 - 基于 Capacitor 8，流程与神笔马良（`sbmlapp`）一致
-- 游戏资源已打进 APK；账号登录等需后端时，请设置 `VITE_API_BASE` 指向可访问的 API 后再重新 `npm run apk:debug`
+- 游戏资源已打进 APK
+- **内置管理员**（离线可用，不调后台）：账号 `kjxgl` / 密码 `kjx.123`
+- 管理员导入模型走本机 IndexedDB，不上传服务器
+- 普通账号仍需后端：设置 `VITE_API_BASE` 后再重新 `npm run apk:debug`
