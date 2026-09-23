@@ -856,12 +856,12 @@ button { font-family: inherit; cursor: pointer; }
   overflow: hidden;
   overscroll-behavior: none;
   word-break: break-word;
-  padding: 0 16px 2px 0;
+  padding: 0 18px 2px 0;
 }
 .adv-next {
   position: absolute;
   right: 4px;
-  bottom: 36px;
+  bottom: 8px;
   font-size: 16px;
   line-height: 1;
   color: var(--gold);
@@ -878,45 +878,31 @@ button { font-family: inherit; cursor: pointer; }
 .adv.kind-nar .adv-who { background: #3a414c; color: #f4f7fb; }
 .adv.kind-nar .adv-text {
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 1.65;
+  line-height: 1.55;
   color: rgba(228, 234, 242, .92);
 }
 .adv.kind-act .adv-who { background: #8a6a32; color: #f8edd4; }
 .adv.kind-act .adv-text {
   font-family: var(--font);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.65;
+  line-height: 1.55;
   color: #e6c88a;
   letter-spacing: .04em;
 }
 .adv.kind-line .adv-who { background: var(--gold); color: #1a140c; }
 .adv.kind-line .adv-text {
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.5;
   color: #fff;
   letter-spacing: .03em;
 }
 .adv-tip {
-  display: block;
-  flex: 0 0 auto;
-  margin: auto 0 0;
-  padding-top: 8px;
-  border-top: 1px solid rgba(230,200,138,.14);
-  font-size: 11px;
-  line-height: 1.55;
-  letter-spacing: .04em;
-  color: rgba(247,241,230,.38);
-}
-.adv-tip::before {
-  content: "冷知识  ";
-  color: rgba(230,200,138,.48);
-  font-weight: 700;
-  letter-spacing: .14em;
+  display: none !important;
 }
 #game-root:has(#sheet:not(.is-locked)) .sheet {
   bottom: 20%;

@@ -421,13 +421,15 @@
 
   function buildBeats(scene) {
     const beats = [];
-    if (state.pendingEcho) {
-      beats.push({ kind: "act", who: "余波", text: fill(state.pendingEcho) });
+    if (isPlayableText(state.pendingEcho)) {
+      beats.push({ kind: "act", who: "余波", text: fill(clipPlot(state.pendingEcho, 28)) });
+      state.pendingEcho = "";
+    } else {
       state.pendingEcho = "";
     }
-    if (scene.nar) beats.push({ kind: "nar", who: "旁白", text: fill(scene.nar) });
-    if (scene.act) beats.push({ kind: "act", who: "动作", text: fill(scene.act) });
-    if (scene.line) beats.push({ kind: "line", who: "陆晏辞", text: fill(scene.line) });
+    if (isPlayableText(scene.nar)) beats.push({ kind: "nar", who: "旁白", text: fill(clipPlot(scene.nar, 42)) });
+    if (isPlayableText(scene.act)) beats.push({ kind: "act", who: "动作", text: fill(clipPlot(scene.act, 24)) });
+    if (isPlayableText(scene.line)) beats.push({ kind: "line", who: "陆晏辞", text: fill(clipPlot(scene.line, 16)) });
     return beats;
   }
 
@@ -447,20 +449,7 @@
     "地图上的地点没有字，名字写在标注里。"
   ];
 
-  function paintAdvTip() {
-    const el = $("#adv-tip");
-    if (!el) return;
-    const scene = sceneById(state.sceneId);
-    const tips = PLAY_TIPS.slice();
-    if (scene && scene.id === "hint_phone") tips.unshift("右下角手机在亮。先点开档案。");
-    if (plotReady) tips.unshift("选一个动作，或自己写一句。");
-    if (state.lastDelta) {
-      const d = state.lastDelta;
-      tips.unshift("上一轮判定 " + (d > 0 ? "+" : "") + d + "。觉得不对就点顶部改。");
-    }
-    const key = (advIndex || 0) + (state.calendarDay || 1) * 3 + String(state.sceneId || "").length;
-    el.textContent = tips[Math.abs(key) % tips.length];
-  }
+  function paintAdvTip() {}
 
   function showBeat() {
     const box = $("#adv");
@@ -877,30 +866,81 @@
   function harvestPlot(text) {
     const t = String(text || "");
     const grab = (keys) => {
-      const re = new RegExp("(?:" + keys + ")\\s*[:：]\\s*[「“\"']?([^\\n」”\"']+)", "i");
+      const re = new RegExp("(?:" + keys + ")\\s*[:：]\\s*[「“\"']?([^\\n」”\"']+)");
       const m = t.match(re);
       return m ? String(m[1] || "").trim() : "";
     };
     return {
-      nar: grab("旁白|nar"),
-      act: grab("动作|act"),
-      line: grab("陆晏辞|台词|line")
+      nar: grab("旁白"),
+      act: grab("动作"),
+      line: grab("陆晏辞|台词")
     };
   }
 
-  function parseJudgeJson(raw) {
-    const full = stripThink(collectApiText(raw));
-    const objs = extractJsonObjects(full);
-    if (!objs.length) {
-      const h = harvestPlot(full);
-      return h.nar || h.act || h.line ? h : null;
+  function chineseCount(s) {
+    return (String(s || "").match(/[\u4e00-\u9fff]/g) || []).length;
+  }
+
+  function isPlayableText(s) {
+    const t = String(s || "").trim();
+    if (!t) return false;
+    const zh = chineseCount(t);
+    const en = (t.match(/[A-Za-z]/g) || []).length;
+    if (zh < 2) return false;
+    if (en >= 3 && en * 2 >= zh) return false;
+    if (/(visible|action|complete|something|json|field|narrat|must\b|like\b|title|place|quest)/i.test(t)) return false;
+    if (/^(nar|act|line)\b/i.test(t)) return false;
+    if (/系统|好感度|攻略对象|被钉住/.test(t)) return false;
+    return true;
+  }
+
+  function clipPlot(s, max) {
+    let t = scrubLeak(s).replace(/[;；]/g, "。").replace(/\s+/g, "");
+    const parts = t.split(/(?<=[。！？])/).filter(Boolean);
+    t = parts.slice(0, 2).join("");
+    if (t.length > max) {
+      const cut = t.slice(0, max);
+      const p = Math.max(cut.lastIndexOf("。"), cut.lastIndexOf("，"), cut.lastIndexOf("、"));
+      t = (p >= 8 ? cut.slice(0, p + (cut[p] === "。" ? 1 : 0)) : cut).replace(/[，、]$/, "");
     }
-    const scored = objs.find((o) => o && o.nar) || objs.find((o) => o && (o.act || o.line || o.choices)) || objs[0];
-    const h = harvestPlot(full);
-    if (scored && !scored.nar && h.nar) scored.nar = h.nar;
-    if (scored && !scored.act && h.act) scored.act = h.act;
-    if (scored && !scored.line && h.line) scored.line = h.line;
-    return scored;
+    return t;
+  }
+
+  function takePlayable(s, max) {
+    const t = clipPlot(s, max);
+    return isPlayableText(t) ? t : "";
+  }
+
+  function parseJudgeJson(raw) {
+    const content = stripThink(typeof raw === "string" ? raw : ((raw && raw.content) || ""));
+    const full = stripThink(collectApiText(raw));
+    const objs = extractJsonObjects(content).concat(extractJsonObjects(full));
+    return objs.find((o) => o && o.kind) || objs.find((o) => o && takePlayable(o.nar, 42)) || objs[0] || null;
+  }
+
+  function parsePlotFromApi(raw) {
+    const content = stripThink(typeof raw === "string" ? raw : ((raw && raw.content) || ""));
+    const think = stripThink([raw && raw.reasoning_content, raw && raw.reasoning, raw && raw.thinking].filter(Boolean).join("\n"));
+    const apply = (o) => {
+      if (!o || typeof o !== "object") return null;
+      const nar = takePlayable(o.nar, 42);
+      const act = takePlayable(o.act, 24);
+      const line = takePlayable(o.line, 16);
+      if (!nar && !act && !line) return null;
+      return Object.assign({}, o, { nar, act, line });
+    };
+    let i;
+    const fromContent = extractJsonObjects(content);
+    for (i = 0; i < fromContent.length; i++) {
+      const v = apply(fromContent[i]);
+      if (v) return v;
+    }
+    const fromThink = extractJsonObjects(think);
+    for (i = 0; i < fromThink.length; i++) {
+      const v = apply(fromThink[i]);
+      if (v) return v;
+    }
+    return apply(harvestPlot(content)) || apply(harvestPlot(think));
   }
 
   function scrubLeak(s) {
@@ -915,9 +955,9 @@
 
   function sanitizeVisible(src) {
     const out = src && typeof src === "object" ? src : {};
-    out.nar = scrubLeak(out.nar);
-    out.act = scrubLeak(out.act);
-    out.line = scrubLeak(out.line);
+    out.nar = takePlayable(out.nar, 42);
+    out.act = takePlayable(out.act, 24);
+    out.line = takePlayable(out.line, 16);
     return out;
   }
 
@@ -1159,9 +1199,9 @@
       title: String(src.title || fb.title).slice(0, 16),
       place: jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12),
       quest: String(src.quest || fb.quest).slice(0, 24),
-      nar: String(src.nar || fb.nar).slice(0, 220),
-      act: String(src.act || fb.act).slice(0, 80),
-      line: String(src.line || fb.line).slice(0, 40),
+      nar: src.nar || fb.nar || "",
+      act: src.act || fb.act || "",
+      line: src.line || fb.line || "",
       sys: sys.length ? sys : fb.sys,
       choices,
       jump: jumped ? 1 : 0,
@@ -1179,8 +1219,9 @@
     const sys = [
       "你是文字恋爱游戏编剧。先想清楚这一幕，再只输出一个JSON对象，不要markdown。",
       "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台来换场。只有隔夜才允许改place并把jump设为1。",
-      "玩家不知道系统存在。nar、act、line 必须是旁观者能看懂的完整一幕：他为什么出现、做了什么、说了什么。禁止在这三字段写系统、任务、好感、攻略、被钉住。",
-      "陆晏辞对外是正常人：36岁高冷总裁，话少、冷脸，但句子完整，像开会时的口吻。不要只丢单字命令。act必须写清可见动作。",
+      "玩家不知道系统存在。旁白、动作、台词必须是中文剧情，禁止英文，禁止把思考过程写进去。",
+      "旁白最多两句、不超过40字。动作一句、不超过20字。台词一句中文、不超过14字，像正常人说话。",
+      "禁止列举多个动作，禁止visible、complete、something这类词。",
       "系统只存在于sys字段，用来逼他开口、让他吃瘪。不许他只放东西就走。",
       "选项必须是女主此刻能做的动作，正好3个：接住、冷淡、添堵。每条不超过16字。禁止心情描写当选项。添堵aff为负。",
       "mins是这一轮动作花费的分钟数，5到180。短对话约8-15。隔夜才把 jump 设为1。",
@@ -1201,7 +1242,7 @@
         { role: "system", content: sys },
         { role: "user", content: user }
       ], { max_tokens: 1600, temperature: 0.7, timeout: 28000 });
-      const parsed = parseJudgeJson(msg);
+      const parsed = parsePlotFromApi(msg);
       if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return fallback;
       return normalizeLive(parsed, fallback);
     } catch (_) {
@@ -1780,8 +1821,8 @@
     const sys = [
       "你是文字恋爱游戏编剧。只输出JSON。",
       "地点：" + (inn.name || "") + "。陆晏辞" + (luHere ? "在场，系统逼他开口，并让他吃瘪。" : "不在。"),
-      "在场时他对外是正常人：话少、句子完整，必须有可见动作和一句完整台词。不在场就写普通路过，不要硬塞他。",
-      "nar/act/line 禁止出现系统。女主是基层员工。选项3个动作。mins 5-20。",
+      "必须全中文。旁白不超过40字，动作不超过20字，台词不超过14字。禁止英文和思考过程。",
+      "不在场就写普通路过。女主是基层员工。选项3个动作。mins 5-20。",
       "字段：title, place, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins"
     ].join("");
     try {
@@ -1789,7 +1830,7 @@
         { role: "system", content: sys },
         { role: "user", content: "好感" + state.affection + " 剩余" + state.daysLeft + "天。写这一遇。" }
       ], { max_tokens: 900, temperature: 0.75, timeout: 20000 });
-      const parsed = parseJudgeJson(msg);
+      const parsed = parsePlotFromApi(msg);
       if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return fallback;
       return normalizeLive(parsed, fallback);
     } catch (_) {
