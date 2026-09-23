@@ -690,7 +690,7 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 20%;
+  bottom: 24%;
   z-index: 8;
   margin: 0;
   padding: 0 14px 8px;
@@ -759,9 +759,9 @@ button { font-family: inherit; cursor: pointer; }
   right: 0;
   bottom: 0;
   z-index: 7;
-  height: 20%;
-  min-height: 158px;
-  padding: 10px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  height: 24%;
+  min-height: 178px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -861,7 +861,7 @@ button { font-family: inherit; cursor: pointer; }
 .adv-next {
   position: absolute;
   right: 4px;
-  bottom: 8px;
+  bottom: 28px;
   font-size: 16px;
   line-height: 1;
   color: var(--gold);
@@ -902,10 +902,24 @@ button { font-family: inherit; cursor: pointer; }
   letter-spacing: .03em;
 }
 .adv-tip {
-  display: none !important;
+  display: block;
+  flex: 0 0 auto;
+  margin: auto 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(230,200,138,.14);
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: .04em;
+  color: rgba(247,241,230,.38);
+}
+.adv-tip::before {
+  content: "冷知识  ";
+  color: rgba(230,200,138,.48);
+  font-weight: 700;
+  letter-spacing: .14em;
 }
 #game-root:has(#sheet:not(.is-locked)) .sheet {
-  bottom: 20%;
+  bottom: 24%;
 }
 
 .aff-modal {

@@ -55,10 +55,10 @@ window.ZC_SCENES = [
     bg: "elevator",
     jump: 0,
     play: "sysQuest",
-    quest: "打开手机，看完档案",
+    quest: "查看手机通知",
     questGate: true,
     luVisible: false,
-    nar: "电梯到了。他先一步出去，在门外顿了一下，没回头。你口袋里的手机震了一下，锁屏亮起四个字：档案已更新。",
+    nar: "电梯到了。他先一步出去，在门外顿了一下，没回头。你口袋里的手机震了一下，锁屏多了一条陌生通知。",
     act: "站在门外，背影停了两秒",
     line: "",
     sys: [

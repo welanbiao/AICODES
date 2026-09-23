@@ -443,13 +443,20 @@
     "未知号码不会好好解释自己是谁。",
     "晏辞总部 68 层。你在裙楼 7F。",
     "专梯直达总裁层。你进不去。",
-    "系统只他能看见。你看不见那套面板。",
+    "他话少，并不代表他知道你手机里有什么。",
     "好感不会一次拉满。每一轮反应都会留下余波。",
     "即达用的是钱包余额，不是别的平台。",
     "地图上的地点没有字，名字写在标注里。"
   ];
 
-  function paintAdvTip() {}
+  function paintAdvTip() {
+    const el = $("#adv-tip");
+    if (!el) return;
+    const tips = PLAY_TIPS.slice();
+    if (plotReady) tips.unshift("选一个动作，或自己写一句。");
+    const key = (advIndex || 0) + (state.calendarDay || 1) * 3 + String(state.sceneId || "").length;
+    el.textContent = tips[Math.abs(key) % tips.length];
+  }
 
   function showBeat() {
     const box = $("#adv");
@@ -537,7 +544,10 @@
   function hudQuestText(scene) {
     if (scene && scene.id === "live") return fill(scene.quest || state.questKey || "邀请{name}共进晚餐");
     const persist = /^(meet1|hint_phone|tea|desk|coffee|overtime|file|rain|meeting)$/;
-    if (scene && persist.test(scene.id)) return "邀请{name}共进晚餐";
+    if (scene && persist.test(scene.id)) {
+      if (scene.id === "hint_phone") return "查看手机通知";
+      return "邀请{name}共进晚餐";
+    }
     return (scene && scene.quest) || "";
   }
 
@@ -890,7 +900,7 @@
     if (en >= 3 && en * 2 >= zh) return false;
     if (/(visible|action|complete|something|json|field|narrat|must\b|like\b|title|place|quest)/i.test(t)) return false;
     if (/^(nar|act|line)\b/i.test(t)) return false;
-    if (/系统|好感度|攻略对象|被钉住/.test(t)) return false;
+    if (hasPlotLeak(t)) return false;
     return true;
   }
 
@@ -943,21 +953,41 @@
     return apply(harvestPlot(content)) || apply(harvestPlot(think));
   }
 
+  function hasPlotLeak(s) {
+    return /系统|档案|任务|好感|攻略|面板|推送|频道|倒计时|嘴毒|被钉住|不许走|SYS/i.test(String(s || ""));
+  }
+
   function scrubLeak(s) {
     return String(s || "")
-      .replace(/系统[^。！？\n]{0,24}[。！？]?/g, "")
-      .replace(/好感度?[^。！？\n]{0,16}[。！？]?/g, "")
-      .replace(/攻略[^。！？\n]{0,16}[。！？]?/g, "")
-      .replace(/任务面板|嘴毒|被钉住|不许走/g, "")
+      .replace(/[^。！？\n]*?(系统|档案|任务|好感度?|攻略|面板|推送|频道|倒计时|嘴毒)[^。！？\n]*[。！？]?/g, "")
+      .replace(/被钉住|不许走/g, "")
       .replace(/\s{2,}/g, " ")
       .trim();
+  }
+
+  function isHisAct(s) {
+    const t = String(s || "").trim();
+    if (!t) return false;
+    if (/^(你|我)(?![的])/.test(t)) return false;
+    if (/我赶|我掏|我低头|我打开|你刚说|再说一遍/.test(t)) return false;
+    return true;
+  }
+
+  function isHisLine(s) {
+    const t = String(s || "").trim();
+    if (!t) return false;
+    if (hasPlotLeak(t)) return false;
+    if (/你去解释|你解释|留给下一趟|低了头开手机/.test(t)) return false;
+    return true;
   }
 
   function sanitizeVisible(src) {
     const out = src && typeof src === "object" ? src : {};
     out.nar = takePlayable(out.nar, 42);
     out.act = takePlayable(out.act, 24);
+    if (out.act && !isHisAct(out.act)) out.act = "";
     out.line = takePlayable(out.line, 16);
+    if (out.line && !isHisLine(out.line)) out.line = "";
     return out;
   }
 
@@ -1191,7 +1221,7 @@
       note: String((c && c.note) || (c && c.text) || "").slice(0, 18),
       flags: (c && c.flags) || {},
       next: "live"
-    })).filter((c) => c.text));
+    })).filter((c) => c.text && !hasPlotLeak(c.text) && !/听我解释|别点开/.test(c.text)));
     const jumped = Number(src.jump) >= 1;
     sanitizeVisible(src);
     sanitizeVisible(fb);
@@ -1219,23 +1249,20 @@
     const sys = [
       "你是文字恋爱游戏编剧。先想清楚这一幕，再只输出一个JSON对象，不要markdown。",
       "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台来换场。只有隔夜才允许改place并把jump设为1。",
-      "玩家不知道系统存在。旁白、动作、台词必须是中文剧情，禁止英文，禁止把思考过程写进去。",
-      "旁白最多两句、不超过40字。动作一句、不超过20字。台词一句中文、不超过14字，像正常人说话。",
-      "禁止列举多个动作，禁止visible、complete、something这类词。",
-      "系统只存在于sys字段，用来逼他开口、让他吃瘪。不许他只放东西就走。",
-      "选项必须是女主此刻能做的动作，正好3个：接住、冷淡、添堵。每条不超过16字。禁止心情描写当选项。添堵aff为负。",
+      "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作，我=女主。禁止对调。",
+      "陆晏辞不知道系统、档案、任务、好感。他看不见她的手机。禁止这些词出现在nar、act、line、choices。",
+      "旁白、动作、台词必须是中文剧情。旁白最多两句、不超过40字。动作一句。台词一句，像正常人说话。禁止英文和思考过程。",
+      "系统只存在于sys字段。不许他只放东西就走。",
+      "选项必须是女主此刻能做的动作，正好3个：接住、冷淡、添堵。每条不超过16字。禁止替陆晏辞说话。添堵aff为负。",
       "mins是这一轮动作花费的分钟数，5到180。短对话约8-15。隔夜才把 jump 设为1。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
     ].join("");
     const user = [
       "女主：" + pname() + "，" + (state.player && state.player.age || "23") + "岁，" + (state.player && state.player.personality || ""),
       "当前地点（必须沿用）：" + here,
-      "刚才动作：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
-      "上一句他：" + fill(scene.line || "……"),
-      "好感" + state.affection + " 警惕" + (state.alert || 0) + " 议论" + (state.rumor || 0) + " 靠谱" + (state.trust || 0) + " 剩余" + state.daysLeft + "天",
-      "当前任务：" + fill(scene.quest || "邀请{name}共进晚餐"),
-      "判定余波：" + (choice.echo || state.pendingEcho || "无"),
-      "这一轮让他继续站在原地开口，并且吃瘪。"
+      "女主刚才做的动作（不是他）：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
+      "他上一句台词：" + fill(scene.line || "……"),
+      "写下一幕：他继续在场，像个正常人说话。禁止提到档案、系统、任务。"
     ].join("\n");
     try {
       const msg = await window.ZC_API.complete([
