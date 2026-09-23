@@ -1,0 +1,16 @@
+{
+  "appId": "1002230",
+  "appSettingHost": "https://api.toutiaoapi.com",
+  "updateConfigKey": "",
+  "appSettingAppId": "",
+  "appSettingHostOversea": "https://api.toutiaoapi.com",
+  "updateConfigKeyOversea": "",
+  "appSettingAppIdOversea": "",
+  "teaReportHost": "https://mcs.zijieapi.com",
+  "teaReportHostOversea": "https://mcs.zijieapi.com",
+  "teaReportVersion": "1.0.4",
+  "devicePlatform": "pc",
+  "minDiskSpace": "1024",
+  "binUpdateConfigKey": "",
+  "binUpdateConfigKeyOversea": ""
+}

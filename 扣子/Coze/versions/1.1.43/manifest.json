@@ -1,0 +1,52 @@
+{
+  "appId": "1002230",
+  "appVersion": "1.1.43.0",
+  "buildId": "494973395",
+  "buildVersion": "1.1.43.0",
+  "activeUrl": "https://log.snssdk.com/service/2/app_alert_check/",
+  "channel": "stable",
+  "language": "en",
+  "logifierDomain": "moment.bytedance.com",
+  "name": "coze",
+  "package": "cn.coze.desktop",
+  "packageType": "stable_cn",
+  "region": "CN",
+  "registryUrl": "https://log.snssdk.com/service/2/desktop/device_register/",
+  "slardarDomain": "pc-mon.zijieapi.com",
+  "oversea": false,
+  "ahaNet": {
+    "ttnet_params": {
+      "domain_httpdns": "34.102.215.99",
+      "domain_netlog": "ttnet.snssdk.com",
+      "app_id": "1002230",
+      "tnc_host_first": "",
+      "app_name": "",
+      "tnc_host_second": "",
+      "tnc_host_third": "",
+      "domain_boe": ".boe-gateway.byted.org",
+      "update_version_code": "",
+      "version_code": "",
+      "bypass_proxy": true,
+      "is_drop_first_tnc": false,
+      "use_domestic_store_region": false,
+      "get_domain_default_json": ""
+    },
+    "params": {
+      "user_agent": "",
+      "experimental_options": "",
+      "enable_http2": true,
+      "enable_brotli": true,
+      "enable_quic": true,
+      "enable_network_quality_estimator": false,
+      "enable_verbose_log": false,
+      "enable_ca_store": false,
+      "store_idc_rule_json": "",
+      "ttnet_inner_log_switch": 255,
+      "bypass_mssdk": false
+    },
+    "access_policy": "{\"domain_white_list\":{},\"enable_detail_log\":false}"
+  },
+  "logifierParty": "coze",
+  "buildEnv": "online",
+  "aid": "1002230"
+}

@@ -1,0 +1,13 @@
+{
+  "protocolVersion": "2.1.0",
+  "kernelAbiVersion": 1,
+  "playwrightRevision": "26a9e470a7b3c7822084b09fb7f13902c5f37b51",
+  "engineSha256": "e7e1d3a4ec5cb9e3c20867c404b22aa3aa3f5680dcebbec4e36400ec56ccb15c",
+  "injectedSha256": "94f1439fb406ce166c5d85d6abe9af9062b54c6d8562ae141822179e985407df",
+  "recorderInjectedSha256": "3d4b61c1ef21fbde19e0b01895e8f316815cd4f75317bbd8746cfd97bd986dd2",
+  "kernelInputs": [
+    "packages/isomorphic/locatorUtils.ts",
+    "packages/isomorphic/stringUtils.ts",
+    "packages/playwright-core/src/cozeBrowserEngine.ts"
+  ]
+}

@@ -2,58 +2,30 @@
   const SAVE_KEY = "zongcai-lu-yanci-v2";
   const $ = (sel) => document.querySelector(sel);
 
-  const CG = {
-    meet1: "img/cg_elevator.png",
-    hint_phone: "img/cg_elevator.png",
-    card_lu: "img/card_lu.png",
-    card_you: "img/cg_office.png",
-    card_company: "img/cg_company.png",
-    map_company: "img/map_company.png",
-    map_city: "img/map_city.png",
-    tea: "img/cg_tea.png",
-    desk: "img/cg_office.png",
-    coffee: "img/cg_office.png",
-    overtime: "img/cg_overtime.png",
-    file: "img/cg_office.png",
-    rain: "img/cg_rain.png",
-    meeting: "img/cg_meeting.png",
-    lunch: "img/cg_cafe.png",
-    cover: "img/cg_office.png",
-    secretary: "img/cg_meeting.png",
-    track: "img/cg_garage.png",
-    night: "img/cg_night.png",
-    almost: "img/cg_tea.png",
-    fever: "img/cg_office.png",
-    pressure: "img/cg_rooftop.png",
-    ten: "img/cg_elevator.png",
-    eve: "img/cg_meeting.png",
-    finale: "img/cg_ending.png",
-    last_day: "img/cg_rooftop.png",
-    clear: "img/cg_ending.png",
-    epilogue: "img/cg_tea.png"
-  };
-  const STAND_CG = "img/cg_elevator.png";
-  const PLACE_CG = {
-    "电梯间": "img/cg_elevator.png",
-    "茶水间": "img/cg_tea.png",
-    "基层办公区": "img/cg_office.png",
-    "你的工位": "img/cg_office.png",
-    "工位": "img/cg_office.png",
-    "办公室夜灯": "img/cg_overtime.png",
-    "打印室": "img/cg_print.png",
-    "公司楼下": "img/cg_rain.png",
-    "大会议室": "img/cg_meeting.png",
-    "会议室": "img/cg_meeting.png",
-    "总裁办走廊": "img/cg_corridor.png",
-    "楼下餐厅": "img/cg_cafe.png",
-    "工位 → 楼下餐厅": "img/cg_cafe.png",
-    "地下车库": "img/cg_garage.png",
-    "他的办公室": "img/cg_night.png",
-    "天台": "img/cg_rooftop.png",
-    "地铁": "img/cg_metro.png",
-    "滨湾": "img/cg_mall.png",
-    "购物中心": "img/cg_mall.png",
-    "落地窗前": "img/cg_ending.png"
+  const SPRITE_LU = "img/sprite_lu.png";
+  const STAND_BG = "img/bg_elevator.png";
+  const PLACE_BG = {
+    "电梯间": "img/bg_elevator.png",
+    "茶水间": "img/bg_office.png",
+    "基层办公区": "img/bg_office.png",
+    "你的工位": "img/bg_office.png",
+    "工位": "img/bg_office.png",
+    "打印室": "img/bg_office.png",
+    "大会议室": "img/bg_office.png",
+    "会议室": "img/bg_office.png",
+    "总裁办走廊": "img/bg_office.png",
+    "楼下餐厅": "img/bg_office.png",
+    "工位 → 楼下餐厅": "img/bg_office.png",
+    "项目群": "img/bg_office.png",
+    "公司楼下": "img/bg_office.png",
+    "地铁": "img/bg_office.png",
+    "滨湾": "img/bg_office.png",
+    "购物中心": "img/bg_office.png",
+    "办公室夜灯": "img/bg_night.png",
+    "他的办公室": "img/bg_night.png",
+    "天台": "img/bg_night.png",
+    "地下车库": "img/bg_night.png",
+    "落地窗前": "img/bg_night.png"
   };
   const END_CG = {
     perfect: "img/cg_ending.png",
@@ -98,7 +70,7 @@
     inbox: { seen: {}, replies: {}, extra: {} },
     live: null,
     clockMin: 18 * 60 + 47,
-    lastCg: "img/cg_elevator.png",
+    lastCg: "",
     money: 1284.6,
     bag: [],
     shopCart: [],
@@ -175,7 +147,7 @@
       if (!state.live) state.live = localContinue({});
       return Object.assign({
         id: "live",
-        jump: 1,
+        jump: 0,
         play: "dualTrack",
         questGate: true
       }, state.live);
@@ -601,6 +573,7 @@
       state.alert = clamp(Number(state.alert) || 0, 0, 100);
       state.rumor = clamp(Number(state.rumor) || 0, 0, 100);
       state.trust = clamp(Number(state.trust) || 0, 0, 100);
+      if (!/^img\/bg_/.test(state.lastCg || "")) state.lastCg = "";
       if (state.clockMin == null) state.clockMin = 18 * 60 + 47;
       if (state.money == null) state.money = 1284.6;
       if (!state.bag) state.bag = [];
@@ -680,7 +653,7 @@
     const seeds = [
       { text: "停在原地看他。", aff: 0, judge: "doing" },
       { text: "点头应一声。", aff: 1, judge: "doing" },
-      { text: "转身走开。", aff: -1, judge: "doing", flags: { wary: true } }
+      { text: "当没听见，让他站着。", aff: -2, judge: "fail", flags: { wary: true } }
     ];
     const out = (list || []).slice(0, 3).map((c) => Object.assign({}, c));
     let i = 0;
@@ -842,11 +815,11 @@
   function buildEcho(scene, row) {
     const crowd = crowdOf(scene);
     const kind = row.kind || "";
-    if (kind === "hostility") return "他眼神冷了一下，像在董事会上被人顶了一句。然后什么都没说。";
-    if (kind === "probe") return "空气停了一拍。他没有解释，也没有否认。";
-    if (kind === "refuse") return "他的手顿了半秒，收回去，当这事没发生过。";
-    if (kind === "leave") return "他没有叫住你。楼道里只剩电梯运行的声音。";
-    if (kind === "silence") return "他看了你一眼，把话咽回去。三个字也没再多。";
+    if (kind === "hostility") return "他被顶得耳根一僵，像在董事会上当众挨训。下一秒系统又把他钉在原地。";
+    if (kind === "probe") return "他张了张嘴，没能解释。系统弹窗正在骂他。";
+    if (kind === "refuse") return "他的手顿了半秒，收回去。像被退货的人。";
+    if (kind === "leave") return "他想跟，系统却只许他继续开口。他只能站在原处，难看极了。";
+    if (kind === "silence") return "空气空了一拍。他的下一句更短，也更像吃瘪。";
     if (kind === "work") return "他把话题按回文件上。像刚才什么都没额外发生。";
     if (kind === "thanks" || kind === "accept") {
       if ((scene && scene.play) === "tsundereFeed") return "东西已经在你手里。他早走了半步，没回头。";
@@ -871,10 +844,10 @@
     if (!window.ZC_API || !window.ZC_API.isReady || !window.ZC_API.isReady()) return null;
     const sys = [
       "你判定女主对陆晏辞的当场行动。只输出一个JSON对象。",
-      "陆晏辞：36岁总裁，话少，冷脸，用行动关心，嘴上只有顺路/随便/别多想/放着/走/吃。绝不解释，绝不讨好，不说软话。",
-      "女主：基层员工，不知道系统。好感只看她此刻感受：莫名其妙扣分，感到被关心才加。禁止因为他开口了就加分。",
+      "陆晏辞：36岁总裁，话少，冷脸，被系统逼着跟女主说话，容易吃瘪。嘴上只有顺路/随便/别多想/放着/走/吃。绝不解释，绝不讨好。",
+      "女主：基层员工，不知道系统。好感只看她此刻感受：莫名其妙扣分，感到被关心才加。添堵、当没看见、顶回去都该让他当场难看。",
       "公开场合（工位/会议/餐厅）接住关心会积议论；盘问跟踪会抬警惕。",
-      "echo必须是一句可见余波：同事目光、他的停顿、手里的东西。禁止心理活动，禁止他解释。",
+      "echo必须是一句可见余波：他被噎住、同事侧目、系统又把他钉住。禁止心理活动，禁止他解释。",
       "字段：kind(accept|thanks|refuse|probe|hostility|work|deflect|silence|leave|intimacy), aff(-8到6整数), alert(-6到20), rumor(0到15), trust(-6到15), feel(不超过12字), echo(一句), judge(ok|fail|doing)"
     ].join("");
     const user = [
@@ -1009,19 +982,27 @@
     return list.find((s) => s.id === "tea") || list[0];
   }
 
+  function stayPlace() {
+    const cur = sceneById(state.sceneId) || {};
+    return cur.place || (state.live && state.live.place) || "基层办公区";
+  }
+
   function localContinue(choice) {
     const src = nextScriptScene(state.sceneId) || {};
+    const here = stayPlace();
+    const same = src.place === here;
     const choices = padChoices((src.choices || []).map((c) => Object.assign({}, c, { next: "live" })));
     return {
-      title: src.title || "继续",
-      place: src.place || "",
+      title: same ? (src.title || "继续") : "还没走",
+      place: here,
       quest: src.quest || state.questKey || "邀请{name}共进晚餐",
-      nar: src.nar || "他没有再解释。时间往前走了一格。",
-      act: src.act || "看了你一眼，没停步",
-      line: src.line || "……",
+      nar: same ? (src.nar || "系统没让他走。他还站在原处，像被钉住，只能再开口。") : "系统没让他走。他还站在原处，像被钉住，只能再开口。",
+      act: same ? (src.act || "喉结动了一下，话却更短") : "喉结动了一下，话却更短",
+      line: same ? (src.line || "……在。") : "……在。",
       sys: src.sys || [
-        { who: "sys", text: "别停。下一句。" },
-        { who: "lu", text: "……知道了。" }
+        { who: "sys", text: "不许换地方。必须再跟{name}说一句，而且要被她接住。" },
+        { who: "lu", text: "……知道了。" },
+        { who: "sys", text: "你刚才已经吃瘪了。再来。禁止用「顺路」交差。" }
       ],
       choices,
       jump: 0,
@@ -1044,16 +1025,17 @@
       flags: (c && c.flags) || {},
       next: "live"
     })).filter((c) => c.text));
+    const jumped = Number(src.jump) >= 1;
     return {
       title: String(src.title || fb.title).slice(0, 16),
-      place: String(src.place || fb.place).slice(0, 12),
+      place: jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12),
       quest: String(src.quest || fb.quest).slice(0, 24),
       nar: String(src.nar || fb.nar).slice(0, 160),
       act: String(src.act || fb.act).slice(0, 60),
       line: String(src.line || fb.line).slice(0, 24),
       sys: sys.length ? sys : fb.sys,
       choices,
-      jump: src.jump === 0 ? 0 : (Number(src.jump) || 0),
+      jump: jumped ? 1 : 0,
       mins: clamp(parseInt(src.mins, 10) || fallback.mins || 15, 5, 180)
     };
   }
@@ -1064,22 +1046,27 @@
       return fallback;
     }
     const scene = sceneById(state.sceneId) || {};
+    const here = stayPlace();
     const sys = [
-      "你是文字恋爱游戏编剧。同一地点不换底图；只有 place 变了才换场景。",
-      "只输出一个JSON对象，不要markdown。",
-      "陆晏辞：36岁高冷总裁，话极少，冷脸，用行动靠近。台词只能短：顺路/随便/别多想/放着/走/吃/加班？/…… 绝不解释、不讨好、不内心独白。",
+      "你是文字恋爱游戏编剧。只输出一个JSON对象，不要markdown。",
+      "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台来换场。只有隔夜才允许改place并把jump设为1。",
+      "系统每轮必须逼陆晏辞主动跟女主说话、要回应。不许只放东西就走，不许他消失。",
+      "陆晏辞：36岁高冷总裁，话极少，冷脸，执行任务会翻车。台词只能短：顺路/随便/别多想/放着/走/吃/加班？/在。/…… 绝不解释、不讨好。",
+      "他要尽量吃瘪：被噎、被当没看见、当众丢脸、系统嘲讽。sys里系统要逼他再开口并嘲笑他。",
       "女主是基层员工，不知道系统。系统只对陆晏辞说话。",
-      "选项必须是女主此刻能做的动作，正好3个，每条不超过16字。禁止心情描写当选项。",
-      "mins是这一轮动作花费的分钟数，5到180。吃饭约50，开会约55，加班约90，看手机约6，短对话约8-15。隔夜才把 jump 设为1。",
+      "选项必须是女主此刻能做的动作，正好3个：接住、冷淡、添堵。每条不超过16字。禁止心情描写当选项。添堵aff为负。",
+      "mins是这一轮动作花费的分钟数，5到180。短对话约8-15。隔夜才把 jump 设为1。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
     ].join("");
     const user = [
       "女主：" + pname() + "，" + (state.player && state.player.age || "23") + "岁，" + (state.player && state.player.personality || ""),
+      "当前地点（必须沿用）：" + here,
       "刚才动作：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
       "上一句他：" + fill(scene.line || "……"),
       "好感" + state.affection + " 警惕" + (state.alert || 0) + " 议论" + (state.rumor || 0) + " 靠谱" + (state.trust || 0) + " 剩余" + state.daysLeft + "天",
       "当前任务：" + fill(scene.quest || "邀请{name}共进晚餐"),
-      "判定余波：" + (choice.echo || state.pendingEcho || "无")
+      "判定余波：" + (choice.echo || state.pendingEcho || "无"),
+      "这一轮让他继续站在原地开口，并且吃瘪。"
     ].join("\n");
     try {
       const msg = await window.ZC_API.complete([
@@ -1452,18 +1439,41 @@
     }
   }
 
-  function setGameCg(src, photo) {
-    $("#cg").src = src;
-    $("#game-root").classList.toggle("is-photo", !!photo);
-    if (src) state.lastCg = src;
+  function plateOf(scene) {
+    const place = String((scene && scene.place) || "");
+    if (PLACE_BG[place]) return PLACE_BG[place];
+    if (/电梯/.test(place)) return "img/bg_elevator.png";
+    if (/夜|天台|总裁办|他的办公|车库/.test(place)) return "img/bg_night.png";
+    return "img/bg_office.png";
+  }
+
+  function setGameCg(src) {
+    const cg = $("#cg");
+    const sprite = $("#sprite-lu");
+    if (sprite && !/sprite_lu\.png/.test(sprite.getAttribute("src") || "")) {
+      sprite.src = SPRITE_LU;
+    }
+    if (!cg || !src) return;
+    $("#game-root").classList.remove("is-photo");
+    if (src === state.lastCg) return;
+    const swap = !!state.lastCg;
+    const apply = () => {
+      cg.src = src;
+      state.lastCg = src;
+      cg.classList.remove("is-fading");
+    };
+    if (swap) {
+      cg.classList.add("is-fading");
+      window.setTimeout(apply, 220);
+    } else {
+      apply();
+    }
   }
 
   function applySceneCg(scene) {
-    const place = (scene && scene.place) || "";
-    const fromPlace = PLACE_CG[place];
-    const fromId = scene && (scene.cg || CG[scene.id]);
-    const src = fromPlace || fromId || state.lastCg || STAND_CG;
-    setGameCg(src, /heroine_/.test(src));
+    setGameCg(plateOf(scene) || state.lastCg || STAND_BG);
+    const sprite = $("#sprite-lu");
+    if (sprite) sprite.classList.toggle("hidden", !!(scene && scene.luVisible === false));
   }
 
   function restoreSceneCg() {
@@ -1640,8 +1650,8 @@
     if (simMode || !window.ZC_API || !window.ZC_API.isReady || !window.ZC_API.isReady()) return fallback;
     const sys = [
       "你是文字恋爱游戏编剧。只输出JSON。",
-      "地点：" + (inn.name || "") + "。陆晏辞" + (luHere ? "在场" : "不在。"),
-      "在场时他话极少：顺路/随便/别多想。不在场就写普通路过，不要硬塞他。",
+      "地点：" + (inn.name || "") + "。陆晏辞" + (luHere ? "在场，系统逼他开口，并让他吃瘪。" : "不在。"),
+      "在场时他话极少：顺路/随便/别多想。必须主动跟女主说话。不在场就写普通路过，不要硬塞他。",
       "女主是基层员工。选项3个动作。mins 5-20。",
       "字段：title, place, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins"
     ].join("");

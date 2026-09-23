@@ -34,13 +34,13 @@ window.ZC_SCENES = [
     play: "sysQuest",
     quest: "邀请{name}共进晚餐",
     questGate: true,
-    nar: "下班点。电梯门开，陆晏辞走进来。总裁不该出现在这一层。你不认识他本人，他却已经接到系统命令：攻略你。你只觉得这张冷脸靠得太近。",
-    act: "看了你一眼，按了关门。声音平得像在开会",
+    nar: "下班点。电梯门开，陆晏辞走进来。总裁不该出现在这一层。系统正在逼他开口。你只觉得这张冷脸靠得太近，又莫名其妙。",
+    act: "看了你一眼，像被谁从背后推了一把",
     line: "加班？",
     sys: [
-      { who: "sys", text: "开始了。你选的开场白像查勤。{name}现在的心理活动大概率是：总裁为什么跟基层挤电梯。" },
+      { who: "sys", text: "开始了。你这句像查勤。{name}现在在想：总裁为什么跟基层挤电梯。" },
       { who: "lu", text: "……自然。" },
-      { who: "sys", text: "自然的定义里不包括审问。建议你再吐两个字，超过一个字就算突破。" }
+      { who: "sys", text: "不许走。她要是不理你，你就站着。再逼她回一句。" }
     ],
     choices: [
       { text: "鞠躬致意。", aff: 1, next: "hint_phone", note: "吓了一跳，当他在问工作", hint: "正常职场反应", judge: "doing" },
@@ -57,32 +57,33 @@ window.ZC_SCENES = [
     play: "sysQuest",
     quest: "打开手机，看完档案",
     questGate: true,
-    nar: "电梯到了。他先一步出去，没回头。你口袋里的手机震了一下，锁屏亮起四个字：档案已更新。",
-    act: "门开的瞬间，他已经走远",
+    luVisible: false,
+    nar: "电梯到了。他想先出去，脚却在门外顿住。你口袋里的手机震了一下，锁屏亮起四个字：档案已更新。",
+    act: "停在门外，没敢回头",
     line: "……",
     sys: [
-      { who: "sys", text: "偶遇结束。禁止向{name}解释你为什么出现。" },
+      { who: "sys", text: "想逃？禁止。看完档案你必须再出现在她面前开口。" },
       { who: "lu", text: "……知道了。" },
-      { who: "sys", text: "下一句更短。你已经像查勤。" }
+      { who: "sys", text: "她不理你也得站着。这才叫攻略，暴君。" }
     ],
     choices: []
   },
   {
     id: "tea",
     title: "茶水间",
-    place: "茶水间",
-    bg: "tea",
-    jump: 1,
+    place: "基层办公区",
+    bg: "office",
+    jump: 0,
     play: "dualTrack",
     quest: "请{name}喝一杯水",
     questGate: true,
-    nar: "第二天。你去倒水，一转身看见他站在门口——像是路过，又像是等谁。高管们从不进这层茶水间。",
-    act: "把刚接的温水放到你手边，没看你",
+    nar: "你刚回到工位，陆晏辞又出现在隔间口。高管不该在这层晃。他手里多了一杯水，像被谁按着递过来。",
+    act: "把杯子搁到隔板上，没看你",
     line: "放着。",
     sys: [
-      { who: "sys", text: "任务完成度：把水给{name}。情商完成度：零。好在你没说「喝」。" },
+      { who: "sys", text: "任务是开口。你只丢了一个字。{name}现在觉得你有病。" },
       { who: "lu", text: "{name}会渴。" },
-      { who: "sys", text: "正常人会说「请喝」。你听起来像在丢垃圾。" }
+      { who: "sys", text: "她要是不接，你就继续站着。不许换地方，不许逃。" }
     ],
     choices: [
       { text: "接过杯子，微微鞠躬。", aff: 3, next: "desk", note: "态度差，但确实递了水", flags: { sawKindness: true }, judge: "ok" },
@@ -95,7 +96,7 @@ window.ZC_SCENES = [
     title: "工位",
     place: "基层办公区",
     bg: "office",
-    jump: 2,
+    jump: 0,
     play: "misread",
     quest: "帮{name}改对表格",
     questGate: true,
@@ -116,9 +117,9 @@ window.ZC_SCENES = [
   {
     id: "coffee",
     title: "顺路",
-    place: "你的工位",
+    place: "基层办公区",
     bg: "office",
-    jump: 3,
+    jump: 0,
     play: "tsundereFeed",
     quest: "请{name}喝一杯咖啡",
     questGate: true,
@@ -162,9 +163,9 @@ window.ZC_SCENES = [
   {
     id: "file",
     title: "文件",
-    place: "打印室",
+    place: "基层办公区",
     bg: "office",
-    jump: 4,
+    jump: 0,
     play: "workplaceCover",
     quest: "帮{name}把文件整理好",
     questGate: true,
@@ -208,9 +209,9 @@ window.ZC_SCENES = [
   {
     id: "meeting",
     title: "例会",
-    place: "大会议室",
-    bg: "meeting",
-    jump: 6,
+    place: "基层办公区",
+    bg: "office",
+    jump: 0,
     play: "workplaceCover",
     quest: "让{name}在会上把话说完",
     questGate: true,
@@ -231,9 +232,9 @@ window.ZC_SCENES = [
   {
     id: "lunch",
     title: "走",
-    place: "工位 → 楼下餐厅",
-    bg: "cafe",
-    jump: 6,
+    place: "基层办公区",
+    bg: "office",
+    jump: 0,
     play: "sysQuest",
     quest: "邀请{name}共进晚餐",
     questGate: true,
@@ -254,9 +255,9 @@ window.ZC_SCENES = [
   {
     id: "cover",
     title: "挡锅",
-    place: "项目群",
+    place: "基层办公区",
     bg: "office",
-    jump: 7,
+    jump: 0,
     play: "workplaceCover",
     quest: "帮{name}挡一次锅",
     questGate: true,
