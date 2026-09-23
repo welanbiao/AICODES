@@ -208,11 +208,11 @@
     if (/雨|伞|楼下/.test(t)) return 25;
     if (/车库|开车/.test(t)) return 20;
     if (/地铁|通勤/.test(t)) return 35;
-    if (/咖啡|水|茶/.test(t)) return 12;
-    if (/手机|档案|锁屏|推送/.test(t)) return 6;
-    if (/走|离开|回工位|下班/.test(t)) return 18;
-    if (/点头|应声|鞠躬|看他|停在/.test(t)) return 8;
-    return 15;
+    if (/咖啡|水|茶/.test(t)) return 8;
+    if (/手机|档案|锁屏|推送/.test(t)) return 4;
+    if (/走|离开|回工位|下班/.test(t)) return 6;
+    if (/点头|应声|鞠躬|看他|停在|让路/.test(t)) return 3;
+    return 6;
   }
 
   function renderClock() {
@@ -635,7 +635,7 @@
       }
       if (state.live) {
         if (!isHisQuest(state.live.quest)) state.live.quest = state.questKey || "邀请{name}共进晚餐";
-        if (Array.isArray(state.live.choices)) state.live.choices = padChoices(state.live.choices);
+        if (Array.isArray(state.live.choices)) state.live.choices = padChoices(state.live.choices, state.live);
       }
       if (!/^img\/bg_/.test(state.lastCg || "")) state.lastCg = "";
       if (state.clockMin == null) state.clockMin = 18 * 60 + 47;
@@ -724,22 +724,98 @@
     return true;
   }
 
-  function padChoices(list) {
+  function beatBlob(ctx) {
+    return [(ctx && ctx.nar) || "", (ctx && ctx.act) || "", (ctx && ctx.line) || "", (ctx && ctx.place) || ""].join(" ");
+  }
+
+  function choiceFitsBeat(text, ctx) {
+    if (!ctx) return true;
+    const t = String(text || "");
+    if (!t) return false;
+    const blob = beatBlob(ctx);
+    const place = String((ctx && ctx.place) || stayPlace() || "");
+    if (/杯|温水|喝一口|没有立刻喝|没有接/.test(t) && !/杯|温水|喝点水/.test(blob)) return false;
+    if (/咖啡|美式/.test(t) && !/咖啡|美式/.test(blob)) return false;
+    if (/便当|筷子/.test(t) && !/便当|晚饭/.test(blob)) return false;
+    if (/伞/.test(t) && !/伞/.test(blob)) return false;
+    if (/改表|表格|屏幕/.test(t) && !/表|屏幕|公式/.test(blob)) return false;
+    if (/电梯/.test(place) && /接过杯子|没有立刻喝|侧身躲开，没有接/.test(t)) return false;
+    return true;
+  }
+
+  function plotJumpedAhead(src, place) {
+    const blob = beatBlob(src);
+    if (/电梯/.test(place || "") && /隔间|温水|杯子|茶水间|美式|便当|表格第三/.test(blob)) return true;
+    return false;
+  }
+
+  function recentPlotContext() {
+    const rows = (state.storyLog || []).slice(-3);
+    return rows.map((r) => {
+      const you = r.you ? "你：" + r.you : "";
+      const beats = (r.beats || []).map((b) => (b.kind === "line" ? "他：「" + b.text + "」" : b.text)).join(" ");
+      return [(r.place || ""), you, beats].filter(Boolean).join(" ");
+    }).filter(Boolean).join("\n");
+  }
+
+  function padChoices(list, ctx) {
     const seeds = [
-      { text: "鞠躬说「陆总好」。", aff: 1, judge: "doing" },
+      { text: "点头应一声。", aff: 1, judge: "doing" },
       { text: "侧身让路，等他先走。", aff: 1, judge: "doing" },
-      { text: "点头应一声，先回工位。", aff: 0, judge: "doing" },
+      { text: "看着他，等下一句。", aff: 0, judge: "doing" },
       { text: "低头不接话，往旁边靠。", aff: -1, judge: "doing", flags: { wary: true } },
       { text: "当没听见，继续往外走。", aff: -2, judge: "fail", flags: { wary: true } }
     ];
-    const out = (list || []).filter((c) => c && isStaffChoice(c.text)).slice(0, 3).map((c) => Object.assign({}, c));
+    const out = (list || []).filter((c) => c && isStaffChoice(c.text) && choiceFitsBeat(c.text, ctx)).slice(0, 3).map((c) => Object.assign({}, c));
     let i = 0;
     while (out.length < 3 && i < 12) {
       const s = seeds[i++ % seeds.length];
+      if (!choiceFitsBeat(s.text, ctx)) continue;
       if (out.some((c) => c.text === s.text)) continue;
       out.push(Object.assign({ next: "live" }, s));
     }
     return out.map((c) => Object.assign({ next: c.next || "live" }, c));
+  }
+
+  function followChoices(you, ctx) {
+    const act = String(you || "");
+    const blob = beatBlob(ctx);
+    const place = String((ctx && ctx.place) || stayPlace() || "");
+    let list = [];
+    if (/杯|温水|喝点水/.test(blob)) {
+      list = [
+        { text: "接过杯子，微微鞠躬。", aff: 2, judge: "doing" },
+        { text: "看着杯子，没有立刻喝。", aff: 0, judge: "doing" },
+        { text: "侧身躲开，没有接。", aff: -2, judge: "fail", flags: { wary: true } }
+      ];
+    } else if (/电梯/.test(place) || /先走|让开|门外/.test(blob)) {
+      if (/鞠躬|陆总好/.test(act)) {
+        list = [
+          { text: "从他身边侧身过去。", aff: 0, judge: "doing" },
+          { text: "停住，等他先开口。", aff: 1, judge: "doing" },
+          { text: "低头再让一次，等他让路。", aff: 1, judge: "doing" }
+        ];
+      } else if (/回工位|走开|先走/.test(act) && !/让他先走/.test(act)) {
+        list = [
+          { text: "继续往通道里走。", aff: 0, judge: "doing" },
+          { text: "停半步，回头看他。", aff: 1, judge: "doing" },
+          { text: "当没听见，加快脚步。", aff: -1, judge: "doing", flags: { wary: true } }
+        ];
+      } else {
+        list = [
+          { text: "点头应一声，等他让开。", aff: 1, judge: "doing" },
+          { text: "侧身让路，等他先走。", aff: 1, judge: "doing" },
+          { text: "低头不接话，往旁边靠。", aff: -1, judge: "doing", flags: { wary: true } }
+        ];
+      }
+    } else {
+      list = [
+        { text: "点头应一声。", aff: 1, judge: "doing" },
+        { text: "看着他，等下一句。", aff: 0, judge: "doing" },
+        { text: "当没听见，先走。", aff: -2, judge: "fail", flags: { wary: true } }
+      ];
+    }
+    return padChoices(list, ctx);
   }
 
   function hintChoices() {
@@ -766,7 +842,7 @@
 
   function sceneChoices(scene) {
     if (scene.id === "hint_phone") return hintChoices();
-    return padChoices(scene.choices || []);
+    return padChoices(scene.choices || [], scene);
   }
 
   function renderGame() {
@@ -865,7 +941,8 @@
   }
 
   function localJudge(scene, text) {
-    const kind = classifyFree(text);
+    let kind = classifyFree(text);
+    if (!choiceFitsBeat(text, scene) && (kind === "accept" || kind === "thanks")) kind = "deflect";
     const play = (scene && scene.play) || "";
     const crowd = crowdOf(scene);
     const table = {
@@ -1121,20 +1198,25 @@
   async function apiJudge(scene, text) {
     if (!window.ZC_API || !window.ZC_API.isReady || !window.ZC_API.isReady()) return null;
     const sys = [
-      "你判定女主对陆晏辞的当场行动。只输出一个JSON对象。",
+      "你判定女主对陆晏辞的当场行动。只输出一个JSON对象。不要写下一幕剧情。",
+      "只根据当前这一秒判断：这个动作在此刻是否合理，他会当场难看还是被接住。",
+      "禁止脑补她已经回到工位、接过杯子、喝了咖啡。场上没有的东西不能当已发生。",
       "陆晏辞：36岁总裁，话少，冷脸，被系统逼着跟女主说话，容易吃瘪。嘴上只有顺路/随便/别多想/放着/走/吃。绝不解释，绝不讨好。",
       "女主：基层员工，不知道系统。好感只看她此刻感受：莫名其妙扣分，感到被关心才加。添堵、当没看见、顶回去都该让他当场难看。",
       "公开场合（工位/会议/餐厅）接住关心会积议论；盘问跟踪会抬警惕。",
       "echo必须是一句可见余波：他被噎住、同事侧目、手里的东西。禁止写系统。禁止心理活动，禁止他解释。",
       "字段：kind(accept|thanks|refuse|probe|hostility|work|deflect|silence|leave|intimacy), aff(-8到6整数), alert(-6到20), rumor(0到15), trust(-6到15), feel(不超过12字), echo(一句), judge(ok|fail|doing)"
     ].join("");
+    const prev = recentPlotContext();
     const user = [
-      "场景：" + (scene.id || "") + "／" + (scene.title || "") + "／任务" + fill(scene.quest || "无"),
+      "地点：" + ((scene && scene.place) || stayPlace()),
       "他刚才：" + fill(scene.act || "") + "／「" + fill(scene.line || "") + "」",
+      prev ? "刚才已经发生：\n" + prev : "",
       "场合：" + crowdOf(scene),
       "当前好感" + state.affection + " 警惕" + (state.alert || 0) + " 议论" + (state.rumor || 0) + " 靠谱" + (state.trust || 0),
-      "女主动作：「" + text + "」"
-    ].join("\n");
+      "女主这一瞬间的动作：「" + text + "」",
+      "只判断这一瞬间。不要当成她已经做完下一场的事。"
+    ].filter(Boolean).join("\n");
     try {
       const msg = await window.ZC_API.complete([
         { role: "system", content: sys },
@@ -1266,25 +1348,45 @@
   }
 
   function localContinue(choice) {
-    const src = nextScriptScene(state.sceneId) || {};
     const here = stayPlace();
-    const same = src.place === here;
-    const choices = padChoices((src.choices || []).map((c) => Object.assign({}, c, { next: "live" })));
+    const you = String((choice && choice.text) || state.lastYouAct || "").replace(/<[^>]+>/g, "");
+    const scene = sceneById(state.sceneId) || {};
+    let nar = "他还站在原处。像有下一句没说完。";
+    let act = "重新看向你";
+    let line = "还在？";
+    if (/鞠躬|陆总好/.test(you)) {
+      nar = "你鞠躬让路。他没立刻动，像被这句称呼噎住。";
+      act = "喉结动了一下，手还按在门边";
+      line = "……嗯。";
+    } else if (/点头|应声/.test(you)) {
+      nar = "你点了点头。厅里静了一拍。他还挡在通道上。";
+      act = "目光偏开，又收回来";
+      line = "加班到现在？";
+    } else if (/回工位|走开|先走/.test(you) && !/让他先走|鞠躬/.test(you)) {
+      nar = "你往通道里走了半步。他侧身让了一点，人还在。";
+      act = "跟着偏了一下，没解释";
+      line = "等等。";
+    } else if (/看手机|不接话|低头/.test(you)) {
+      nar = "你没接话。他还站在原处，像这句话没发出去。";
+      act = "手指在身侧收紧";
+      line = "……";
+    }
+    const beat = { nar, act, line, place: here };
     return {
-      title: same ? (src.title || "继续") : "还没走",
+      title: "还没走",
       place: here,
-      quest: isHisQuest(src.quest) ? src.quest : (isHisQuest(state.questKey) ? state.questKey : "邀请{name}共进晚餐"),
-      nar: same ? (src.nar || "他还站在原处。像有下一句没说完，又像在等你先动。") : "他还站在原处。像有下一句没说完，又像在等你先动。",
-      act: same ? (src.act || "喉结动了一下，重新看向你") : "喉结动了一下，重新看向你",
-      line: same ? (src.line || "还在？") : "还在？",
-      sys: src.sys || [
+      quest: isHisQuest(state.questKey) ? state.questKey : "邀请{name}共进晚餐",
+      nar,
+      act,
+      line,
+      sys: [
         { who: "sys", text: "不许换地方。必须再跟{name}说一句，而且要被她接住。" },
         { who: "lu", text: "……知道了。" },
-        { who: "sys", text: "你刚才已经吃瘪了。再来。禁止用「顺路」交差。" }
+        { who: "sys", text: "她刚才那样做了。你现在像木头。再开口。" }
       ],
-      choices,
+      choices: followChoices(you, beat),
       jump: 0,
-      mins: estimateMinutes(choice, src)
+      mins: clamp(estimateMinutes(choice, scene), 3, 8)
     };
   }
 
@@ -1295,20 +1397,24 @@
       who: row && row.who === "lu" ? "lu" : "sys",
       text: String((row && row.text) || "").slice(0, 80)
     })).filter((row) => row.text) : fb.sys;
-    const choices = padChoices((Array.isArray(src.choices) ? src.choices : []).map((c) => ({
+    const jumped = Number(src.jump) >= 1;
+    sanitizeVisible(src);
+    sanitizeVisible(fb);
+    const place = jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12);
+    const ctx = { nar: src.nar || fb.nar, act: src.act || fb.act, line: src.line || fb.line, place };
+    const mapped = (Array.isArray(src.choices) ? src.choices : []).map((c) => ({
       text: String((c && c.text) || "").slice(0, 22),
       aff: clamp(parseInt(c && c.aff, 10) || 0, -8, 6),
       judge: /^(ok|fail|doing)$/.test(c && c.judge) ? c.judge : "doing",
       note: String((c && c.note) || (c && c.text) || "").slice(0, 18),
       flags: (c && c.flags) || {},
       next: "live"
-    })).filter((c) => c.text && !hasPlotLeak(c.text) && !/听我解释|别点开/.test(c.text)));
-    const jumped = Number(src.jump) >= 1;
-    sanitizeVisible(src);
-    sanitizeVisible(fb);
+    })).filter((c) => c.text && !hasPlotLeak(c.text) && !/听我解释|别点开/.test(c.text) && choiceFitsBeat(c.text, ctx));
+    const you = String((state.lastYouAct || "")).replace(/<[^>]+>/g, "");
+    const choices = mapped.length ? padChoices(mapped, ctx) : followChoices(you, ctx);
     return {
       title: String(src.title || fb.title).slice(0, 16),
-      place: jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12),
+      place,
       quest: isHisQuest(src.quest) ? String(src.quest).slice(0, 24) : (isHisQuest(fb.quest) ? fb.quest : "邀请{name}共进晚餐"),
       nar: src.nar || fb.nar || "",
       act: src.act || fb.act || "",
@@ -1316,7 +1422,7 @@
       sys: sys.length ? sys : fb.sys,
       choices,
       jump: jumped ? 1 : 0,
-      mins: clamp(parseInt(src.mins, 10) || fallback.mins || 15, 5, 180)
+      mins: jumped ? clamp(parseInt(src.mins, 10) || 40, 20, 180) : clamp(parseInt(src.mins, 10) || fallback.mins || 5, 3, 12)
     };
   }
 
@@ -1330,31 +1436,35 @@
     const sys = [
       "你是文字恋爱游戏编剧。先想清楚这一幕，再只输出一个JSON对象，不要markdown。",
       "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台来换场。只有隔夜才允许改place并把jump设为1。",
+      "只写她刚才那个动作之后立刻发生的十几秒。可以很短。禁止跳过中间过程，禁止突然递水、改表、送咖啡、送晚饭。",
       "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作，我=女主。禁止对调。",
       "陆晏辞不知道系统、档案、任务、好感。他看不见她的手机。禁止这些词出现在nar、act、line、choices。",
-      "旁白、动作、台词必须是中文剧情。旁白最多两句、不超过40字。动作一句。台词一句，像正常人说话。禁止英文和思考过程。",
+      "旁白、动作、台词必须是中文剧情。旁白最多两句、不超过28字。动作一句。台词一句，像正常人说话。禁止英文和思考过程。",
       "系统只存在于sys字段。不许他只放东西就走。",
       "这一幕主写陆晏辞：他怎么站、怎么开口、怎么被噎。女主是他公司的基层员工。",
-      "选项必须是基层员工面对总裁时可能做的反应，正好3个：接住、冷淡、添堵。例如鞠躬、让路、回工位、点头、低头不接话。每条不超过16字。禁止三个都在看手机，禁止锁屏/拿出手机查看/握在手里。禁止替陆晏辞说话。添堵aff为负。",
-      "mins是这一轮动作花费的分钟数，5到180。短对话约8-15。隔夜才把 jump 设为1。",
+      "选项必须紧接这一秒能做的反应，正好3个：接住、冷淡、添堵。每条不超过16字。禁止出现上一幕没有的杯子/咖啡/便当/伞/表格。禁止三个都在看手机。禁止替陆晏辞说话。添堵aff为负。",
+      "mins是这一轮立刻经过的分钟数，3到12。短对话写3到5。隔夜才把 jump 设为1。",
       "quest沿用他当前必须完成的事，例如邀请她共进晚餐。禁止写她要不要搭理他，禁止档案系统词。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
     ].join("");
+    const prev = recentPlotContext();
     const user = [
       "女主：" + pname() + "，" + (state.player && state.player.age || "23") + "岁，" + (state.player && state.player.personality || ""),
       "当前地点（必须沿用）：" + here,
-      "女主刚才做的动作（不是他）：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
+      prev ? "刚才已经发生（必须接着写，禁止跳场）：\n" + prev : "",
+      "她这一瞬间做的动作（必须从这里接）：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
       "他上一句台词：" + fill(scene.line || "……"),
       "他当前必须做成的事（只写给他，不要写进旁白）：" + hudQuestText(scene),
-      "写下一幕：他继续在场，像个正常人说话。禁止提到档案、系统、任务。"
-    ].join("\n");
+      "只写这一动作之后立刻发生的事。他还在" + here + "。禁止提到档案、系统、任务。"
+    ].filter(Boolean).join("\n");
     try {
       const msg = await window.ZC_API.complete([
         { role: "system", content: sys },
         { role: "user", content: user }
-      ], { max_tokens: 1600, temperature: 0.7, timeout: 28000 });
+      ], { max_tokens: 900, temperature: 0.45, timeout: 28000 });
       const parsed = parsePlotFromApi(msg);
       if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return fallback;
+      if (plotJumpedAhead(parsed, here)) return fallback;
       return normalizeLive(parsed, fallback);
     } catch (_) {
       return fallback;
@@ -1398,7 +1508,7 @@
       }
 
       const scripted = /^(meet1|last_day|clear|epilogue)$/.test(currentId) && choice.next && choice.next !== "live" && choice.next !== "__phone";
-      advanceStoryClock(estimateMinutes(choice, scene));
+      if (scripted) advanceStoryClock(estimateMinutes(choice, scene));
       rippleApps(prev);
 
       if (state.affection >= 100 && !state.epilogue && currentId !== "clear" && currentId !== "epilogue") {
@@ -1467,7 +1577,7 @@
     }
     if (!row) row = localJudge(scene, text);
     if (btn) btn.disabled = false;
-    const fallback = choiceByJudge(opts, row.judge) || opts[1] || opts[0];
+    const fallback = choiceByJudge(opts, row.judge) || opts[1] || opts[0] || {};
     const flags = Object.assign({}, fallback.flags || {});
     if (row.kind === "probe" || row.kind === "hostility") flags.suspicious = true;
     if (row.kind === "refuse" || row.kind === "leave") flags.wary = true;
@@ -1480,9 +1590,7 @@
       trust: row.trust,
       echo: row.echo,
       free: true,
-      next: fallback.next,
-      ending: fallback.ending,
-      jump: fallback.jump,
+      next: "live",
       flags,
       judge: row.judge,
       note: (row.feel || "自由行动") + "：" + text.slice(0, 16)
@@ -1901,7 +2009,7 @@
           { text: "点头走过。", aff: 1, judge: "doing" },
           { text: "停下来看他。", aff: 0, judge: "doing" },
           { text: "当没看见。", aff: -1, judge: "doing", flags: { wary: true } }
-        ]),
+        ], { place: name, nar: "陆晏辞站在不远处。", act: "看了你一眼", line: "顺路。" }),
         jump: 0,
         mins: 8
       };
@@ -1921,7 +2029,7 @@
         { text: "再看一眼四周。", aff: 0, judge: "doing" },
         { text: "点头应一声，先回工位。", aff: 0, judge: "doing" },
         { text: "离开这里。", aff: 0, judge: "doing" }
-      ]),
+      ], { place: name, nar: name + "此刻很普通。", act: "风从通道里过来", line: "" }),
       jump: 0,
       mins: 6
     };
