@@ -141,6 +141,7 @@
         <p class="title-sub">陆晏辞仍在攻略你。进度保存在本机。</p>
         <div class="btn-col">
           <button class="btn btn-gold" id="btn-resume" type="button">继续游戏</button>
+          <button class="btn btn-ghost" id="btn-log" type="button">回顾剧情</button>
           <button class="btn btn-ghost" id="btn-panel" type="button">查看状态</button>
           <button class="btn btn-ghost" id="btn-save" type="button">保存进度</button>
           <button class="btn btn-ghost" id="btn-restart" type="button">重新开始</button>
@@ -207,6 +208,7 @@
           <div class="adv-head">
             <span class="adv-who" id="adv-who">旁白</span>
             <time class="adv-time" id="adv-time">18:47</time>
+            <button type="button" class="adv-log" id="btn-adv-log">回顾</button>
             <span class="adv-dots" id="adv-step"></span>
           </div>
           <p class="adv-text" id="adv-text"></p>
@@ -351,6 +353,14 @@
             <button type="button" id="pos-home-btn" class="pos-return">返回游戏</button>
           </div>
         </div>
+      </div>
+    </div>
+    <div id="log-modal" class="log-modal hidden">
+      <div class="log-card">
+        <p class="log-kicker">回顾</p>
+        <h3>已经发生的事</h3>
+        <div class="log-list" id="log-list"></div>
+        <button type="button" class="log-ok" id="log-ok">关闭</button>
       </div>
     </div>
   </div>

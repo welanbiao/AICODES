@@ -69,6 +69,8 @@
     pendingEcho: "",
     inbox: { seen: {}, replies: {}, extra: {} },
     live: null,
+    storyLog: [],
+    lastYouAct: "",
     clockMin: 18 * 60 + 47,
     lastCg: "",
     money: 1284.6,
@@ -497,6 +499,7 @@
     if ($("#brief-modal") && !$("#brief-modal").classList.contains("hidden")) return;
     if ($("#sys-modal") && !$("#sys-modal").classList.contains("hidden")) return;
     if ($("#aff-modal") && !$("#aff-modal").classList.contains("hidden")) return;
+    if ($("#log-modal") && !$("#log-modal").classList.contains("hidden")) return;
     if (plotReady && !$("#sheet").classList.contains("is-locked")) return;
     if (advIndex < advBeats.length - 1) {
       advIndex += 1;
@@ -508,6 +511,7 @@
 
   function startAdv(scene) {
     advBeats = buildBeats(scene);
+    rememberScene(scene, advBeats);
     advIndex = 0;
     lockSheet();
     showBeat();
@@ -573,6 +577,7 @@
       state.alert = clamp(Number(state.alert) || 0, 0, 100);
       state.rumor = clamp(Number(state.rumor) || 0, 0, 100);
       state.trust = clamp(Number(state.trust) || 0, 0, 100);
+      if (!Array.isArray(state.storyLog)) state.storyLog = [];
       if (!/^img\/bg_/.test(state.lastCg || "")) state.lastCg = "";
       if (state.clockMin == null) state.clockMin = 18 * 60 + 47;
       if (state.money == null) state.money = 1284.6;
@@ -833,11 +838,133 @@
     return "";
   }
 
+  function collectApiText(msg) {
+    if (!msg) return "";
+    if (typeof msg === "string") return msg;
+    return [msg.reasoning_content, msg.reasoning, msg.thinking, msg.content]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  function stripThink(s) {
+    return String(s || "")
+      .replace(/<think>[\s\S]*?<\/think>/gi, "\n")
+      .replace(/```(?:json)?/gi, "")
+      .trim();
+  }
+
+  function extractJsonObjects(s) {
+    const out = [];
+    let depth = 0;
+    let start = -1;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (ch === "{") {
+        if (depth === 0) start = i;
+        depth += 1;
+      } else if (ch === "}") {
+        depth -= 1;
+        if (depth === 0 && start >= 0) {
+          try { out.push(JSON.parse(s.slice(start, i + 1))); } catch (_) {}
+          start = -1;
+        }
+        if (depth < 0) depth = 0;
+      }
+    }
+    return out;
+  }
+
+  function harvestPlot(text) {
+    const t = String(text || "");
+    const grab = (keys) => {
+      const re = new RegExp("(?:" + keys + ")\\s*[:：]\\s*[「“\"']?([^\\n」”\"']+)", "i");
+      const m = t.match(re);
+      return m ? String(m[1] || "").trim() : "";
+    };
+    return {
+      nar: grab("旁白|nar"),
+      act: grab("动作|act"),
+      line: grab("陆晏辞|台词|line")
+    };
+  }
+
   function parseJudgeJson(raw) {
-    const s = String(raw || "");
-    const m = s.match(/\{[\s\S]*\}/);
-    if (!m) return null;
-    try { return JSON.parse(m[0]); } catch (_) { return null; }
+    const full = stripThink(collectApiText(raw));
+    const objs = extractJsonObjects(full);
+    if (!objs.length) {
+      const h = harvestPlot(full);
+      return h.nar || h.act || h.line ? h : null;
+    }
+    const scored = objs.find((o) => o && o.nar) || objs.find((o) => o && (o.act || o.line || o.choices)) || objs[0];
+    const h = harvestPlot(full);
+    if (scored && !scored.nar && h.nar) scored.nar = h.nar;
+    if (scored && !scored.act && h.act) scored.act = h.act;
+    if (scored && !scored.line && h.line) scored.line = h.line;
+    return scored;
+  }
+
+  function scrubLeak(s) {
+    return String(s || "")
+      .replace(/系统[^。！？\n]{0,24}[。！？]?/g, "")
+      .replace(/好感度?[^。！？\n]{0,16}[。！？]?/g, "")
+      .replace(/攻略[^。！？\n]{0,16}[。！？]?/g, "")
+      .replace(/任务面板|嘴毒|被钉住|不许走/g, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
+  function sanitizeVisible(src) {
+    const out = src && typeof src === "object" ? src : {};
+    out.nar = scrubLeak(out.nar);
+    out.act = scrubLeak(out.act);
+    out.line = scrubLeak(out.line);
+    return out;
+  }
+
+  function rememberScene(scene, beats) {
+    if (!state.storyLog) state.storyLog = [];
+    const rows = (beats || []).filter((b) => b && b.text);
+    if (!rows.length && !state.lastYouAct) return;
+    const sig = ((scene && scene.title) || "") + "|" + rows.map((b) => b.text).join("|");
+    const last = state.storyLog[state.storyLog.length - 1];
+    const lastSig = last ? (last.title || "") + "|" + (last.beats || []).map((b) => b.text).join("|") : "";
+    if (sig && sig === lastSig) return;
+    state.storyLog.push({
+      day: state.calendarDay,
+      clock: typeof storyClock === "function" ? storyClock() : "",
+      place: (scene && scene.place) || "",
+      title: (scene && scene.title) || "",
+      you: state.lastYouAct || "",
+      beats: rows.map((b) => ({ kind: b.kind, who: b.who, text: b.text }))
+    });
+    if (state.storyLog.length > 48) state.storyLog = state.storyLog.slice(-48);
+    state.lastYouAct = "";
+  }
+
+  function openLogModal() {
+    const box = $("#log-list");
+    const logs = state.storyLog || [];
+    if (!logs.length) {
+      box.innerHTML = "<p class=\"log-empty\">还没有可回顾的段落。往下走几轮就会出现。</p>";
+    } else {
+      box.innerHTML = logs.map((row) => {
+        const head = `第${row.day || 1}天 ${row.clock || ""} · ${row.place || ""}${row.title ? " · " + row.title : ""}`;
+        const you = row.you ? `<p class="you">你：${fill(row.you)}</p>` : "";
+        const body = (row.beats || []).map((b) => {
+          const who = b.kind === "line" ? "陆晏辞" : (b.who || "旁白");
+          const text = b.kind === "line" ? `“${b.text}”` : b.text;
+          return `<p class="kind-${b.kind || "nar"}">${who}　${fill(text)}</p>`;
+        }).join("");
+        return `<article class="log-item"><p class="meta">${head}</p>${you}${body}</article>`;
+      }).join("");
+    }
+    $("#log-modal").classList.remove("hidden");
+    requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
+  }
+
+  function closeLogModal() {
+    const el = $("#log-modal");
+    if (el) el.classList.add("hidden");
   }
 
   async function apiJudge(scene, text) {
@@ -847,7 +974,7 @@
       "陆晏辞：36岁总裁，话少，冷脸，被系统逼着跟女主说话，容易吃瘪。嘴上只有顺路/随便/别多想/放着/走/吃。绝不解释，绝不讨好。",
       "女主：基层员工，不知道系统。好感只看她此刻感受：莫名其妙扣分，感到被关心才加。添堵、当没看见、顶回去都该让他当场难看。",
       "公开场合（工位/会议/餐厅）接住关心会积议论；盘问跟踪会抬警惕。",
-      "echo必须是一句可见余波：他被噎住、同事侧目、系统又把他钉住。禁止心理活动，禁止他解释。",
+      "echo必须是一句可见余波：他被噎住、同事侧目、手里的东西。禁止写系统。禁止心理活动，禁止他解释。",
       "字段：kind(accept|thanks|refuse|probe|hostility|work|deflect|silence|leave|intimacy), aff(-8到6整数), alert(-6到20), rumor(0到15), trust(-6到15), feel(不超过12字), echo(一句), judge(ok|fail|doing)"
     ].join("");
     const user = [
@@ -862,7 +989,7 @@
         { role: "system", content: sys },
         { role: "user", content: user }
       ], { max_tokens: 220, temperature: 0.2, timeout: 9000 });
-      const parsed = parseJudgeJson(msg && msg.content);
+      const parsed = parseJudgeJson(msg);
       if (!parsed || !parsed.kind) return null;
       const kind = String(parsed.kind);
       return {
@@ -996,9 +1123,9 @@
       title: same ? (src.title || "继续") : "还没走",
       place: here,
       quest: src.quest || state.questKey || "邀请{name}共进晚餐",
-      nar: same ? (src.nar || "系统没让他走。他还站在原处，像被钉住，只能再开口。") : "系统没让他走。他还站在原处，像被钉住，只能再开口。",
-      act: same ? (src.act || "喉结动了一下，话却更短") : "喉结动了一下，话却更短",
-      line: same ? (src.line || "……在。") : "……在。",
+      nar: same ? (src.nar || "他还站在原处。像有下一句没说完，又像在等你先动。") : "他还站在原处。像有下一句没说完，又像在等你先动。",
+      act: same ? (src.act || "喉结动了一下，重新看向你") : "喉结动了一下，重新看向你",
+      line: same ? (src.line || "还在？") : "还在？",
       sys: src.sys || [
         { who: "sys", text: "不许换地方。必须再跟{name}说一句，而且要被她接住。" },
         { who: "lu", text: "……知道了。" },
@@ -1026,13 +1153,15 @@
       next: "live"
     })).filter((c) => c.text));
     const jumped = Number(src.jump) >= 1;
+    sanitizeVisible(src);
+    sanitizeVisible(fb);
     return {
       title: String(src.title || fb.title).slice(0, 16),
       place: jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12),
       quest: String(src.quest || fb.quest).slice(0, 24),
-      nar: String(src.nar || fb.nar).slice(0, 160),
-      act: String(src.act || fb.act).slice(0, 60),
-      line: String(src.line || fb.line).slice(0, 24),
+      nar: String(src.nar || fb.nar).slice(0, 220),
+      act: String(src.act || fb.act).slice(0, 80),
+      line: String(src.line || fb.line).slice(0, 40),
       sys: sys.length ? sys : fb.sys,
       choices,
       jump: jumped ? 1 : 0,
@@ -1048,12 +1177,11 @@
     const scene = sceneById(state.sceneId) || {};
     const here = stayPlace();
     const sys = [
-      "你是文字恋爱游戏编剧。只输出一个JSON对象，不要markdown。",
+      "你是文字恋爱游戏编剧。先想清楚这一幕，再只输出一个JSON对象，不要markdown。",
       "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台来换场。只有隔夜才允许改place并把jump设为1。",
-      "系统每轮必须逼陆晏辞主动跟女主说话、要回应。不许只放东西就走，不许他消失。",
-      "陆晏辞：36岁高冷总裁，话极少，冷脸，执行任务会翻车。台词只能短：顺路/随便/别多想/放着/走/吃/加班？/在。/…… 绝不解释、不讨好。",
-      "他要尽量吃瘪：被噎、被当没看见、当众丢脸、系统嘲讽。sys里系统要逼他再开口并嘲笑他。",
-      "女主是基层员工，不知道系统。系统只对陆晏辞说话。",
+      "玩家不知道系统存在。nar、act、line 必须是旁观者能看懂的完整一幕：他为什么出现、做了什么、说了什么。禁止在这三字段写系统、任务、好感、攻略、被钉住。",
+      "陆晏辞对外是正常人：36岁高冷总裁，话少、冷脸，但句子完整，像开会时的口吻。不要只丢单字命令。act必须写清可见动作。",
+      "系统只存在于sys字段，用来逼他开口、让他吃瘪。不许他只放东西就走。",
       "选项必须是女主此刻能做的动作，正好3个：接住、冷淡、添堵。每条不超过16字。禁止心情描写当选项。添堵aff为负。",
       "mins是这一轮动作花费的分钟数，5到180。短对话约8-15。隔夜才把 jump 设为1。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
@@ -1072,9 +1200,9 @@
       const msg = await window.ZC_API.complete([
         { role: "system", content: sys },
         { role: "user", content: user }
-      ], { max_tokens: 700, temperature: 0.7, timeout: 18000 });
-      const parsed = parseJudgeJson(msg && msg.content);
-      if (!parsed || !parsed.nar) return fallback;
+      ], { max_tokens: 1600, temperature: 0.7, timeout: 28000 });
+      const parsed = parseJudgeJson(msg);
+      if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return fallback;
       return normalizeLive(parsed, fallback);
     } catch (_) {
       return fallback;
@@ -1100,6 +1228,7 @@
       const delta = applyConsequences(scene, choice);
       Object.assign(state.flags, choice.flags || {});
       applyQuestJudge(scene, choice);
+      state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 24);
       state.lastNote = String(choice.note || choice.text || "").replace(/<[^>]+>/g, "").slice(0, 36);
       renderHud();
       state.history.push({
@@ -1651,17 +1780,17 @@
     const sys = [
       "你是文字恋爱游戏编剧。只输出JSON。",
       "地点：" + (inn.name || "") + "。陆晏辞" + (luHere ? "在场，系统逼他开口，并让他吃瘪。" : "不在。"),
-      "在场时他话极少：顺路/随便/别多想。必须主动跟女主说话。不在场就写普通路过，不要硬塞他。",
-      "女主是基层员工。选项3个动作。mins 5-20。",
+      "在场时他对外是正常人：话少、句子完整，必须有可见动作和一句完整台词。不在场就写普通路过，不要硬塞他。",
+      "nar/act/line 禁止出现系统。女主是基层员工。选项3个动作。mins 5-20。",
       "字段：title, place, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins"
     ].join("");
     try {
       const msg = await window.ZC_API.complete([
         { role: "system", content: sys },
         { role: "user", content: "好感" + state.affection + " 剩余" + state.daysLeft + "天。写这一遇。" }
-      ], { max_tokens: 500, temperature: 0.75, timeout: 14000 });
-      const parsed = parseJudgeJson(msg && msg.content);
-      if (!parsed || !parsed.nar) return fallback;
+      ], { max_tokens: 900, temperature: 0.75, timeout: 20000 });
+      const parsed = parseJudgeJson(msg);
+      if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return fallback;
       return normalizeLive(parsed, fallback);
     } catch (_) {
       return fallback;
@@ -2000,7 +2129,7 @@
         { role: "system", content: sys },
         { role: "user", content: user }
       ], { max_tokens: 80, temperature: temperature, timeout: 14000 });
-      return cleanSms(msg && msg.content, thread);
+      return cleanSms(stripThink(collectApiText(msg)), thread);
     }
 
     try {
@@ -2882,6 +3011,23 @@
       showScreen("menu");
     });
     $("#btn-resume").addEventListener("click", () => renderGame());
+    const btnLog = $("#btn-log");
+    if (btnLog) btnLog.addEventListener("click", () => openLogModal());
+    const advLog = $("#btn-adv-log");
+    if (advLog) {
+      advLog.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openLogModal();
+      });
+    }
+    const logOk = $("#log-ok");
+    if (logOk) logOk.addEventListener("click", () => closeLogModal());
+    const logModal = $("#log-modal");
+    if (logModal) {
+      logModal.addEventListener("click", (e) => {
+        if (e.target.id === "log-modal") closeLogModal();
+      });
+    }
     $("#btn-save").addEventListener("click", () => { save(); toast("进度已保存"); });
     $("#btn-panel").addEventListener("click", () => {
       toast(`${pname()} · ${state.player.age || ""}岁 · 好感${state.affection}/100`);
@@ -2953,7 +3099,7 @@
     const briefOk = $("#brief-ok");
     if (briefOk) briefOk.addEventListener("click", () => stepBrief());
     $("#game-root").addEventListener("click", (e) => {
-      if (e.target.closest("#sys-modal, #aff-modal, #brief-modal, #task-modal, #phone-os, .hud, #phone-fab, #sheet, .menu-btn")) return;
+      if (e.target.closest("#sys-modal, #aff-modal, #brief-modal, #task-modal, #log-modal, #phone-os, .hud, #phone-fab, #sheet, .menu-btn, .adv-log")) return;
       advanceAdv();
     });
   }

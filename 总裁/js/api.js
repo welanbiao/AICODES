@@ -122,7 +122,12 @@ window.ZC_API = (function () {
         throw new Error(parseError(resp.status, errText));
       }
       const data = await resp.json();
-      return (((data || {}).choices || [])[0] || {}).message || {};
+      const msg = (((data || {}).choices || [])[0] || {}).message || {};
+      return {
+        content: msg.content || "",
+        reasoning_content: msg.reasoning_content || msg.reasoning || "",
+        role: msg.role || "assistant"
+      };
     } catch (err) {
       if (err && err.name === "AbortError") throw new Error("判定超时");
       throw err;
