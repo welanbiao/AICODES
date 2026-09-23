@@ -50,17 +50,16 @@ window.ZC_SCENES = [
   },
   {
     id: "hint_phone",
-    title: "系统推送",
+    title: "电梯口",
     place: "电梯间",
     bg: "elevator",
     jump: 0,
     play: "sysQuest",
-    quest: "查看手机通知",
+    quest: "邀请{name}共进晚餐",
     questGate: true,
-    luVisible: false,
-    nar: "电梯到了。他先一步出去，在门外顿了一下，没回头。你口袋里的手机震了一下，锁屏多了一条陌生通知。",
-    act: "站在门外，背影停了两秒",
-    line: "",
+    nar: "电梯到了。他先一步出去，却停在门外，没让开。裙楼厅里只剩你们两个。",
+    act: "侧过身，像还有话要说",
+    line: "你先走。",
     sys: [
       { who: "sys", text: "想逃？禁止。看完档案你必须再出现在她面前开口。" },
       { who: "lu", text: "……知道了。" },
@@ -616,7 +615,7 @@ window.ZC_PHONE = {
 
 window.ZC_TASKS = [
   { id: "meet", name: "制造一次自然偶遇", scene: "meet1" },
-  { id: "phone", name: "让她看见档案推送", scene: "hint_phone" },
+  { id: "phone", name: "电梯口再留住她", scene: "hint_phone" },
   { id: "water", name: "请她喝一杯水", scene: "tea" },
   { id: "coffee", name: "把咖啡放到她桌上", scene: "coffee" },
   { id: "overtime", name: "加班后送她下楼", scene: "overtime" },

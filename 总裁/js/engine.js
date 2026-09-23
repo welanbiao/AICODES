@@ -524,31 +524,83 @@
     showJudgeStamp._t = setTimeout(() => el.classList.add("hidden"), 1400);
   }
 
-  function applyQuestJudge(scene, choice) {
-    if (!scene || !scene.quest) return;
-    let judge = state.questJudge || "doing";
-    if (choice.judge === "ok" || choice.judge === "fail" || choice.judge === "doing") {
-      judge = choice.judge;
-    } else if (scene.questGate) {
-      const aff = Number(choice.aff) || 0;
-      if (aff >= 2) judge = "ok";
-      else if (aff <= -2) judge = "fail";
-    }
-    if (/晚餐|吃饭/.test(hudQuestText(scene)) && scene.id !== "lunch") {
-      judge = "doing";
-    }
-    state.questJudge = judge;
-    if (judge === "ok" || judge === "fail") showJudgeStamp(judge);
+  function isHisQuest(s) {
+    const t = fill(String(s || ""));
+    if (!t || t.length < 4) return false;
+    if (/决定|搭理|查看手机|打开手机|要不要|通知/.test(t)) return false;
+    if (hasPlotLeak(t)) return false;
+    return /邀请|请|给|帮|送|把伞|留下|留住|护|挡|见面|说开|跟你走/.test(t);
   }
 
   function hudQuestText(scene) {
-    if (scene && scene.id === "live") return fill(scene.quest || state.questKey || "邀请{name}共进晚餐");
-    const persist = /^(meet1|hint_phone|tea|desk|coffee|overtime|file|rain|meeting)$/;
+    const fallback = "邀请{name}共进晚餐";
+    const persist = /^(meet1|hint_phone|tea|desk|coffee|overtime|file|rain|meeting|live)$/;
     if (scene && persist.test(scene.id)) {
-      if (scene.id === "hint_phone") return "查看手机通知";
-      return "邀请{name}共进晚餐";
+      const liveQ = scene.id === "live" ? scene.quest : "";
+      if (isHisQuest(liveQ)) return fill(liveQ);
+      if (isHisQuest(state.questKey)) return fill(state.questKey);
+      return fill(fallback);
     }
-    return (scene && scene.quest) || "";
+    if (scene && isHisQuest(scene.quest)) return fill(scene.quest);
+    if (isHisQuest(state.questKey)) return fill(state.questKey);
+    return fill(fallback);
+  }
+
+  function localQuestCheck(quest, choice, live) {
+    const q = fill(quest || "");
+    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
+    const aff = Number(choice && choice.aff) || 0;
+    if (/晚餐|吃饭/.test(q)) {
+      if (/餐厅|一起吃|跟上|跟去/.test(blob) && aff >= 2) return "ok";
+      if (/不跟|摇头|拒绝/.test(blob) && aff <= -3) return "fail";
+      return "doing";
+    }
+    if (/水/.test(q)) {
+      if (/接过|喝/.test(blob) && aff >= 2) return "ok";
+      if (/躲开|不接/.test(blob)) return "fail";
+      return "doing";
+    }
+    if (/咖啡/.test(q)) {
+      if (/接过|喝一口/.test(blob) && aff >= 2) return "ok";
+      if (/不伸手|推回/.test(blob)) return "fail";
+      return "doing";
+    }
+    if (/伞/.test(q)) {
+      if (/接过伞|收下伞/.test(blob) && aff >= 2) return "ok";
+      if (/避开伞/.test(blob)) return "fail";
+      return "doing";
+    }
+    return "doing";
+  }
+
+  async function resolveQuestStamp(scene, choice, live) {
+    const quest = hudQuestText(scene);
+    if (!quest || (choice && choice.next === "__phone")) return;
+    let judge = "doing";
+    const apiOn = !!(window.ZC_API && window.ZC_API.isReady && window.ZC_API.isReady() && !simMode);
+    if (apiOn) {
+      try {
+        const msg = await window.ZC_API.complete([
+          {
+            role: "system",
+            content: "你只判断陆晏辞的系统任务有没有在这一幕做成。只输出JSON：{\"judge\":\"ok|fail|doing\"}。ok=他已经把这件事做成（例如已经开口请她吃饭且她应了）。fail=这一幕他明确搞砸。doing=还在进行。禁止因她看手机、鞠躬、让路、普通应答就判成功。"
+          },
+          {
+            role: "user",
+            content: "他的任务：" + quest + "\n她的动作：" + String((choice && choice.text) || "") + "\n这一幕：" + [(live && live.nar) || "", (live && live.act) || "", (live && live.line) || ""].join(" / ")
+          }
+        ], { max_tokens: 40, temperature: 0.1, timeout: 8000 });
+        const hit = parseQuestJudge(msg);
+        if (hit) judge = hit;
+      } catch (_) {
+        judge = "doing";
+      }
+    } else {
+      judge = localQuestCheck(quest, choice, live);
+    }
+    if (judge === "doing" && state.questJudge === "doing") return;
+    state.questJudge = judge;
+    if (judge === "ok" || judge === "fail") showJudgeStamp(judge);
   }
 
   function save() {
@@ -577,6 +629,14 @@
       state.rumor = clamp(Number(state.rumor) || 0, 0, 100);
       state.trust = clamp(Number(state.trust) || 0, 0, 100);
       if (!Array.isArray(state.storyLog)) state.storyLog = [];
+      if (!isHisQuest(state.questKey)) {
+        state.questKey = "邀请{name}共进晚餐";
+        if (state.questJudge === "ok" || state.questJudge === "fail") state.questJudge = "doing";
+      }
+      if (state.live) {
+        if (!isHisQuest(state.live.quest)) state.live.quest = state.questKey || "邀请{name}共进晚餐";
+        if (Array.isArray(state.live.choices)) state.live.choices = padChoices(state.live.choices);
+      }
       if (!/^img\/bg_/.test(state.lastCg || "")) state.lastCg = "";
       if (state.clockMin == null) state.clockMin = 18 * 60 + 47;
       if (state.money == null) state.money = 1284.6;
@@ -653,15 +713,28 @@
     return !!(f.seenLuCard && f.seenIdentity && f.seenCorp && f.seenMapDesk && f.seenMapTower);
   }
 
+  function isStaffChoice(s) {
+    const t = String(s || "").replace(/<[^>]+>/g, "").trim();
+    if (!t || t.length < 4) return false;
+    if (hasPlotLeak(t)) return false;
+    if (/听我解释|别点开|让她|叫她|我先说/.test(t)) return false;
+    if (/决定|搭理|要不要/.test(t)) return false;
+    if (/锁屏|握在手里|打开通知|点开通知|拿出手机查看|先看锁屏/.test(t)) return false;
+    if (/拿出手机|查看手机|打开手机|看通知/.test(t) && !/工作群|工作消息|静音/.test(t)) return false;
+    return true;
+  }
+
   function padChoices(list) {
     const seeds = [
-      { text: "停在原地看他。", aff: 0, judge: "doing" },
-      { text: "点头应一声。", aff: 1, judge: "doing" },
-      { text: "当没听见，让他站着。", aff: -2, judge: "fail", flags: { wary: true } }
+      { text: "鞠躬说「陆总好」。", aff: 1, judge: "doing" },
+      { text: "侧身让路，等他先走。", aff: 1, judge: "doing" },
+      { text: "点头应一声，先回工位。", aff: 0, judge: "doing" },
+      { text: "低头不接话，往旁边靠。", aff: -1, judge: "doing", flags: { wary: true } },
+      { text: "当没听见，继续往外走。", aff: -2, judge: "fail", flags: { wary: true } }
     ];
-    const out = (list || []).slice(0, 3).map((c) => Object.assign({}, c));
+    const out = (list || []).filter((c) => c && isStaffChoice(c.text)).slice(0, 3).map((c) => Object.assign({}, c));
     let i = 0;
-    while (out.length < 3 && i < 9) {
+    while (out.length < 3 && i < 12) {
       const s = seeds[i++ % seeds.length];
       if (out.some((c) => c.text === s.text)) continue;
       out.push(Object.assign({ next: "live" }, s));
@@ -672,22 +745,22 @@
   function hintChoices() {
     if (tutorialDone()) {
       return padChoices([
-        { text: "把手机收回口袋。", aff: 0, next: "live", note: "看完档案", judge: "ok" },
-        { text: "再点开手机确认一眼。", aff: 0, next: "__phone", note: "打开手机", judge: "doing" },
-        { text: "抬脚离开电梯厅。", aff: 0, next: "live", note: "离开", judge: "doing" }
+        { text: "鞠躬让路，等他先走。", aff: 1, next: "live", note: "基层礼节", judge: "doing" },
+        { text: "点头应一声，先回工位。", aff: 0, next: "live", note: "正常下班", judge: "doing" },
+        { text: "低头走开，当没看见他停步。", aff: -1, next: "live", note: "避嫌", flags: { wary: true }, judge: "doing" }
       ]);
     }
     if (!state.flags.seenLuCard) {
       return padChoices([
-        { text: "拿出手机查看。", aff: 0, next: "__phone", note: "打开系统档案", judge: "doing" },
-        { text: "先看锁屏通知。", aff: 0, next: "__phone", note: "打开系统档案", judge: "doing" },
-        { text: "把手机握在手里。", aff: 0, next: "__phone", note: "打开系统档案", judge: "doing" }
+        { text: "鞠躬说「陆总好」，让他先走。", aff: 1, next: "live", note: "基层礼节", judge: "doing" },
+        { text: "站在厅里，等他走远再动。", aff: 0, next: "live", note: "避嫌", judge: "doing" },
+        { text: "口袋震了，低头看是不是工作群。", aff: 0, next: "__phone", note: "当工作消息", judge: "doing" }
       ]);
     }
     return padChoices([
-      { text: "继续翻看手机。", aff: 0, next: "__phone", note: "继续教程", judge: "doing" },
-      { text: "回到桌面再点一遍。", aff: 0, next: "__phone", note: "继续教程", judge: "doing" },
-      { text: "打开刚才那条推送。", aff: 0, next: "__phone", note: "继续教程", judge: "doing" }
+      { text: "把工牌理好，先回工位。", aff: 0, next: "live", note: "先走", judge: "doing" },
+      { text: "点头应一声，从他身边过去。", aff: 1, next: "live", note: "正常路过", judge: "doing" },
+      { text: "站着不动，等他先开口。", aff: 0, next: "live", note: "不敢先走", judge: "doing" }
     ]);
   }
 
@@ -925,7 +998,15 @@
     const content = stripThink(typeof raw === "string" ? raw : ((raw && raw.content) || ""));
     const full = stripThink(collectApiText(raw));
     const objs = extractJsonObjects(content).concat(extractJsonObjects(full));
-    return objs.find((o) => o && o.kind) || objs.find((o) => o && takePlayable(o.nar, 42)) || objs[0] || null;
+    return objs.find((o) => o && /^(ok|fail|doing)$/.test(o.judge) && !o.kind) || objs.find((o) => o && o.kind) || objs.find((o) => o && takePlayable(o.nar, 42)) || objs[0] || null;
+  }
+
+  function parseQuestJudge(raw) {
+    const content = stripThink(typeof raw === "string" ? raw : ((raw && raw.content) || ""));
+    const full = stripThink(collectApiText(raw));
+    const objs = extractJsonObjects(content).concat(extractJsonObjects(full));
+    const hit = objs.find((o) => o && /^(ok|fail|doing)$/.test(o.judge));
+    return hit ? hit.judge : "";
   }
 
   function parsePlotFromApi(raw) {
@@ -1192,7 +1273,7 @@
     return {
       title: same ? (src.title || "继续") : "还没走",
       place: here,
-      quest: src.quest || state.questKey || "邀请{name}共进晚餐",
+      quest: isHisQuest(src.quest) ? src.quest : (isHisQuest(state.questKey) ? state.questKey : "邀请{name}共进晚餐"),
       nar: same ? (src.nar || "他还站在原处。像有下一句没说完，又像在等你先动。") : "他还站在原处。像有下一句没说完，又像在等你先动。",
       act: same ? (src.act || "喉结动了一下，重新看向你") : "喉结动了一下，重新看向你",
       line: same ? (src.line || "还在？") : "还在？",
@@ -1228,7 +1309,7 @@
     return {
       title: String(src.title || fb.title).slice(0, 16),
       place: jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12),
-      quest: String(src.quest || fb.quest).slice(0, 24),
+      quest: isHisQuest(src.quest) ? String(src.quest).slice(0, 24) : (isHisQuest(fb.quest) ? fb.quest : "邀请{name}共进晚餐"),
       nar: src.nar || fb.nar || "",
       act: src.act || fb.act || "",
       line: src.line || fb.line || "",
@@ -1253,8 +1334,10 @@
       "陆晏辞不知道系统、档案、任务、好感。他看不见她的手机。禁止这些词出现在nar、act、line、choices。",
       "旁白、动作、台词必须是中文剧情。旁白最多两句、不超过40字。动作一句。台词一句，像正常人说话。禁止英文和思考过程。",
       "系统只存在于sys字段。不许他只放东西就走。",
-      "选项必须是女主此刻能做的动作，正好3个：接住、冷淡、添堵。每条不超过16字。禁止替陆晏辞说话。添堵aff为负。",
+      "这一幕主写陆晏辞：他怎么站、怎么开口、怎么被噎。女主是他公司的基层员工。",
+      "选项必须是基层员工面对总裁时可能做的反应，正好3个：接住、冷淡、添堵。例如鞠躬、让路、回工位、点头、低头不接话。每条不超过16字。禁止三个都在看手机，禁止锁屏/拿出手机查看/握在手里。禁止替陆晏辞说话。添堵aff为负。",
       "mins是这一轮动作花费的分钟数，5到180。短对话约8-15。隔夜才把 jump 设为1。",
+      "quest沿用他当前必须完成的事，例如邀请她共进晚餐。禁止写她要不要搭理他，禁止档案系统词。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
     ].join("");
     const user = [
@@ -1262,6 +1345,7 @@
       "当前地点（必须沿用）：" + here,
       "女主刚才做的动作（不是他）：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
       "他上一句台词：" + fill(scene.line || "……"),
+      "他当前必须做成的事（只写给他，不要写进旁白）：" + hudQuestText(scene),
       "写下一幕：他继续在场，像个正常人说话。禁止提到档案、系统、任务。"
     ].join("\n");
     try {
@@ -1295,7 +1379,6 @@
     try {
       const delta = applyConsequences(scene, choice);
       Object.assign(state.flags, choice.flags || {});
-      applyQuestJudge(scene, choice);
       state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 24);
       state.lastNote = String(choice.note || choice.text || "").replace(/<[^>]+>/g, "").slice(0, 36);
       renderHud();
@@ -1343,6 +1426,7 @@
       state.graceActive = false;
 
       if (scripted) {
+        await resolveQuestStamp(scene, choice, scene);
         state.sceneId = choice.next;
         renderGame();
         return;
@@ -1353,6 +1437,7 @@
       advanceStoryClock(live.mins || estimateMinutes(choice, scene));
       if (Number(live.jump) >= 1) skipDays(live.jump);
       if (choice.echo) state.pendingEcho = choice.echo;
+      await resolveQuestStamp(scene, choice, live);
       state.live = live;
       state.sceneId = "live";
       renderGame();
@@ -1804,7 +1889,7 @@
       return {
         title: name,
         place: name,
-        quest: state.questKey || "邀请{name}共进晚餐",
+        quest: isHisQuest(state.questKey) ? state.questKey : "邀请{name}共进晚餐",
         nar: "你走到" + name + "。陆晏辞站在不远处，像是刚停步。",
         act: "看了你一眼，没解释",
         line: "顺路。",
@@ -1824,7 +1909,7 @@
     return {
       title: name,
       place: name,
-      quest: state.questKey || "邀请{name}共进晚餐",
+      quest: isHisQuest(state.questKey) ? state.questKey : "邀请{name}共进晚餐",
       nar: name + "此刻很普通。没有人特意等你。",
       act: "风从通道里过来",
       line: "",
@@ -1834,7 +1919,7 @@
       ],
       choices: padChoices([
         { text: "再看一眼四周。", aff: 0, judge: "doing" },
-        { text: "拿出手机。", aff: 0, next: "__phone", judge: "doing" },
+        { text: "点头应一声，先回工位。", aff: 0, judge: "doing" },
         { text: "离开这里。", aff: 0, judge: "doing" }
       ]),
       jump: 0,
@@ -1849,7 +1934,7 @@
       "你是文字恋爱游戏编剧。只输出JSON。",
       "地点：" + (inn.name || "") + "。陆晏辞" + (luHere ? "在场，系统逼他开口，并让他吃瘪。" : "不在。"),
       "必须全中文。旁白不超过40字，动作不超过20字，台词不超过14字。禁止英文和思考过程。",
-      "不在场就写普通路过。女主是基层员工。选项3个动作。mins 5-20。",
+      "不在场就写普通路过。女主是他公司的基层员工。选项必须是员工面对总裁或路过时会做的反应，禁止三个都在看手机。mins 5-20。",
       "字段：title, place, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins"
     ].join("");
     try {
