@@ -563,17 +563,35 @@
     if (/^(good|bad)$/.test(simMode || "") || !advBeats.length) finishPlot();
   }
 
-  function showJudgeStamp(kind) {
-    const el = $("#judge-stamp");
-    if (!el || (kind !== "ok" && kind !== "fail")) return;
-    el.textContent = kind === "fail" ? "判定失败" : "判定成功";
-    el.classList.remove("hidden");
-    el.className = "judge-stamp " + kind;
-    el.style.animation = "none";
-    void el.offsetWidth;
-    el.style.animation = "";
+  function closeJudgeModal() {
+    const modal = $("#judge-modal");
+    const stamp = $("#judge-stamp");
+    if (modal) modal.classList.add("hidden");
+    if (stamp) stamp.classList.add("hidden");
     clearTimeout(showJudgeStamp._t);
-    showJudgeStamp._t = setTimeout(() => el.classList.add("hidden"), 1100);
+    clearTimeout(showJudgeStamp._s);
+  }
+
+  function showJudgeStamp(kind, task) {
+    const modal = $("#judge-modal");
+    const pop = modal && modal.querySelector(".judge-pop");
+    const title = $("#judge-task-name");
+    const stamp = $("#judge-stamp");
+    if (!modal || !stamp || (kind !== "ok" && kind !== "fail")) return;
+    if (title) title.textContent = fill((task && task.name) || hudQuestText() || "系统任务");
+    if (pop) pop.classList.toggle("is-fail", kind === "fail");
+    stamp.textContent = kind === "fail" ? "判定失败" : "判定成功";
+    stamp.className = "judge-stamp hidden";
+    modal.classList.remove("hidden");
+    clearTimeout(showJudgeStamp._t);
+    clearTimeout(showJudgeStamp._s);
+    showJudgeStamp._s = setTimeout(() => {
+      stamp.className = "judge-stamp " + kind;
+      stamp.style.animation = "none";
+      void stamp.offsetWidth;
+      stamp.style.animation = "";
+    }, 180);
+    showJudgeStamp._t = setTimeout(closeJudgeModal, 1600);
   }
 
   function isSabotage(choice) {
@@ -616,7 +634,7 @@
     state.taskMarks[task.id] = judge;
     state.stampedTasks[task.id] = judge;
     if (task.id === "dinner") state.questJudge = judge;
-    showJudgeStamp(judge);
+    showJudgeStamp(judge, task);
     if (judge === "fail") {
       state.taskFails = (state.taskFails || 0) + 1;
       const hit = state.taskFails >= 3 ? 8 : state.taskFails >= 2 ? 5 : 3;
@@ -3450,6 +3468,10 @@
         e.stopPropagation();
         openTaskModal();
       });
+    }
+    const judgeModal = $("#judge-modal");
+    if (judgeModal) {
+      judgeModal.addEventListener("click", () => closeJudgeModal());
     }
     const taskOk = $("#task-ok");
     if (taskOk) taskOk.addEventListener("click", () => closeTaskModal());
