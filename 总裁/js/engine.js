@@ -65,6 +65,8 @@
     questKey: "",
     taskMarks: {},
     stampedTasks: {},
+    taskFails: 0,
+    pendingPunish: null,
     alert: 0,
     rumor: 0,
     trust: 0,
@@ -238,6 +240,10 @@
     const box = $("#sys-chat");
     if (!box) return;
     const lines = (scene && scene.sys && scene.sys.length) ? scene.sys.slice() : [];
+    if (state.pendingPunish && state.pendingPunish.length) {
+      lines.unshift.apply(lines, state.pendingPunish);
+      state.pendingPunish = null;
+    }
     const extra = toneLine();
     if (extra) lines.push({ who: "sys", text: extra });
     if (!lines.length) {
@@ -559,16 +565,67 @@
 
   function showJudgeStamp(kind) {
     const el = $("#judge-stamp");
-    if (!el) return;
-    const map = { ok: "判定 · 成功", fail: "判定 · 失败", doing: "判定 · 进行中" };
-    el.textContent = map[kind] || map.doing;
+    if (!el || (kind !== "ok" && kind !== "fail")) return;
+    el.textContent = kind === "fail" ? "判定失败" : "判定成功";
     el.classList.remove("hidden");
-    el.className = "judge-stamp " + (kind === "ok" || kind === "fail" ? kind : "doing");
+    el.className = "judge-stamp " + kind;
     el.style.animation = "none";
     void el.offsetWidth;
     el.style.animation = "";
     clearTimeout(showJudgeStamp._t);
-    showJudgeStamp._t = setTimeout(() => el.classList.add("hidden"), 1600);
+    showJudgeStamp._t = setTimeout(() => el.classList.add("hidden"), 1100);
+  }
+
+  function isSabotage(choice) {
+    const t = String((choice && choice.text) || "");
+    const aff = Number(choice && choice.aff) || 0;
+    if (aff <= -2) return true;
+    if ((choice && choice.flags && choice.flags.suspicious)) return true;
+    return /躲开|不接|当没听见|当没看见|拒绝|滚|变态|恶心|不跟|避开伞|加快脚步|低头走开|当没问过/.test(t);
+  }
+
+  function punishSysLines(task) {
+    const n = state.taskFails || 1;
+    const name = (task && task.name) || "当前任务";
+    if (n <= 1) {
+      return [
+        { who: "sys", text: "任务失败。警告一次。她在添堵，你被噎死了。" },
+        { who: "lu", text: "……" },
+        { who: "sys", text: "再失败就心悸。站着，继续开口。" }
+      ];
+    }
+    if (n === 2) {
+      return [
+        { who: "sys", text: "第二次失败。处罚：心悸启动。" },
+        { who: "lu", text: "……知道了。" },
+        { who: "sys", text: name + "没做成。不许逃。再跟她说一句。" }
+      ];
+    }
+    return [
+      { who: "sys", text: "处罚叠加。再这样按崩溃清算。" },
+      { who: "lu", text: "……" },
+      { who: "sys", text: "她在看你出丑。现在就补救。" }
+    ];
+  }
+
+  function applyTaskJudge(task, judge) {
+    if (!task || (judge !== "ok" && judge !== "fail")) return false;
+    if (!state.taskMarks) state.taskMarks = {};
+    if (!state.stampedTasks) state.stampedTasks = {};
+    if (state.stampedTasks[task.id]) return false;
+    state.taskMarks[task.id] = judge;
+    state.stampedTasks[task.id] = judge;
+    if (task.id === "dinner") state.questJudge = judge;
+    showJudgeStamp(judge);
+    if (judge === "fail") {
+      state.taskFails = (state.taskFails || 0) + 1;
+      const hit = state.taskFails >= 3 ? 8 : state.taskFails >= 2 ? 5 : 3;
+      state.affection = clamp(state.affection - hit, -40, 100);
+      state.lastDelta = (state.lastDelta || 0) - hit;
+      if (state.taskFails >= 2 && state.affection > -20) state.affection = -20;
+      state.pendingPunish = punishSysLines(task);
+    }
+    return true;
   }
 
   function isHisQuest(s) {
@@ -616,55 +673,20 @@
     return "doing";
   }
 
-  function flashNewTaskStamps() {
-    if (!state.stampedTasks) state.stampedTasks = {};
-    const list = window.ZC_TASKS || [];
-    for (let i = 0; i < list.length; i++) {
-      const id = list[i].id;
-      const now = (state.taskMarks || {})[id];
-      if ((now === "ok" || now === "fail") && !state.stampedTasks[id]) {
-        state.stampedTasks[id] = now;
-        showJudgeStamp(now);
-        if (id === "dinner") state.questJudge = now;
-        return true;
-      }
-    }
-    return false;
-  }
-
-  async function resolveQuestStamp(scene, choice, live) {
+  function resolveQuestStamp(scene, choice, live) {
     if (choice && choice.next === "__phone") return;
-    if (!state.stampedTasks) state.stampedTasks = {};
     const extra = Object.assign({}, live || {}, { you: choice && choice.text });
     const doing = currentDoingTask();
     const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
-    if (doing) {
+    if (doing && !((state.stampedTasks || {})[doing.id])) {
       let judge = "doing";
       const re = TASK_SIG[doing.id];
       if (re && re.test(blob)) judge = "ok";
-      const apiOn = !!(window.ZC_API && window.ZC_API.isReady && window.ZC_API.isReady() && !simMode);
-      if (apiOn) {
-        try {
-          const msg = await window.ZC_API.complete([
-            {
-              role: "system",
-              content: "你只判断陆晏辞的系统任务有没有在这一幕做成。只输出JSON：{\"judge\":\"ok|fail|doing\"}。ok=他已经做成这件事。fail=这一幕明确搞砸。doing=还在进行。禁止判断女主自己的行动。场上没发生的事禁止判成功。"
-            },
-            {
-              role: "user",
-              content: "他的任务：" + doing.name + "\n地点：" + stayPlace() + "\n她的动作：" + String((choice && choice.text) || "") + "\n这一幕：" + [(live && live.nar) || "", (live && live.act) || "", (live && live.line) || ""].join(" / ")
-            }
-          ], { max_tokens: 40, temperature: 0.1, timeout: 8000 });
-          const hit = parseQuestJudge(msg);
-          if (hit) judge = hit;
-        } catch (_) {}
-      } else if (judge === "doing") {
-        judge = localQuestCheck(doing.name, choice, live);
-      }
-      if (judge === "ok" || judge === "fail") state.taskMarks[doing.id] = judge;
+      else if (isSabotage(choice)) judge = "fail";
+      else judge = localQuestCheck(doing.name, choice, live);
+      applyTaskJudge(doing, judge);
     }
     syncTaskMarks(extra);
-    flashNewTaskStamps();
     const hudTask = currentDoingTask();
     if (!(hudTask && hudTask.id === "dinner" && (state.questJudge === "ok" || state.questJudge === "fail"))) {
       state.questJudge = "doing";
@@ -1583,6 +1605,8 @@
     try {
       const delta = applyConsequences(scene, choice);
       Object.assign(state.flags, choice.flags || {});
+      const doingNow = currentDoingTask();
+      if (doingNow && isSabotage(choice)) applyTaskJudge(doingNow, "fail");
       state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 40);
       state.lastNote = String(choice.note || choice.text || "").replace(/<[^>]+>/g, "").slice(0, 36);
       renderHud();
@@ -1630,7 +1654,7 @@
       state.graceActive = false;
 
       if (scripted) {
-        await resolveQuestStamp(scene, choice, scene);
+        resolveQuestStamp(scene, choice, scene);
         state.sceneId = choice.next;
         renderGame();
         return;
@@ -1641,7 +1665,10 @@
       advanceStoryClock(live.mins || estimateMinutes(choice, scene));
       if (Number(live.jump) >= 1) skipDays(live.jump);
       if (choice.echo) state.pendingEcho = choice.echo;
-      await resolveQuestStamp(scene, choice, live);
+      if (state.pendingPunish && live) {
+        live.sys = (state.pendingPunish || []).concat(live.sys || []).slice(0, 4);
+      }
+      resolveQuestStamp(scene, choice, live);
       state.live = live;
       state.sceneId = "live";
       renderGame();
