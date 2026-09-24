@@ -63,6 +63,7 @@
     sysSeen: "",
     questJudge: "doing",
     questKey: "",
+    taskMarks: {},
     alert: 0,
     rumor: 0,
     trust: 0,
@@ -301,26 +302,67 @@
     save();
   }
 
+  const TASK_SIG = {
+    meet: /电梯门开|第一次偶遇|还在加班|走进来/,
+    phone: /你先走|没让开|停在门外|电梯口/,
+    water: /杯子|温水|喝点水|一杯水/,
+    coffee: /咖啡|美式/,
+    overtime: /便当|送她下楼|加班灯/,
+    file: /表格|第三列|错了。重做|文件整理/,
+    rain: /把伞|黑伞|暴雨/,
+    meeting: /会议上|挡一句|替她挡/,
+    dinner: /一起吃|共进晚餐|去吃饭|请你吃饭/,
+    cover: /扛一回|背锅|锅我来|责任我来/
+  };
+
+  function plotCorpus(extra) {
+    const bits = [];
+    (state.storyLog || []).forEach((r) => {
+      if (r.you) bits.push(r.you);
+      if (r.title) bits.push(r.title);
+      if (r.place) bits.push(r.place);
+      (r.beats || []).forEach((b) => bits.push(b.text));
+    });
+    if (extra) bits.push(extra.nar, extra.act, extra.line, extra.title, extra.place);
+    return bits.filter(Boolean).join(" ");
+  }
+
+  function syncTaskMarks() {
+    if (!state.taskMarks) state.taskMarks = {};
+    const corpus = plotCorpus(state.live);
+    const list = window.ZC_TASKS || [];
+    list.forEach((t) => {
+      const prev = state.taskMarks[t.id];
+      if (prev === "ok" || prev === "fail") return;
+      const re = TASK_SIG[t.id];
+      if (re && re.test(corpus)) state.taskMarks[t.id] = "ok";
+    });
+    if (state.flags && state.flags.ateTogether) state.taskMarks.dinner = "ok";
+    let active = false;
+    list.forEach((t) => {
+      const st = state.taskMarks[t.id];
+      if (st === "ok" || st === "fail") return;
+      if (!active) {
+        state.taskMarks[t.id] = "doing";
+        active = true;
+      } else if (t.id === "dinner") {
+        if (state.taskMarks.meet === "ok") state.taskMarks.dinner = "doing";
+        else state.taskMarks.dinner = "lock";
+      } else {
+        state.taskMarks[t.id] = "lock";
+      }
+    });
+    return state.taskMarks;
+  }
+
   function taskStatus(task) {
-    const nowId = state.sceneId;
-    const reached = sceneReached(task.scene);
-    const idx = sceneIndex(task.scene);
-    const here = nowId === task.scene;
-    if (task.id === "dinner") {
-      if (state.flags && state.flags.ateTogether) return "ok";
-      if (here && state.questJudge === "fail") return "fail";
-      if (here || /晚餐|吃饭/.test(state.questKey || "") || nowId === "live") return "doing";
-      return reached ? "doing" : "lock";
-    }
-    if (nowId === "live") {
-      const beat = (state.history || []).length;
-      if (idx >= 0 && beat > idx + 1) return "ok";
-      if (idx >= 0 && beat >= idx) return "doing";
-      return "lock";
-    }
-    if (idx >= 0 && sceneIndex(nowId) > idx) return "ok";
-    if (here) return state.questJudge === "fail" ? "fail" : "doing";
-    return reached ? "doing" : "lock";
+    syncTaskMarks();
+    return (state.taskMarks && state.taskMarks[task.id]) || "lock";
+  }
+
+  function currentDoingTask() {
+    syncTaskMarks();
+    return (window.ZC_TASKS || []).find((t) => (state.taskMarks || {})[t.id] === "doing") || null;
   }
 
   function openTaskModal() {
@@ -519,9 +561,13 @@
     if (!el) return;
     const map = { ok: "判定 · 成功", fail: "判定 · 失败", doing: "判定 · 进行中" };
     el.textContent = map[kind] || map.doing;
+    el.classList.remove("hidden");
     el.className = "judge-stamp " + (kind === "ok" || kind === "fail" ? kind : "doing");
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
     clearTimeout(showJudgeStamp._t);
-    showJudgeStamp._t = setTimeout(() => el.classList.add("hidden"), 1400);
+    showJudgeStamp._t = setTimeout(() => el.classList.add("hidden"), 1600);
   }
 
   function isHisQuest(s) {
@@ -533,14 +579,10 @@
   }
 
   function hudQuestText(scene) {
+    syncTaskMarks();
+    const doing = currentDoingTask();
+    if (doing && doing.name) return fill(doing.name.replace(/她/g, "{name}"));
     const fallback = "邀请{name}共进晚餐";
-    const persist = /^(meet1|hint_phone|tea|desk|coffee|overtime|file|rain|meeting|live)$/;
-    if (scene && persist.test(scene.id)) {
-      const liveQ = scene.id === "live" ? scene.quest : "";
-      if (isHisQuest(liveQ)) return fill(liveQ);
-      if (isHisQuest(state.questKey)) return fill(state.questKey);
-      return fill(fallback);
-    }
     if (scene && isHisQuest(scene.quest)) return fill(scene.quest);
     if (isHisQuest(state.questKey)) return fill(state.questKey);
     return fill(fallback);
@@ -574,33 +616,59 @@
   }
 
   async function resolveQuestStamp(scene, choice, live) {
-    const quest = hudQuestText(scene);
-    if (!quest || (choice && choice.next === "__phone")) return;
-    let judge = "doing";
-    const apiOn = !!(window.ZC_API && window.ZC_API.isReady && window.ZC_API.isReady() && !simMode);
-    if (apiOn) {
-      try {
-        const msg = await window.ZC_API.complete([
-          {
-            role: "system",
-            content: "你只判断陆晏辞的系统任务有没有在这一幕做成。只输出JSON：{\"judge\":\"ok|fail|doing\"}。ok=他已经把这件事做成（例如已经开口请她吃饭且她应了）。fail=这一幕他明确搞砸。doing=还在进行。禁止因她看手机、鞠躬、让路、普通应答就判成功。"
-          },
-          {
-            role: "user",
-            content: "他的任务：" + quest + "\n她的动作：" + String((choice && choice.text) || "") + "\n这一幕：" + [(live && live.nar) || "", (live && live.act) || "", (live && live.line) || ""].join(" / ")
-          }
-        ], { max_tokens: 40, temperature: 0.1, timeout: 8000 });
-        const hit = parseQuestJudge(msg);
-        if (hit) judge = hit;
-      } catch (_) {
-        judge = "doing";
+    if (choice && choice.next === "__phone") return;
+    syncTaskMarks();
+    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
+    const doing = currentDoingTask();
+    const dinner = (window.ZC_TASKS || []).find((t) => t.id === "dinner");
+    const targets = [doing, dinner].filter((t, i, a) => t && a.indexOf(t) === i);
+    let stamped = false;
+    for (let i = 0; i < targets.length; i++) {
+      const task = targets[i];
+      const prev = (state.taskMarks || {})[task.id] || "doing";
+      if (prev === "ok" || prev === "fail") continue;
+      let judge = "doing";
+      const re = TASK_SIG[task.id];
+      if (re && re.test(blob)) judge = "ok";
+      const apiOn = !!(window.ZC_API && window.ZC_API.isReady && window.ZC_API.isReady() && !simMode);
+      if (apiOn) {
+        try {
+          const msg = await window.ZC_API.complete([
+            {
+              role: "system",
+              content: "你只判断这一幕陆晏辞有没有做成指定任务。只输出JSON：{\"judge\":\"ok|fail|doing\"}。ok=这一幕里他已经做成。fail=这一幕明确搞砸。doing=还没做成。场上没发生的事禁止判成功。禁止因鞠躬、让路、普通应答就判成功。"
+            },
+            {
+              role: "user",
+              content: "指定任务：" + task.name + "\n地点：" + stayPlace() + "\n她的动作：" + String((choice && choice.text) || "") + "\n这一幕：" + [(live && live.nar) || "", (live && live.act) || "", (live && live.line) || ""].join(" / ")
+            }
+          ], { max_tokens: 40, temperature: 0.1, timeout: 8000 });
+          const hit = parseQuestJudge(msg);
+          if (hit) judge = hit;
+        } catch (_) {}
+      } else if (judge === "doing") {
+        judge = localQuestCheck(task.name, choice, live);
+      }
+      if (judge === "ok" && re && !re.test(blob)) judge = "doing";
+      if (judge !== "ok" && judge !== "fail") continue;
+      state.taskMarks[task.id] = judge;
+      if (task.id === "dinner") state.questJudge = judge;
+      if (!stamped) {
+        showJudgeStamp(judge);
+        stamped = true;
+      }
+    }
+    syncTaskMarks();
+    const hudTask = currentDoingTask();
+    if (hudTask && hudTask.id === "dinner") {
+      if (state.questJudge === "ok" || state.questJudge === "fail") {
+        /* keep */
+      } else {
+        state.questJudge = "doing";
       }
     } else {
-      judge = localQuestCheck(quest, choice, live);
+      state.questJudge = "doing";
     }
-    if (judge === "doing" && state.questJudge === "doing") return;
-    state.questJudge = judge;
-    if (judge === "ok" || judge === "fail") showJudgeStamp(judge);
   }
 
   function save() {
@@ -629,6 +697,8 @@
       state.rumor = clamp(Number(state.rumor) || 0, 0, 100);
       state.trust = clamp(Number(state.trust) || 0, 0, 100);
       if (!Array.isArray(state.storyLog)) state.storyLog = [];
+      state.taskMarks = {};
+      syncTaskMarks();
       if (!isHisQuest(state.questKey)) {
         state.questKey = "邀请{name}共进晚餐";
         if (state.questJudge === "ok" || state.questJudge === "fail") state.questJudge = "doing";

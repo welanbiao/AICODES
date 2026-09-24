@@ -1058,8 +1058,8 @@ button { font-family: inherit; cursor: pointer; }
 .judge-stamp {
   position: absolute;
   left: 50%;
-  top: 62%;
-  z-index: 20;
+  top: 54%;
+  z-index: 36;
   transform: translate(-50%, -50%) rotate(-8deg);
   padding: 8px 16px;
   border: 2px solid currentColor;
