@@ -1058,18 +1058,19 @@ button { font-family: inherit; cursor: pointer; }
 .judge-stamp {
   position: absolute;
   left: 50%;
-  top: 54%;
-  z-index: 36;
+  top: 50%;
+  z-index: 80;
   transform: translate(-50%, -50%) rotate(-8deg);
-  padding: 8px 16px;
-  border: 2px solid currentColor;
-  border-radius: 6px;
-  font-size: 22px;
+  padding: 14px 22px;
+  border: 3px solid currentColor;
+  border-radius: 8px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: .18em;
-  background: rgba(8,10,16,.72);
+  background: rgba(8,10,16,.82);
+  box-shadow: 0 0 0 6px rgba(8,10,16,.35);
   pointer-events: none;
-  animation: stamp-in .28s ease;
+  animation: stamp-in .32s ease;
 }
 .judge-stamp.ok { color: var(--ok); }
 .judge-stamp.fail { color: var(--sys-red); }

@@ -64,6 +64,7 @@
     questJudge: "doing",
     questKey: "",
     taskMarks: {},
+    stampedTasks: {},
     alert: 0,
     rumor: 0,
     trust: 0,
@@ -304,7 +305,7 @@
 
   const TASK_SIG = {
     meet: /电梯门开|第一次偶遇|还在加班|走进来/,
-    phone: /你先走|没让开|停在门外|电梯口/,
+    phone: /你先走|没让开|停在门外|挡在通道/,
     water: /杯子|温水|喝点水|一杯水/,
     coffee: /咖啡|美式/,
     overtime: /便当|送她下楼|加班灯/,
@@ -323,13 +324,13 @@
       if (r.place) bits.push(r.place);
       (r.beats || []).forEach((b) => bits.push(b.text));
     });
-    if (extra) bits.push(extra.nar, extra.act, extra.line, extra.title, extra.place);
+    if (extra) bits.push(extra.you, extra.nar, extra.act, extra.line, extra.title, extra.place);
     return bits.filter(Boolean).join(" ");
   }
 
-  function syncTaskMarks() {
+  function syncTaskMarks(extra) {
     if (!state.taskMarks) state.taskMarks = {};
-    const corpus = plotCorpus(state.live);
+    const corpus = plotCorpus(extra || state.live);
     const list = window.ZC_TASKS || [];
     list.forEach((t) => {
       const prev = state.taskMarks[t.id];
@@ -615,20 +616,31 @@
     return "doing";
   }
 
+  function flashNewTaskStamps() {
+    if (!state.stampedTasks) state.stampedTasks = {};
+    const list = window.ZC_TASKS || [];
+    for (let i = 0; i < list.length; i++) {
+      const id = list[i].id;
+      const now = (state.taskMarks || {})[id];
+      if ((now === "ok" || now === "fail") && !state.stampedTasks[id]) {
+        state.stampedTasks[id] = now;
+        showJudgeStamp(now);
+        if (id === "dinner") state.questJudge = now;
+        return true;
+      }
+    }
+    return false;
+  }
+
   async function resolveQuestStamp(scene, choice, live) {
     if (choice && choice.next === "__phone") return;
-    syncTaskMarks();
-    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
+    if (!state.stampedTasks) state.stampedTasks = {};
+    const extra = Object.assign({}, live || {}, { you: choice && choice.text });
     const doing = currentDoingTask();
-    const dinner = (window.ZC_TASKS || []).find((t) => t.id === "dinner");
-    const targets = [doing, dinner].filter((t, i, a) => t && a.indexOf(t) === i);
-    let stamped = false;
-    for (let i = 0; i < targets.length; i++) {
-      const task = targets[i];
-      const prev = (state.taskMarks || {})[task.id] || "doing";
-      if (prev === "ok" || prev === "fail") continue;
+    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
+    if (doing) {
       let judge = "doing";
-      const re = TASK_SIG[task.id];
+      const re = TASK_SIG[doing.id];
       if (re && re.test(blob)) judge = "ok";
       const apiOn = !!(window.ZC_API && window.ZC_API.isReady && window.ZC_API.isReady() && !simMode);
       if (apiOn) {
@@ -636,37 +648,25 @@
           const msg = await window.ZC_API.complete([
             {
               role: "system",
-              content: "你只判断这一幕陆晏辞有没有做成指定任务。只输出JSON：{\"judge\":\"ok|fail|doing\"}。ok=这一幕里他已经做成。fail=这一幕明确搞砸。doing=还没做成。场上没发生的事禁止判成功。禁止因鞠躬、让路、普通应答就判成功。"
+              content: "你只判断陆晏辞的系统任务有没有在这一幕做成。只输出JSON：{\"judge\":\"ok|fail|doing\"}。ok=他已经做成这件事。fail=这一幕明确搞砸。doing=还在进行。禁止判断女主自己的行动。场上没发生的事禁止判成功。"
             },
             {
               role: "user",
-              content: "指定任务：" + task.name + "\n地点：" + stayPlace() + "\n她的动作：" + String((choice && choice.text) || "") + "\n这一幕：" + [(live && live.nar) || "", (live && live.act) || "", (live && live.line) || ""].join(" / ")
+              content: "他的任务：" + doing.name + "\n地点：" + stayPlace() + "\n她的动作：" + String((choice && choice.text) || "") + "\n这一幕：" + [(live && live.nar) || "", (live && live.act) || "", (live && live.line) || ""].join(" / ")
             }
           ], { max_tokens: 40, temperature: 0.1, timeout: 8000 });
           const hit = parseQuestJudge(msg);
           if (hit) judge = hit;
         } catch (_) {}
       } else if (judge === "doing") {
-        judge = localQuestCheck(task.name, choice, live);
+        judge = localQuestCheck(doing.name, choice, live);
       }
-      if (judge === "ok" && re && !re.test(blob)) judge = "doing";
-      if (judge !== "ok" && judge !== "fail") continue;
-      state.taskMarks[task.id] = judge;
-      if (task.id === "dinner") state.questJudge = judge;
-      if (!stamped) {
-        showJudgeStamp(judge);
-        stamped = true;
-      }
+      if (judge === "ok" || judge === "fail") state.taskMarks[doing.id] = judge;
     }
-    syncTaskMarks();
+    syncTaskMarks(extra);
+    flashNewTaskStamps();
     const hudTask = currentDoingTask();
-    if (hudTask && hudTask.id === "dinner") {
-      if (state.questJudge === "ok" || state.questJudge === "fail") {
-        /* keep */
-      } else {
-        state.questJudge = "doing";
-      }
-    } else {
+    if (!(hudTask && hudTask.id === "dinner" && (state.questJudge === "ok" || state.questJudge === "fail"))) {
       state.questJudge = "doing";
     }
   }
@@ -699,6 +699,11 @@
       if (!Array.isArray(state.storyLog)) state.storyLog = [];
       state.taskMarks = {};
       syncTaskMarks();
+      state.stampedTasks = {};
+      (window.ZC_TASKS || []).forEach((t) => {
+        const st = state.taskMarks[t.id];
+        if (st === "ok" || st === "fail") state.stampedTasks[t.id] = st;
+      });
       if (!isHisQuest(state.questKey)) {
         state.questKey = "邀请{name}共进晚餐";
         if (state.questJudge === "ok" || state.questJudge === "fail") state.questJudge = "doing";
@@ -954,7 +959,7 @@
     sceneChoices(scene).forEach((c) => {
       const btn = document.createElement("button");
       btn.className = "choice";
-      btn.innerHTML = fill(c.text) + (c.hint ? `<span class="hint">${fill(c.hint)}</span>` : "");
+      btn.innerHTML = fill(c.text);
       btn.addEventListener("click", () => pick(c));
       box.appendChild(btn);
     });
@@ -2616,11 +2621,6 @@
     if (state.alert >= 40) bits.push("他出现的时机太准。你有点发紧。");
     if (state.trust >= 40) bits.push("你开始能猜到他停顿的意思。");
     if ((state.lastDelta || 0) < 0) bits.push("刚才那一下，他像被噎住，没解释。");
-    const q = hudQuestText(scene);
-    if (q) {
-      const j = state.questJudge === "ok" ? "成功" : state.questJudge === "fail" ? "失败" : "进行中";
-      bits.push("手头：" + fill(q) + " · " + j);
-    }
     return bits.join(" ") || "暂无备忘。";
   }
 
