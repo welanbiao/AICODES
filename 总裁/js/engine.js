@@ -777,12 +777,23 @@
     return out.map((c) => Object.assign({ next: c.next || "live" }, c));
   }
 
+  function isGenericBeat(src) {
+    const t = [(src && src.nar) || "", (src && src.line) || ""].join("");
+    return /还在？|他还站在原处|像有下一句没说完/.test(t);
+  }
+
   function followChoices(you, ctx) {
     const act = String(you || "");
     const blob = beatBlob(ctx);
     const place = String((ctx && ctx.place) || stayPlace() || "");
     let list = [];
-    if (/杯|温水|喝点水/.test(blob)) {
+    if (/[吗呢？?]/.test(act) && act.length >= 4) {
+      list = [
+        { text: "看着他，等他答完。", aff: 1, judge: "doing" },
+        { text: "把刚才那句再说清楚。", aff: 0, judge: "doing" },
+        { text: "当没问过，先走。", aff: -1, judge: "doing", flags: { wary: true } }
+      ];
+    } else if (/杯|温水|喝点水/.test(blob)) {
       list = [
         { text: "接过杯子，微微鞠躬。", aff: 2, judge: "doing" },
         { text: "看着杯子，没有立刻喝。", aff: 0, judge: "doing" },
@@ -1351,25 +1362,17 @@
     const here = stayPlace();
     const you = String((choice && choice.text) || state.lastYouAct || "").replace(/<[^>]+>/g, "");
     const scene = sceneById(state.sceneId) || {};
-    let nar = "他还站在原处。像有下一句没说完。";
-    let act = "重新看向你";
-    let line = "还在？";
-    if (/鞠躬|陆总好/.test(you)) {
-      nar = "你鞠躬让路。他没立刻动，像被这句称呼噎住。";
-      act = "喉结动了一下，手还按在门边";
-      line = "……嗯。";
-    } else if (/点头|应声/.test(you)) {
-      nar = "你点了点头。厅里静了一拍。他还挡在通道上。";
-      act = "目光偏开，又收回来";
-      line = "加班到现在？";
-    } else if (/回工位|走开|先走/.test(you) && !/让他先走|鞠躬/.test(you)) {
-      nar = "你往通道里走了半步。他侧身让了一点，人还在。";
-      act = "跟着偏了一下，没解释";
-      line = "等等。";
-    } else if (/看手机|不接话|低头/.test(you)) {
-      nar = "你没接话。他还站在原处，像这句话没发出去。";
-      act = "手指在身侧收紧";
-      line = "……";
+    const clip = you.slice(0, 18) || "……";
+    const asked = /[吗呢？?]/.test(you);
+    let nar = "厅里静了一拍。他还没让开。";
+    let act = "手还按在门边";
+    let line = "……";
+    if (you) {
+      nar = asked
+        ? ("你问：「" + clip + "」。他顿住，像没准备好接这句话。")
+        : ("你：" + clip + "。他还站着，没立刻接上。");
+      act = "目光停在你脸上，又移开";
+      line = asked ? "……加班。" : "……";
     }
     const beat = { nar, act, line, place: here };
     return {
@@ -1380,9 +1383,9 @@
       act,
       line,
       sys: [
-        { who: "sys", text: "不许换地方。必须再跟{name}说一句，而且要被她接住。" },
+        { who: "sys", text: "任务还在：邀请{name}共进晚餐。她刚才那句你必须接。" },
         { who: "lu", text: "……知道了。" },
-        { who: "sys", text: "她刚才那样做了。你现在像木头。再开口。" }
+        { who: "sys", text: "别回「还在」。接她的话，再往约饭上靠。" }
       ],
       choices: followChoices(you, beat),
       jump: 0,
@@ -1412,13 +1415,14 @@
     })).filter((c) => c.text && !hasPlotLeak(c.text) && !/听我解释|别点开/.test(c.text) && choiceFitsBeat(c.text, ctx));
     const you = String((state.lastYouAct || "")).replace(/<[^>]+>/g, "");
     const choices = mapped.length ? padChoices(mapped, ctx) : followChoices(you, ctx);
+    const hasPlot = !!(src.nar || src.act || src.line);
     return {
       title: String(src.title || fb.title).slice(0, 16),
       place,
       quest: isHisQuest(src.quest) ? String(src.quest).slice(0, 24) : (isHisQuest(fb.quest) ? fb.quest : "邀请{name}共进晚餐"),
-      nar: src.nar || fb.nar || "",
-      act: src.act || fb.act || "",
-      line: src.line || fb.line || "",
+      nar: src.nar || (hasPlot ? "" : fb.nar) || "",
+      act: src.act || (hasPlot ? "" : fb.act) || "",
+      line: src.line || (hasPlot ? "" : fb.line) || "",
       sys: sys.length ? sys : fb.sys,
       choices,
       jump: jumped ? 1 : 0,
@@ -1426,45 +1430,60 @@
     };
   }
 
+  function plotPrompt(choice, extra) {
+    const scene = sceneById(state.sceneId) || {};
+    const here = stayPlace();
+    const quest = hudQuestText(scene);
+    const you = String((choice && choice.text) || "").replace(/<[^>]+>/g, "");
+    const sys = [
+      "你是文字恋爱游戏编剧。对话框只负责显示你写的内容。只输出一个JSON对象，不要markdown。",
+      "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台。只有隔夜才允许改place并把jump设为1。",
+      "必须正面接她刚才那句话或动作，禁止答非所问。可以很短。禁止「还在？」「他还站在原处。像有下一句没说完。」",
+      "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作，我=女主。",
+      "陆晏辞不知道系统、档案、任务、好感。这些词禁止出现在nar、act、line、choices。",
+      "旁白最多两句、不超过28字。动作一句。台词一句。禁止英文和思考过程。",
+      "系统只存在于sys字段。",
+      "选项正好3个，必须是她听完他这句之后立刻能做的反应。每条不超过16字。禁止出现场上没有的杯子/咖啡/便当/伞/表格。",
+      "mins写3到8。隔夜才把 jump 设为1。",
+      "quest原样写「" + quest + "」。",
+      "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
+    ].join("");
+    const prev = recentPlotContext();
+    const user = [
+      "女主：" + pname() + "，基层员工。",
+      "地点（必须沿用）：" + here,
+      "【他的当前任务】" + quest + "。这一幕要朝这个任务靠近：他可以别扭地留人、问加班、试着开口约饭。禁止突然出现餐厅或杯子。",
+      prev ? "【已经发生，必须接着写】\n" + prev : "",
+      "【她刚才说/做的，必须正面接】" + you,
+      "他上一句：「" + fill(scene.line || "……") + "」",
+      extra || "只写这一秒之后立刻发生的事。对话框会原样显示你写的旁白、动作、台词。"
+    ].filter(Boolean).join("\n");
+    return { sys, user, here };
+  }
+
+  async function askLivePlot(choice, extra) {
+    const p = plotPrompt(choice, extra);
+    const msg = await window.ZC_API.complete([
+      { role: "system", content: p.sys },
+      { role: "user", content: p.user }
+    ], { max_tokens: 900, temperature: 0.5, timeout: 28000 });
+    const parsed = parsePlotFromApi(msg);
+    if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return null;
+    if (plotJumpedAhead(parsed, p.here) || isGenericBeat(parsed)) return null;
+    return parsed;
+  }
+
   async function apiContinue(choice) {
     const fallback = localContinue(choice);
     if (simMode || !window.ZC_API || !window.ZC_API.isReady || !window.ZC_API.isReady()) {
       return fallback;
     }
-    const scene = sceneById(state.sceneId) || {};
-    const here = stayPlace();
-    const sys = [
-      "你是文字恋爱游戏编剧。先想清楚这一幕，再只输出一个JSON对象，不要markdown。",
-      "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台来换场。只有隔夜才允许改place并把jump设为1。",
-      "只写她刚才那个动作之后立刻发生的十几秒。可以很短。禁止跳过中间过程，禁止突然递水、改表、送咖啡、送晚饭。",
-      "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作，我=女主。禁止对调。",
-      "陆晏辞不知道系统、档案、任务、好感。他看不见她的手机。禁止这些词出现在nar、act、line、choices。",
-      "旁白、动作、台词必须是中文剧情。旁白最多两句、不超过28字。动作一句。台词一句，像正常人说话。禁止英文和思考过程。",
-      "系统只存在于sys字段。不许他只放东西就走。",
-      "这一幕主写陆晏辞：他怎么站、怎么开口、怎么被噎。女主是他公司的基层员工。",
-      "选项必须紧接这一秒能做的反应，正好3个：接住、冷淡、添堵。每条不超过16字。禁止出现上一幕没有的杯子/咖啡/便当/伞/表格。禁止三个都在看手机。禁止替陆晏辞说话。添堵aff为负。",
-      "mins是这一轮立刻经过的分钟数，3到12。短对话写3到5。隔夜才把 jump 设为1。",
-      "quest沿用他当前必须完成的事，例如邀请她共进晚餐。禁止写她要不要搭理他，禁止档案系统词。",
-      "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
-    ].join("");
-    const prev = recentPlotContext();
-    const user = [
-      "女主：" + pname() + "，" + (state.player && state.player.age || "23") + "岁，" + (state.player && state.player.personality || ""),
-      "当前地点（必须沿用）：" + here,
-      prev ? "刚才已经发生（必须接着写，禁止跳场）：\n" + prev : "",
-      "她这一瞬间做的动作（必须从这里接）：" + String(choice.text || "").replace(/<[^>]+>/g, ""),
-      "他上一句台词：" + fill(scene.line || "……"),
-      "他当前必须做成的事（只写给他，不要写进旁白）：" + hudQuestText(scene),
-      "只写这一动作之后立刻发生的事。他还在" + here + "。禁止提到档案、系统、任务。"
-    ].filter(Boolean).join("\n");
     try {
-      const msg = await window.ZC_API.complete([
-        { role: "system", content: sys },
-        { role: "user", content: user }
-      ], { max_tokens: 900, temperature: 0.45, timeout: 28000 });
-      const parsed = parsePlotFromApi(msg);
-      if (!parsed || (!parsed.nar && !parsed.act && !parsed.line)) return fallback;
-      if (plotJumpedAhead(parsed, here)) return fallback;
+      let parsed = await askLivePlot(choice, "");
+      if (!parsed) {
+        parsed = await askLivePlot(choice, "上一稿答非所问或跳场了。必须正面接她刚才那句话，留在原地，禁止「还在？」");
+      }
+      if (!parsed) return fallback;
       return normalizeLive(parsed, fallback);
     } catch (_) {
       return fallback;
@@ -1489,7 +1508,7 @@
     try {
       const delta = applyConsequences(scene, choice);
       Object.assign(state.flags, choice.flags || {});
-      state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 24);
+      state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 40);
       state.lastNote = String(choice.note || choice.text || "").replace(/<[^>]+>/g, "").slice(0, 36);
       renderHud();
       state.history.push({

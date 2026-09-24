@@ -43,9 +43,9 @@ window.ZC_SCENES = [
       { who: "sys", text: "不许走。她要是不理你，你就站着。再逼她回一句。" }
     ],
     choices: [
-      { text: "鞠躬致意。", aff: 1, next: "hint_phone", note: "吓了一跳，当他在问工作", hint: "正常职场反应", judge: "doing" },
-      { text: "点头应声。", aff: 2, next: "hint_phone", note: "他问得生硬，但你还是答了", flags: { spoke: true }, judge: "doing" },
-      { text: "低头看手机，不接话。", aff: -2, next: "hint_phone", note: "被冷脸盯着，只觉得莫名其妙", flags: { wary: true }, judge: "fail" }
+      { text: "鞠躬致意。", aff: 1, next: "live", note: "吓了一跳，当他在问工作", hint: "正常职场反应", judge: "doing" },
+      { text: "点头应声。", aff: 2, next: "live", note: "他问得生硬，但你还是答了", flags: { spoke: true }, judge: "doing" },
+      { text: "低头看手机，不接话。", aff: -2, next: "live", note: "被冷脸盯着，只觉得莫名其妙", flags: { wary: true }, judge: "fail" }
     ]
   },
   {
