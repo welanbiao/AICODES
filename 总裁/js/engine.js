@@ -331,18 +331,39 @@
     save();
   }
 
-  const TASK_SIG = {
-    meet: /电梯门开|第一次偶遇|还在加班|走进来/,
+  const TASK_DONE = {
+    meet: /电梯门开|还在加班|走进来|电梯里/,
     phone: /你先走|没让开|停在门外|挡在通道/,
-    water: /杯子|温水|喝点水|一杯水/,
-    coffee: /咖啡|美式/,
-    overtime: /便当|送她下楼|加班灯/,
-    file: /表格|第三列|错了。重做|文件整理/,
-    rain: /把伞|黑伞|暴雨/,
-    meeting: /会议上|挡一句|替她挡/,
-    dinner: /一起吃|共进晚餐|去吃饭|请你吃饭/,
+    water: /接过.{0,8}(杯|水)|喝了.{0,6}水|水杯.{0,4}(到|在)她/,
+    coffee: /咖啡.{0,10}(放到|摆到|放在).{0,8}桌|桌上.{0,8}咖啡/,
+    overtime: /送她下楼|送到楼下|一起下楼/,
+    file: /改掉.{0,8}(表|错)|第三列.{0,8}(改|对)/,
+    rain: /把伞.{0,8}(给|递)|她接过伞|伞到她手里/,
+    meeting: /会议上.{0,8}挡|替她挡/,
+    dinner: /进了?(餐厅|饭店|食堂)|在(餐厅|饭店|食堂).{0,12}(坐下|点|吃)|已经在吃|一起吃了|共进了晚餐/,
     cover: /扛一回|背锅|锅我来|责任我来/
   };
+
+  const TASK_FAIL = {
+    dinner: /不太合适|不去吃|摇头.{0,10}(便当|不)|拒绝.{0,8}(请|约|饭|吃)|不跟/,
+    water: /躲开.{0,8}(杯|水)|不接.{0,6}(杯|水)/,
+    coffee: /推回.{0,6}咖啡|不伸手/,
+    rain: /避开伞|不接伞/
+  };
+
+  function stripTaskTalk(s) {
+    let t = String(s || "");
+    (window.ZC_TASKS || []).forEach((task) => {
+      const name = String(task.name || "");
+      if (name.length >= 4) t = t.split(name).join(" ");
+      const named = name.replace(/她/g, pname());
+      if (named.length >= 4) t = t.split(named).join(" ");
+    });
+    t = t.replace(/邀请.{0,8}(共进)?晚餐/g, " ");
+    t = t.replace(/任务(还在|进度|失败|完成)[：:]?[^\s]{0,24}/g, " ");
+    t = t.replace(/请你(吃饭|吃顿饭|共进晚餐)|一起吃(饭|晚餐)?吗|去不去/g, " ");
+    return t;
+  }
 
   function plotCorpus(extra) {
     const bits = [];
@@ -353,7 +374,22 @@
       (r.beats || []).forEach((b) => bits.push(b.text));
     });
     if (extra) bits.push(extra.you, extra.nar, extra.act, extra.line, extra.title, extra.place);
-    return bits.filter(Boolean).join(" ");
+    return stripTaskTalk(bits.filter(Boolean).join(" "));
+  }
+
+  function taskHit(map, id, text) {
+    const re = map[id];
+    return !!(re && re.test(stripTaskTalk(text)));
+  }
+
+  function dinnerReallyDone(text) {
+    if (state.flags && state.flags.ateTogether) return true;
+    return taskHit(TASK_DONE, "dinner", text);
+  }
+
+  function dinnerFollowNow(choice, live) {
+    const t = stripTaskTalk([choice && choice.text, live && live.nar, live && live.act, live && live.place].join(" "));
+    return /拿上工牌.{0,12}跟上|跟上(去|他)|跟着他(走|去)|去(吃饭|餐厅)|进了?(餐厅|饭店)/.test(t);
   }
 
   function syncTaskMarks(extra) {
@@ -362,9 +398,14 @@
     const list = window.ZC_TASKS || [];
     list.forEach((t) => {
       const prev = state.taskMarks[t.id];
-      if (prev === "ok" || prev === "fail") return;
-      const re = TASK_SIG[t.id];
-      if (re && re.test(corpus)) state.taskMarks[t.id] = "ok";
+      if (prev === "fail") return;
+      if (t.id === "dinner") {
+        if (dinnerReallyDone(corpus)) state.taskMarks.dinner = "ok";
+        else if (prev === "ok") state.taskMarks.dinner = "doing";
+        return;
+      }
+      if (prev === "ok") return;
+      if (taskHit(TASK_DONE, t.id, corpus)) state.taskMarks[t.id] = "ok";
     });
     if (state.flags && state.flags.ateTogether) state.taskMarks.dinner = "ok";
     let active = false;
@@ -660,7 +701,13 @@
     if (state.stampedTasks[task.id]) return false;
     state.taskMarks[task.id] = judge;
     state.stampedTasks[task.id] = judge;
-    if (task.id === "dinner") state.questJudge = judge;
+    if (task.id === "dinner") {
+      state.questJudge = judge;
+      if (judge === "ok") {
+        if (!state.flags) state.flags = {};
+        state.flags.ateTogether = true;
+      }
+    }
     showJudgeStamp(judge, task);
     if (judge === "ok") queueReview("seg");
     if (judge === "fail") {
@@ -694,11 +741,12 @@
 
   function localQuestCheck(quest, choice, live) {
     const q = fill(quest || "");
-    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
+    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line, live && live.place].join(" ");
+    const you = String((choice && choice.text) || "");
     const aff = Number(choice && choice.aff) || 0;
     if (/晚餐|吃饭/.test(q)) {
-      if (/餐厅|一起吃|跟上|跟去/.test(blob) && aff >= 2) return "ok";
-      if (/不跟|摇头|拒绝/.test(blob) && aff <= -3) return "fail";
+      if (dinnerReallyDone(blob) || dinnerFollowNow(choice, live)) return "ok";
+      if (taskHit(TASK_FAIL, "dinner", you)) return "fail";
       return "doing";
     }
     if (/水/.test(q)) {
@@ -723,13 +771,21 @@
     if (choice && choice.next === "__phone") return;
     const extra = Object.assign({}, live || {}, { you: choice && choice.text });
     const doing = currentDoingTask();
-    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line].join(" ");
+    const blob = [choice && choice.text, live && live.nar, live && live.act, live && live.line, live && live.place].join(" ");
     if (doing && !((state.stampedTasks || {})[doing.id])) {
       let judge = "doing";
-      const re = TASK_SIG[doing.id];
-      if (re && re.test(blob)) judge = "ok";
-      else if (isSabotage(choice)) judge = "fail";
-      else judge = localQuestCheck(doing.name, choice, live);
+      if (doing.id === "dinner") {
+        if (dinnerReallyDone(blob) || dinnerFollowNow(choice, live)) judge = "ok";
+        else if (taskHit(TASK_FAIL, "dinner", String((choice && choice.text) || ""))) judge = "fail";
+      } else if (taskHit(TASK_DONE, doing.id, blob)) {
+        judge = "ok";
+      } else if (taskHit(TASK_FAIL, doing.id, String((choice && choice.text) || ""))) {
+        judge = "fail";
+      } else if (isSabotage(choice) && doing.id !== "dinner") {
+        judge = "fail";
+      } else {
+        judge = localQuestCheck(doing.name, choice, live);
+      }
       applyTaskJudge(doing, judge);
     }
     syncTaskMarks(extra);
@@ -772,6 +828,9 @@
         const st = state.taskMarks[t.id];
         if (st === "ok" || st === "fail") state.stampedTasks[t.id] = st;
       });
+      if (state.taskMarks.dinner !== "ok" && (state.questJudge === "ok" || state.questJudge === "fail")) {
+        state.questJudge = "doing";
+      }
       if (!isHisQuest(state.questKey)) {
         state.questKey = "邀请{name}共进晚餐";
         if (state.questJudge === "ok" || state.questJudge === "fail") state.questJudge = "doing";
@@ -1624,7 +1683,7 @@
     const you = String((choice && choice.text) || "").replace(/<[^>]+>/g, "");
     const sys = [
       "你是文字恋爱游戏编剧。对话框只负责显示你写的内容。只输出一个JSON对象，不要markdown。",
-      "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台。只有隔夜才允许改place并把jump设为1。",
+      "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/车库/天台。只有她真的跟去吃饭这一拍才允许把place改成楼下餐厅。只有隔夜才把jump设为1。",
       "必须正面接她刚才那句话或动作，禁止答非所问。可以很短。禁止「还在？」「他还站在原处。像有下一句没说完。」",
       "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作：你=女主，他=陆晏辞。禁止写「等她下班」「问她」。",
       "sys只给陆晏辞看。系统对陆晏辞说话时你=陆晏辞、她=女主。陆晏辞回话时我=陆晏辞、她=女主。禁止系统说「约你」。禁止陆晏辞用「他」自称。",
@@ -1640,7 +1699,7 @@
     const user = [
       "女主：" + pname() + "，基层员工。",
       "地点（必须沿用）：" + here,
-      "【他的当前任务】" + quest + "。这一幕要朝这个任务靠近：他可以别扭地留人、问加班、试着开口约饭。禁止突然出现餐厅或杯子。",
+      "【他的当前任务】" + quest + "。开口约饭、口头答应都不算完成。只有她真的跟去或已经坐下吃饭才算完成。没完成时禁止写已经在餐厅。",
       prev ? "【已经发生，必须接着写】\n" + prev : "",
       "【她刚才说/做的，必须正面接】" + you,
       "他上一句：「" + fill(scene.line || "……") + "」",
@@ -1697,7 +1756,11 @@
       const delta = applyConsequences(scene, choice);
       Object.assign(state.flags, choice.flags || {});
       const doingNow = currentDoingTask();
-      if (doingNow && isSabotage(choice)) applyTaskJudge(doingNow, "fail");
+      if (doingNow && isSabotage(choice)) {
+        if (doingNow.id !== "dinner" || taskHit(TASK_FAIL, "dinner", String(choice.text || ""))) {
+          applyTaskJudge(doingNow, "fail");
+        }
+      }
       state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 40);
       state.lastNote = String(choice.note || choice.text || "").replace(/<[^>]+>/g, "").slice(0, 36);
       renderHud();
