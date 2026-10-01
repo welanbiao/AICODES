@@ -255,7 +255,7 @@
     }
     box.innerHTML = lines.map((m) => {
       const lu = m.who === "lu";
-      return `<div class="sys-row ${lu ? "lu" : "sys"}"><span>${lu ? "陆晏辞" : "系统"}</span><p>${fill(m.text)}</p></div>`;
+      return `<div class="sys-row ${lu ? "lu" : "sys"}"><span>${lu ? "陆晏辞" : "系统"}</span><p>${fill(fixSysVoice(m.who, m.text))}</p></div>`;
     }).join("");
   }
 
@@ -911,7 +911,7 @@
     ];
     const out = (list || []).filter((c) => c && isStaffChoice(c.text) && choiceFitsBeat(c.text, ctx)).slice(0, 3).map((c) => {
       const row = Object.assign({}, c);
-      row.text = cleanZhText(row.text);
+      row.text = fixChoiceVoice(cleanZhText(row.text));
       return row;
     }).filter((c) => c.text);
     let i = 0;
@@ -1210,6 +1210,30 @@
     if (/^(nar|act|line)\b/i.test(t)) return false;
     if (hasPlotLeak(t)) return false;
     return true;
+  }
+
+  function fixChoiceVoice(s) {
+    let t = String(s || "");
+    t = t.replace(/(等|找|约|躲|送|拦|留|接)她/g, "$1你");
+    t = t.replace(/她下班/g, "你下班");
+    t = t.replace(/问她/g, "问他");
+    t = t.replace(/等我/g, "等你").replace(/找我/g, "找你");
+    return t;
+  }
+
+  function fixSysVoice(who, s) {
+    let t = String(s || "");
+    if (who === "lu") {
+      t = t.replace(/敬他/g, "敬我").replace(/躲他/g, "躲我").replace(/烦他/g, "烦我");
+      t = t.replace(/是敬我还是躲我/g, "是敬我还是躲我");
+      t = t.replace(/还是躲他/g, "还是躲我");
+    } else {
+      t = t.replace(/他主动/g, "你主动");
+      t = t.replace(/开口约你/g, "开口约她");
+      t = t.replace(/约你/g, "约她");
+      t = t.replace(/她鞠了一躬，是敬他还是躲他/g, "她鞠了一躬。你分不清她是敬你还是躲你");
+    }
+    return t;
   }
 
   function cleanZhText(s) {
@@ -1569,7 +1593,7 @@
     const place = jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12);
     const ctx = { nar: src.nar || fb.nar, act: src.act || fb.act, line: src.line || fb.line, place };
     const mapped = (Array.isArray(src.choices) ? src.choices : []).map((c) => ({
-      text: cleanZhText(String((c && c.text) || "")).slice(0, 22),
+      text: fixChoiceVoice(cleanZhText(String((c && c.text) || ""))).slice(0, 22),
       aff: clamp(parseInt(c && c.aff, 10) || 0, -8, 6),
       judge: /^(ok|fail|doing)$/.test(c && c.judge) ? c.judge : "doing",
       note: String((c && c.note) || (c && c.text) || "").slice(0, 18),
@@ -1602,11 +1626,12 @@
       "你是文字恋爱游戏编剧。对话框只负责显示你写的内容。只输出一个JSON对象，不要markdown。",
       "默认必须留在当前地点，place原样写「" + here + "」。禁止换茶水间/餐厅/车库/天台。只有隔夜才允许改place并把jump设为1。",
       "必须正面接她刚才那句话或动作，禁止答非所问。可以很短。禁止「还在？」「他还站在原处。像有下一句没说完。」",
-      "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作，我=女主。",
+      "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作：你=女主，他=陆晏辞。禁止写「等她下班」「问她」。",
+      "sys只给陆晏辞看。系统对陆晏辞说话时你=陆晏辞、她=女主。陆晏辞回话时我=陆晏辞、她=女主。禁止系统说「约你」。禁止陆晏辞用「他」自称。",
       "陆晏辞不知道系统、档案、任务、好感。这些词禁止出现在nar、act、line、choices。",
       "旁白最多两句、不超过28字。动作一句。台词一句。只用中文和，。！？、。禁止英文。",
       "系统只存在于sys字段。",
-      "选项正好3个，必须是她听完他这句之后立刻能做的反应。每条不超过16字。只用中文和逗号句号感叹问号。禁止英文，禁止书名号叠在双引号里。aff默认为0；只有明显心动才写2到4，明显发火才写负数。",
+      "选项正好3个，必须是她听完他这句之后立刻能做的反应。每条不超过16字。只用中文和逗号句号感叹问号。禁止英文。禁止「等她」「问她」。aff默认为0；只有明显心动才写2到4，明显发火才写负数。",
       "mins写3到8。隔夜才把 jump 设为1。",
       "quest原样写「" + quest + "」。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"

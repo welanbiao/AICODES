@@ -1134,16 +1134,16 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute;
   inset: 0;
   z-index: 18;
-  background: rgba(5,7,12,.28);
+  background: rgba(5,7,12,.36);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding: 16px 16px 18px;
+  padding: 24px 16px;
 }
 .sys-modal.hidden { display: none !important; }
 .sys-card {
   width: 100%;
-  max-height: 46%;
+  max-height: 64%;
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(18, 28, 42, .82), rgba(8, 12, 20, .78));
   backdrop-filter: blur(22px);
