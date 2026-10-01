@@ -49,6 +49,8 @@
     calendarDay: 1,
     lastDelta: 0,
     lastNote: "",
+    segBeats: 0,
+    pendingReview: "",
     lowStreak: 0,
     graceActive: false,
     graceUsed: false,
@@ -189,6 +191,7 @@
     state.calendarDay += n;
     state.clockMin = 9 * 60;
     for (let i = 0; i < n; i++) noteLowDay();
+    queueReview("day");
   }
 
   function advanceStoryClock(mins) {
@@ -268,39 +271,58 @@
     if (plotReady) {
       unlockSheet();
       paintAdvTip();
+      maybeOpenReview();
     }
   }
 
   let draftDelta = 0;
 
   function previewAff() {
-    return clamp(state.affection - (state.lastDelta || 0) + draftDelta, -40, 100);
+    return clamp(state.affection, -40, 100);
   }
 
   function paintAffModal() {
     const now = $("#aff-now");
-    const oldEl = $("#aff-old");
-    const newEl = $("#aff-new");
     const lead = $("#aff-lead");
-    const range = $("#aff-range");
     if (now) now.textContent = String(previewAff());
-    if (oldEl) oldEl.textContent = ((state.lastDelta || 0) > 0 ? "+" : "") + (state.lastDelta || 0);
-    if (newEl) newEl.textContent = (draftDelta > 0 ? "+" : "") + draftDelta;
-    if (range) range.value = String(draftDelta);
     if (lead) {
-      lead.textContent = state.history.length
-        ? ("上一轮：" + (state.lastNote || "系统判定") + "。只能改这一段的加减，不能一次拉满。")
-        : "还没有判定。先做一轮行动，再来改上一段。";
+      lead.textContent = state.pendingReview === "day"
+        ? "今天结束了。这一天他对你的态度，你满意吗？满意会增加好感。"
+        : "这一段他对你的态度，你满意吗？满意会增加好感。";
     }
   }
 
-  function syncAffModal() {
-    draftDelta = clamp(state.lastDelta || 0, -8, 8);
-    paintAffModal();
+  function queueReview(reason) {
+    state.pendingReview = reason || "seg";
+    state.segBeats = 0;
+  }
+
+  function maybeOpenReview() {
+    if (!state.pendingReview) return;
+    if ($("#judge-modal") && !$("#judge-modal").classList.contains("hidden")) return;
+    if ($("#sheet") && $("#sheet").classList.contains("is-locked")) return;
+    if ($("#aff-modal") && !$("#aff-modal").classList.contains("hidden")) return;
+    openAffModal();
+  }
+
+  function applyReview(kind) {
+    let d = 0;
+    if (kind === "yes") d = 3;
+    state.affection = clamp(state.affection + d, -40, 100);
+    state.lastDelta = d;
+    state.pendingReview = "";
+    renderHud();
+    closeAffModal();
+    if (d > 0) toast("好感 +" + d);
+    else toast("好感没有变化");
   }
 
   function openAffModal() {
-    syncAffModal();
+    if (!state.pendingReview) {
+      toast("等这一段告一段落，再问你满不满意");
+      return;
+    }
+    paintAffModal();
     $("#aff-modal").classList.remove("hidden");
   }
 
@@ -522,7 +544,7 @@
     const beat = advBeats[idx];
     box.className = "adv kind-" + beat.kind;
     $("#adv-who").textContent = beat.who;
-    $("#adv-text").textContent = beat.kind === "line" ? `“${beat.text}”` : beat.text;
+    $("#adv-text").textContent = beat.kind === "line" ? `“${cleanZhText(beat.text)}”` : cleanZhText(beat.text);
     dots.innerHTML = advBeats.map((_, i) => `<i class="${i === idx ? "on" : ""}"></i>`).join("");
     paintAdvTip();
   }
@@ -538,6 +560,7 @@
     }
     unlockSheet();
     paintAdvTip();
+    maybeOpenReview();
   }
 
   function advanceAdv() {
@@ -570,6 +593,7 @@
     if (stamp) stamp.classList.add("hidden");
     clearTimeout(showJudgeStamp._t);
     clearTimeout(showJudgeStamp._s);
+    maybeOpenReview();
   }
 
   function showJudgeStamp(kind, task) {
@@ -591,7 +615,10 @@
       void stamp.offsetWidth;
       stamp.style.animation = "";
     }, 180);
-    showJudgeStamp._t = setTimeout(closeJudgeModal, 1600);
+    showJudgeStamp._t = setTimeout(() => {
+      closeJudgeModal();
+      maybeOpenReview();
+    }, 1600);
   }
 
   function isSabotage(choice) {
@@ -635,6 +662,7 @@
     state.stampedTasks[task.id] = judge;
     if (task.id === "dinner") state.questJudge = judge;
     showJudgeStamp(judge, task);
+    if (judge === "ok") queueReview("seg");
     if (judge === "fail") {
       state.taskFails = (state.taskFails || 0) + 1;
       const hit = state.taskFails >= 3 ? 8 : state.taskFails >= 2 ? 5 : 3;
@@ -881,7 +909,11 @@
       { text: "低头不接话，往旁边靠。", aff: -1, judge: "doing", flags: { wary: true } },
       { text: "当没听见，继续往外走。", aff: -2, judge: "fail", flags: { wary: true } }
     ];
-    const out = (list || []).filter((c) => c && isStaffChoice(c.text) && choiceFitsBeat(c.text, ctx)).slice(0, 3).map((c) => Object.assign({}, c));
+    const out = (list || []).filter((c) => c && isStaffChoice(c.text) && choiceFitsBeat(c.text, ctx)).slice(0, 3).map((c) => {
+      const row = Object.assign({}, c);
+      row.text = cleanZhText(row.text);
+      return row;
+    }).filter((c) => c.text);
     let i = 0;
     while (out.length < 3 && i < 12) {
       const s = seeds[i++ % seeds.length];
@@ -1180,8 +1212,18 @@
     return true;
   }
 
+  function cleanZhText(s) {
+    let t = String(s || "").replace(/<[^>]+>/g, "");
+    t = t.replace(/[A-Za-z]/g, "");
+    t = t.replace(/[「」『』【】\[\]()（）{}<>《》]/g, "");
+    t = t.replace(/[“”"']/g, "");
+    t = t.replace(/[^\u4e00-\u9fff0-9，。！？、：；…—·\-]/g, "");
+    t = t.replace(/^[，。、：；]+/, "").replace(/[，、：；]+$/, (m) => (m.indexOf("。") >= 0 || m.indexOf("！") >= 0 || m.indexOf("？") >= 0 ? m.replace(/[，、：；]/g, "") : ""));
+    return t;
+  }
+
   function clipPlot(s, max) {
-    let t = scrubLeak(s).replace(/[;；]/g, "。").replace(/\s+/g, "");
+    let t = cleanZhText(scrubLeak(s)).replace(/[;；]/g, "。");
     const parts = t.split(/(?<=[。！？])/).filter(Boolean);
     t = parts.slice(0, 2).join("");
     if (t.length > max) {
@@ -1366,29 +1408,35 @@
     }
   }
 
+  function choiceFeel(choice) {
+    const aff = Number(choice && choice.aff) || 0;
+    const flags = (choice && choice.flags) || {};
+    const t = String((choice && choice.text) || "") + String((choice && choice.note) || "");
+    if (flags.sawKindness || flags.rainUmbrella || flags.ateTogether || flags.wasCovered) return "heart";
+    if (aff >= 4) return "heart";
+    if (flags.suspicious || aff <= -3 || isSabotage(choice)) return "anger";
+    if (/心动|接过伞|留下了|把手放上去/.test(t)) return "heart";
+    return "none";
+  }
+
   function applyConsequences(scene, choice) {
     const crowd = crowdOf(scene);
     let aff = Number(choice.aff) || 0;
+    const feel = choiceFeel(choice);
+    if (feel === "none") aff = 0;
+    else if (feel === "heart") aff = clamp(Math.max(aff, 2), 2, 5);
+    else aff = clamp(Math.min(aff || -3, -2), -6, -2);
     let alertD = Number(choice.alert) || 0;
     let rumorD = Number(choice.rumor) || 0;
     let trustD = Number(choice.trust) || 0;
     const flags = choice.flags || {};
-    if (flags.wary) alertD += 8;
-    if (flags.suspicious) alertD += 14;
+    if (flags.wary) alertD += 4;
+    if (flags.suspicious) alertD += 10;
     if (flags.sawKindness) trustD += 8;
-    if (flags.embarrassed) rumorD += 10;
+    if (flags.embarrassed) rumorD += 8;
     if (flags.ateTogether || flags.rainUmbrella) rumorD += 4;
-    if (crowd === "public") rumorD += aff >= 2 ? 5 : (aff <= -2 ? 7 : 3);
-    if (state.alert >= 50 && aff > 0) aff -= 1;
-    if (state.alert >= 70 && flags.suspicious) aff -= 2;
-    if (state.trust >= 40 && flags.sawKindness) aff += 1;
-    if (state.rumor >= 50 && crowd === "public" && aff > 0) aff -= 1;
-    const vibe = vibeOf(state.player && state.player.personality);
-    if (vibe === "soft" && flags.sawKindness) aff += 1;
-    if (vibe === "cool" && (flags.suspicious || flags.wary)) aff -= 1;
-    if (vibe === "lively" && aff < 0) aff += 1;
-    if (choice.flags && choice.flags.sawKindness && state.flags.sawKindness) aff += 1;
-    if (state.graceActive) aff = Math.round(aff * 1.5);
+    if (crowd === "public" && aff !== 0) rumorD += aff > 0 ? 4 : 6;
+    if (state.graceActive && aff > 0) aff = Math.round(aff * 1.5);
     const prevRumor = state.rumor || 0;
     const prevAlert = state.alert || 0;
     state.affection = clamp(state.affection + aff, -40, 100);
@@ -1521,7 +1569,7 @@
     const place = jumped && src.place ? String(src.place).slice(0, 12) : String(fb.place || stayPlace()).slice(0, 12);
     const ctx = { nar: src.nar || fb.nar, act: src.act || fb.act, line: src.line || fb.line, place };
     const mapped = (Array.isArray(src.choices) ? src.choices : []).map((c) => ({
-      text: String((c && c.text) || "").slice(0, 22),
+      text: cleanZhText(String((c && c.text) || "")).slice(0, 22),
       aff: clamp(parseInt(c && c.aff, 10) || 0, -8, 6),
       judge: /^(ok|fail|doing)$/.test(c && c.judge) ? c.judge : "doing",
       note: String((c && c.note) || (c && c.text) || "").slice(0, 18),
@@ -1556,9 +1604,9 @@
       "必须正面接她刚才那句话或动作，禁止答非所问。可以很短。禁止「还在？」「他还站在原处。像有下一句没说完。」",
       "人称铁律：nar用第三人称，你=女主，他=陆晏辞。act只写他的可见动作，用「他」。line只写他对女主说的话，我=陆晏辞。choices只写女主动作，我=女主。",
       "陆晏辞不知道系统、档案、任务、好感。这些词禁止出现在nar、act、line、choices。",
-      "旁白最多两句、不超过28字。动作一句。台词一句。禁止英文和思考过程。",
+      "旁白最多两句、不超过28字。动作一句。台词一句。只用中文和，。！？、。禁止英文。",
       "系统只存在于sys字段。",
-      "选项正好3个，必须是她听完他这句之后立刻能做的反应。每条不超过16字。禁止出现场上没有的杯子/咖啡/便当/伞/表格。",
+      "选项正好3个，必须是她听完他这句之后立刻能做的反应。每条不超过16字。只用中文和逗号句号感叹问号。禁止英文，禁止书名号叠在双引号里。aff默认为0；只有明显心动才写2到4，明显发火才写负数。",
       "mins写3到8。隔夜才把 jump 设为1。",
       "quest原样写「" + quest + "」。",
       "字段：title, place, quest, nar, act, line, sys([{who:sys|lu,text}]), choices([{text,aff,judge,note}]), mins, jump(0或1)"
@@ -1628,6 +1676,8 @@
       state.lastYouAct = String(choice.text || "").replace(/<[^>]+>/g, "").slice(0, 40);
       state.lastNote = String(choice.note || choice.text || "").replace(/<[^>]+>/g, "").slice(0, 36);
       renderHud();
+      state.segBeats = (state.segBeats || 0) + 1;
+      if (state.segBeats >= 4 && !state.pendingReview) queueReview("seg");
       state.history.push({
         day: state.calendarDay,
         title: scene.title,
@@ -3481,19 +3531,14 @@
         if (e.target.id === "task-modal") closeTaskModal();
       });
     }
-    $("#aff-ok").addEventListener("click", () => commitLastDelta());
+    const affYes = $("#aff-yes");
+    const affMid = $("#aff-mid");
+    const affNo = $("#aff-no");
+    if (affYes) affYes.addEventListener("click", () => applyReview("yes"));
+    if (affMid) affMid.addEventListener("click", () => applyReview("mid"));
+    if (affNo) affNo.addEventListener("click", () => applyReview("no"));
     $("#aff-modal").addEventListener("click", (e) => {
       if (e.target.id === "aff-modal") closeAffModal();
-    });
-    $("#aff-range").addEventListener("input", () => {
-      draftDelta = clamp(parseInt($("#aff-range").value, 10) || 0, -8, 8);
-      paintAffModal();
-    });
-    document.querySelectorAll("[data-delta]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        draftDelta = clamp(draftDelta + Number(btn.getAttribute("data-delta")), -8, 8);
-        paintAffModal();
-      });
     });
     const briefOk = $("#brief-ok");
     if (briefOk) briefOk.addEventListener("click", () => stepBrief());
