@@ -1,2 +1,0 @@
-# Let Git normalize text; core.autocrlf still applies on Windows checkouts.
-* text=auto
