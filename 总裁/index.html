@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.2.6/chinese-simplified-700.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5.2.6/chinese-simplified-400.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5.2.6/chinese-simplified-700.min.css">
-<link rel="stylesheet" href="css/game.css?v=20261002c">
+<link rel="stylesheet" href="css/game.css?v=20261002d">
 </head>
 <body>
 <div id="shell">
@@ -183,6 +183,7 @@
           <div class="hud-row">
             <button class="hud-menu menu-btn" id="btn-menu" type="button">菜单</button>
             <span class="hud-name" id="hud-name">苏晚</span>
+            <button type="button" class="hud-fix" id="btn-hud-shift">工位</button>
             <button type="button" class="hud-fix" id="btn-hud-board">介入判定</button>
           </div>
           <div class="hud-row hud-aff-row">
@@ -203,6 +204,7 @@
           </button>
         </div>
       </header>
+      <div id="shift-root" class="shift-root hidden"></div>
       <div class="sheet is-locked" id="sheet">
         <div class="choices" id="choices"></div>
         <form class="free-say" id="free-say">
@@ -369,9 +371,10 @@
     </div>
   </div>
 </div>
-<script src="js/plays.js?v=20261002c"></script>
-<script src="js/data.js?v=20261002c"></script>
-<script src="js/api.js?v=20261002c"></script>
-<script src="js/engine.js?v=20261002c"></script>
+<script src="js/plays.js?v=20261002d"></script>
+<script src="js/data.js?v=20261002d"></script>
+<script src="js/api.js?v=20261002d"></script>
+<script src="js/shift.js?v=20261002d"></script>
+<script src="js/engine.js?v=20261002d"></script>
 </body>
 </html>

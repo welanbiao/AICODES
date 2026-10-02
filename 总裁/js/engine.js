@@ -85,6 +85,7 @@
     shopOrders: [],
     shopCoupon: 5,
     wxCity: "binjiang",
+    shift: null,
     ledger: [
       { name: "地铁通勤", delta: -6 },
       { name: "便利店", delta: -13.5 },
@@ -477,9 +478,10 @@
 
   const BRIEF_STEPS = [
     "你并不知道<b>系统</b>的存在<br>所以只需要按心意行动",
+    "点顶部<b>工位</b>去改表、送印、核对。那是你的正事",
+    "他突然出现时可以<b>躲开</b>。被整层看见，只会更麻烦",
     "当然，你可以选择刻意给他<b>添堵</b>",
-    "如果您觉得系统判定加减好感不合理<br>可以点击最上方的“<b>介入判定</b>”进行修改",
-    "但您需要注意的是，只能修改<b>上一轮</b>的变化"
+    "觉得加减好感不合理，点“<b>介入判定</b>”。只能改上一轮"
   ];
   let briefStep = 0;
 
@@ -1816,6 +1818,31 @@
         return;
       }
 
+      if (currentId === "meet1") {
+        resolveQuestStamp(scene, choice, scene);
+        advanceStoryClock(8);
+        state.sceneId = "live";
+        state.live = {
+          title: "回裙楼",
+          place: "基层办公区",
+          quest: hudQuestText(scene),
+          nar: "你回到工位。总裁刚在裙楼电梯里出现过，隔间里有人看了你一眼。",
+          act: "",
+          line: "",
+          sys: scene.sys || [],
+          choices: [
+            { text: "先把今天的表改完。", aff: 0, next: "live", judge: "doing" },
+            { text: "低头，当没看见那些目光。", aff: 0, next: "live", judge: "doing" },
+            { text: "打开工牌，确认自己没走错层。", aff: 0, next: "live", judge: "doing" }
+          ],
+          jump: 0,
+          mins: 6
+        };
+        renderGame();
+        if (window.ZC_SHIFT) window.ZC_SHIFT.openDesk("meet1");
+        return;
+      }
+
       toast("生成后续…");
       const live = await apiContinue(choice);
       advanceStoryClock(live.mins || estimateMinutes(choice, scene));
@@ -1925,6 +1952,110 @@
       return;
     }
     enterLoadedGame();
+  }
+
+  function shiftEnterTalk(tag, ok) {
+    if (window.ZC_SHIFT) window.ZC_SHIFT.closeDesk();
+    const key = tag === "eyes-leave" ? "eyes" : tag;
+    const caught = !ok;
+    const packs = {
+      lift: {
+        title: "电梯",
+        place: "电梯间",
+        nar: caught ? "电梯门关了。陆晏辞站在你斜前方，像认错了层，又没有按开门。" : "你出了电梯。门在身后合上。",
+        act: caught ? "没有让开" : "",
+        line: caught ? "你先走。" : "",
+        choices: caught ? [
+          { text: "鞠躬，等他先出。", aff: 1, next: "live", judge: "doing" },
+          { text: "侧身，尽快出去。", aff: 0, next: "live", judge: "doing" },
+          { text: "低声问，是不是按错层。", aff: 0, next: "live", judge: "doing" }
+        ] : [
+          { text: "加快脚步回工位。", aff: 0, next: "live", judge: "doing" },
+          { text: "回头看一眼门。", aff: 0, next: "live", judge: "doing" },
+          { text: "当没发生，去刷卡。", aff: 0, next: "live", judge: "doing" }
+        ]
+      },
+      hall: {
+        title: "走廊",
+        place: "基层办公区",
+        nar: caught ? "他和你停在同一段走廊。背后有椅子转过来。" : "走廊空了。你从门缝里出来。",
+        act: caught ? "停了半步" : "",
+        line: caught ? "……" : "",
+        choices: caught ? [
+          { text: "点头致意，先进打印室。", aff: 0, next: "live", judge: "doing" },
+          { text: "侧身让路，等他先走。", aff: 1, next: "live", judge: "doing" },
+          { text: "低头走过，当没看见。", aff: -1, next: "live", judge: "doing", flags: { wary: true } }
+        ] : [
+          { text: "等脚步远了再出门。", aff: 0, next: "live", judge: "doing" },
+          { text: "继续打印。", aff: 0, next: "live", judge: "doing" },
+          { text: "先回工位。", aff: 0, next: "live", judge: "doing" }
+        ]
+      },
+      eyes: {
+        title: "隔间",
+        place: "基层办公区",
+        nar: caught ? "陆晏辞停在你隔间口。周围键盘轻了一拍。高管平时不下这层。" : "隔间口空了。表格上的数字重新清晰。",
+        act: caught ? "把杯子放到隔板上" : "",
+        line: caught ? "喝。" : "",
+        choices: caught ? [
+          { text: "接过杯子，微微鞠躬。", aff: 2, next: "live", judge: "doing" },
+          { text: "看着杯子，没有立刻喝。", aff: 0, next: "live", judge: "doing" },
+          { text: "侧身躲开，没有接。", aff: -2, next: "live", judge: "fail", flags: { wary: true } }
+        ] : [
+          { text: "继续改表。", aff: 0, next: "live", judge: "doing" },
+          { text: "看一眼过道，确认他走了。", aff: 0, next: "live", judge: "doing" },
+          { text: "把水杯推远一点。", aff: 0, next: "live", judge: "doing" }
+        ]
+      }
+    };
+    const src = packs[key] || packs.eyes;
+    state.live = {
+      title: src.title,
+      place: src.place,
+      quest: hudQuestText({}),
+      nar: src.nar,
+      act: src.act,
+      line: src.line,
+      sys: [
+        { who: "sys", text: caught ? "你已经够显眼了。她现在只觉得被谈话。" : "她躲开了。不许追着喊。" },
+        { who: "lu", text: caught ? "……" : "知道了。" },
+        { who: "sys", text: caught ? "站着。再开口，短一点。" : "下一回换个不那么像押送的方式。" }
+      ],
+      choices: src.choices,
+      jump: 0,
+      mins: 4
+    };
+    state.sceneId = "live";
+    renderGame();
+  }
+
+  function bindShiftHost() {
+    if (!window.ZC_SHIFT) return;
+    window.ZC_SHIFT.init({
+      getState: () => state,
+      save,
+      toast,
+      renderHud,
+      addMins(n) {
+        advanceStoryClock(n);
+        renderClock();
+      },
+      bump(stat, n) {
+        if (stat === "rumor") state.rumor = clamp((state.rumor || 0) + n, 0, 100);
+        else if (stat === "alert") state.alert = clamp((state.alert || 0) + n, 0, 100);
+        else if (stat === "trust") state.trust = clamp((state.trust || 0) + n, 0, 100);
+        else if (stat === "affection") {
+          state.affection = clamp(state.affection + n, -40, 100);
+          state.lastDelta = n;
+        }
+      },
+      doingTask: () => currentDoingTask(),
+      enterTalk: shiftEnterTalk,
+      backToTalk() {
+        window.ZC_SHIFT.closeDesk();
+        renderGame();
+      }
+    });
   }
 
   function enterLoadedGame() {
@@ -3538,6 +3669,7 @@
     bindCoverflow();
     bindPhone();
     $("#btn-menu").addEventListener("click", () => {
+      if (window.ZC_SHIFT) window.ZC_SHIFT.closeDesk();
       $("#phone-os").classList.add("hidden");
       $("#phone-fab").classList.remove("hidden");
       $("#game-root").classList.add("hidden");
@@ -3593,6 +3725,19 @@
     $("#sys-modal").addEventListener("click", (e) => {
       if (e.target.id === "sys-modal") closeSysModal();
     });
+    const hudShift = $("#btn-hud-shift");
+    if (hudShift) {
+      hudShift.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!window.ZC_SHIFT) return;
+        if (window.ZC_SHIFT.isOpen()) {
+          window.ZC_SHIFT.closeDesk();
+          renderGame();
+        } else {
+          window.ZC_SHIFT.openDesk();
+        }
+      });
+    }
     const hudBoard = $("#btn-hud-board");
     if (hudBoard) {
       hudBoard.addEventListener("click", (e) => {
@@ -3631,7 +3776,7 @@
     const briefOk = $("#brief-ok");
     if (briefOk) briefOk.addEventListener("click", () => stepBrief());
     $("#game-root").addEventListener("click", (e) => {
-      if (e.target.closest("#sys-modal, #aff-modal, #brief-modal, #task-modal, #log-modal, #phone-os, .hud, #phone-fab, #sheet, .menu-btn, .adv-log")) return;
+      if (e.target.closest("#sys-modal, #aff-modal, #brief-modal, #task-modal, #log-modal, #phone-os, .hud, #phone-fab, #sheet, .menu-btn, .adv-log, #shift-root")) return;
       advanceAdv();
     });
   }
@@ -3649,6 +3794,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     bind();
+    bindShiftHost();
     $("#btn-continue").classList.toggle("hidden", !hasSave());
     const sim = new URLSearchParams(location.search).get("sim");
     if (sim) {
