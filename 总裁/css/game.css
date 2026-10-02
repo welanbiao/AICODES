@@ -3033,7 +3033,7 @@ button { font-family: inherit; cursor: pointer; }
 #game-root.is-shift #adv { display: none !important; }
 #game-root.is-shift #sprite-lu { display: none !important; }
 #game-root.is-shift .stage .veil {
-  background: linear-gradient(180deg, rgba(5,7,12,.2) 0%, rgba(5,7,12,.35) 40%, rgba(5,7,12,.88) 100%);
+  background: linear-gradient(180deg, rgba(5,7,12,.55) 0%, rgba(5,7,12,.72) 40%, rgba(5,7,12,.94) 100%);
 }
 
 .shift-root {
@@ -3048,11 +3048,29 @@ button { font-family: inherit; cursor: pointer; }
   color: var(--ink);
 }
 .shift-root.hidden { display: none !important; }
+.sh-card {
+  background: rgba(10, 12, 18, .92);
+  border: 1px solid rgba(230,200,138,.28);
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  backdrop-filter: blur(16px);
+}
 .sh-desk, .sh-play, .sh-dodge, .sh-result {
   min-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.sh-result { justify-content: center; padding-top: 8px; }
+.sh-result .sh-lead {
+  font-size: 15px;
+  color: var(--ink);
+  margin: 8px 0 14px;
+}
+.sh-result h2 {
+  font-size: 20px;
+  margin-top: 4px;
 }
 .sh-kicker {
   font-size: 11px;
@@ -3154,7 +3172,8 @@ button { font-family: inherit; cursor: pointer; }
   text-align: center;
   border-bottom: 1px solid rgba(230,200,138,.12);
 }
-.sh-table th { color: var(--gold); font-size: 12px; }
+.sh-table th.is-focus { color: #ffd7a0; box-shadow: inset 0 -2px 0 var(--gold); }
+.sh-table td.is-warn { color: #ff8a96; font-weight: 800; background: rgba(255,107,122,.16); }
 .sh-table td { cursor: pointer; }
 .sh-table td.is-hit { background: rgba(125,255,195,.16); color: var(--ok); }
 .sh-table td.is-miss { background: rgba(255,107,122,.2); }
@@ -3285,7 +3304,7 @@ button { font-family: inherit; cursor: pointer; }
   bottom: 0;
   width: 50%;
   background: linear-gradient(90deg, #3a3d46, #2a2d36);
-  transition: transform 2s linear;
+  transition: transform 4s linear;
 }
 .sh-door.left { left: 0; border-right: 1px solid #111; transform: translateX(-96%); }
 .sh-door.right { right: 0; border-left: 1px solid #111; transform: translateX(96%); }
@@ -3312,5 +3331,3 @@ button { font-family: inherit; cursor: pointer; }
   touch-action: none;
   background: rgba(8,10,16,.4);
 }
-.sh-result { justify-content: center; padding-top: 24px; }
-.sh-result .sh-lead { font-size: 15px; color: var(--ink); }

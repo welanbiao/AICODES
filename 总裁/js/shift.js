@@ -74,32 +74,34 @@
     view = "desk";
     locking = false;
     clearTimers();
-    setCg("img/cg_office.png");
+    setCg("img/bg_office.png");
     const sh = ensureShift();
     const left = ["sheet", "print", "meet"].filter((id) => !jobDone(id)).length;
     root().innerHTML = `
       <section class="sh-desk">
-        <header class="sh-head">
-          <p class="sh-kicker">裙楼 7F</p>
-          <h2>你的工位</h2>
-          <p class="sh-heat">${heatText()}</p>
-        </header>
-        ${rumbar()}
-        <p class="sh-lead">先把活做完。他要是下来，整排都会看。</p>
-        <div class="sh-jobs">
-          <button type="button" class="sh-job ${jobDone("sheet") ? "is-done" : ""}" data-job="sheet" ${jobDone("sheet") ? "disabled" : ""}>
-            <em>必须</em><b>改节点表</b><span>${jobDone("sheet") ? "已交" : "找出第三列错格"}</span>
-          </button>
-          <button type="button" class="sh-job ${jobDone("print") ? "is-done" : ""}" data-job="print" ${jobDone("print") ? "disabled" : ""}>
-            <em>事务</em><b>送印</b><span>${jobDone("print") ? "已取" : "卡纸要及时清"}</span>
-          </button>
-          <button type="button" class="sh-job ${jobDone("meet") ? "is-done" : ""}" data-job="meet" ${jobDone("meet") ? "disabled" : ""}>
-            <em>会前</em><b>核对数据</b><span>${jobDone("meet") ? "已核" : "被点名就点对那一格"}</span>
-          </button>
-        </div>
-        <div class="sh-actions">
-          <button type="button" class="sh-btn" id="sh-leave" ${left ? "" : ""}>${left ? "先下班" : "下班走电梯"}</button>
-          <button type="button" class="sh-btn ghost" id="sh-talk">听对话</button>
+        <div class="sh-card">
+          <header class="sh-head">
+            <p class="sh-kicker">裙楼 7F</p>
+            <h2>你的工位</h2>
+            <p class="sh-heat">${heatText()}</p>
+          </header>
+          ${rumbar()}
+          <p class="sh-lead">先把活做完。他要是下来，整排都会看。</p>
+          <div class="sh-jobs">
+            <button type="button" class="sh-job ${jobDone("sheet") ? "is-done" : ""}" data-job="sheet" ${jobDone("sheet") ? "disabled" : ""}>
+              <em>必须</em><b>改节点表</b><span>${jobDone("sheet") ? "已交" : "第三列有一格加不对"}</span>
+            </button>
+            <button type="button" class="sh-job ${jobDone("print") ? "is-done" : ""}" data-job="print" ${jobDone("print") ? "disabled" : ""}>
+              <em>事务</em><b>送印</b><span>${jobDone("print") ? "已取" : "卡住了再清卡"}</span>
+            </button>
+            <button type="button" class="sh-job ${jobDone("meet") ? "is-done" : ""}" data-job="meet" ${jobDone("meet") ? "disabled" : ""}>
+              <em>会前</em><b>核对数据</b><span>${jobDone("meet") ? "已核" : "把两行加起来"}</span>
+            </button>
+          </div>
+          <div class="sh-actions">
+            <button type="button" class="sh-btn" id="sh-leave">${left ? "先下班" : "下班走电梯"}</button>
+            <button type="button" class="sh-btn ghost" id="sh-talk">听对话</button>
+          </div>
         </div>
       </section>`;
   }
@@ -107,57 +109,48 @@
   function startSheet() {
     view = "sheet";
     job = "sheet";
-    setCg("img/cg_office.png");
+    setCg("img/bg_office.png");
     const rows = [
       ["A3节点", "12", "14", "18"],
       ["B1复核", "9", "9", "11"],
-      ["C2验收", "7", "8", "6"],
-      ["D4签字", "4", "5", "5"],
-      ["合计", "32", "36", "40"]
+      ["C2验收", "7", "8", "6"]
     ];
-    const err = { r: 2, c: 3, wrong: "6", right: "8" };
-    rows[err.r][err.c] = err.wrong;
+    const err = { r: 2, c: 3 };
     const body = rows.map((row, ri) => `<tr>${row.map((cell, ci) => {
       const head = ci === 0;
-      return `<t${head ? "h" : "d"} ${head ? "" : `data-r="${ri}" data-c="${ci}"`}>${cell}</t${head ? "h" : "d"}>`;
+      const mark = !head && ri === err.r && ci === err.c ? " is-warn" : "";
+      return `<t${head ? "h" : "d"} class="${mark.trim()}" ${head ? "" : `data-r="${ri}" data-c="${ci}"`}>${cell}</t${head ? "h" : "d"}>`;
     }).join("")}</tr>`).join("");
     root().innerHTML = `
       <section class="sh-play">
-        <header class="sh-play-head">
-          <button type="button" class="sh-back" id="sh-back">回工位</button>
-          <p>本周节点表</p>
-        </header>
-        <p class="sh-hint">第三列有一格对不上。点出错格。</p>
-        <table class="sh-table" id="sh-table">
-          <thead><tr><th>项目</th><th>一列</th><th>二列</th><th>三列</th></tr></thead>
-          <tbody>${body}</tbody>
-        </table>
-        <div id="sh-fix" class="sh-fix hidden"></div>
+        <div class="sh-card">
+          <header class="sh-play-head">
+            <button type="button" class="sh-back" id="sh-back">回工位</button>
+            <p>本周节点表</p>
+          </header>
+          <p class="sh-hint">第三列加起来是 35，合计写着 37。点那格少了的数，改成 8 就行。</p>
+          <table class="sh-table" id="sh-table">
+            <thead><tr><th>项目</th><th>一列</th><th>二列</th><th class="is-focus">三列</th></tr></thead>
+            <tbody>${body}
+              <tr><th>合计</th><td>28</td><td>31</td><td>37</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>`;
-    const table = $("#sh-table");
-    table.addEventListener("click", (e) => {
+    $("#sh-table").addEventListener("click", (e) => {
       const td = e.target.closest("td");
-      if (!td) return;
+      if (!td || locking) return;
       const r = Number(td.dataset.r);
       const c = Number(td.dataset.c);
       if (r === err.r && c === err.c) {
+        td.textContent = "8";
+        td.classList.remove("is-warn");
         td.classList.add("is-hit");
-        const box = $("#sh-fix");
-        box.classList.remove("hidden");
-        box.innerHTML = `<p>更正第三列</p><div class="sh-chips">
-          <button type="button" data-ok="0">7</button>
-          <button type="button" data-ok="1">${err.right}</button>
-          <button type="button" data-ok="0">9</button>
-        </div>`;
-        box.addEventListener("click", (ev) => {
-          const btn = ev.target.closest("button");
-          if (!btn) return;
-          finishJob("sheet", btn.dataset.ok === "1");
-        }, { once: true });
+        later(() => finishJob("sheet", true), 280);
       } else {
         td.classList.add("is-miss");
-        host.toast("这格没问题");
-        later(() => td.classList.remove("is-miss"), 400);
+        host.toast("不是这格，看第三列那格发红的。");
+        later(() => td.classList.remove("is-miss"), 500);
       }
     });
   }
@@ -165,136 +158,99 @@
   function startPrint() {
     view = "print";
     job = "print";
-    setCg("img/cg_print.png");
-    let wave = 0;
-    let locked = false;
+    setCg("img/bg_office.png");
+    let phase = "idle";
     root().innerHTML = `
       <section class="sh-play">
-        <header class="sh-play-head">
-          <button type="button" class="sh-back" id="sh-back">回工位</button>
-          <p>打印室</p>
-        </header>
-        <p class="sh-hint" id="sh-print-hint">点送印。红区出现时立刻清卡。</p>
-        <div class="sh-printer">
-          <div class="sh-printer-body"><i></i><b>7F-P2</b></div>
-          <div class="sh-bar"><em id="sh-pbar"></em></div>
-          <p class="sh-pstat" id="sh-pstat">待送 1 / 2</p>
-        </div>
-        <div class="sh-actions">
-          <button type="button" class="sh-btn" id="sh-send">送印</button>
-          <button type="button" class="sh-btn danger hidden" id="sh-jam">清卡</button>
+        <div class="sh-card">
+          <header class="sh-play-head">
+            <button type="button" class="sh-back" id="sh-back">回工位</button>
+            <p>打印室</p>
+          </header>
+          <p class="sh-hint" id="sh-print-hint">点送印。卡住以后，清卡会一直停着等你按。</p>
+          <div class="sh-printer">
+            <div class="sh-printer-body"><i></i><b>7F-P2</b></div>
+            <div class="sh-bar"><em id="sh-pbar"></em></div>
+            <p class="sh-pstat" id="sh-pstat">一份文件</p>
+          </div>
+          <div class="sh-actions">
+            <button type="button" class="sh-btn" id="sh-send">送印</button>
+            <button type="button" class="sh-btn danger hidden" id="sh-jam">清卡</button>
+          </div>
         </div>
       </section>`;
     const bar = $("#sh-pbar");
     const send = $("#sh-send");
     const jam = $("#sh-jam");
-    const stat = $("#sh-pstat");
     const hint = $("#sh-print-hint");
-    function runWave() {
-      if (locked) return;
-      locked = true;
+    const track = bar.parentNode;
+    send.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (phase !== "idle") return;
+      phase = "run";
       send.disabled = true;
-      jam.classList.add("hidden");
       let t0 = performance.now();
-      let hit = false;
-      let windowOn = false;
-      const windowAt = 520;
-      const windowEnd = 980;
       function tick(now) {
-        const p = clamp((now - t0) / 1600, 0, 1);
+        if (phase !== "run") return;
+        const p = clamp((now - t0) / 2200, 0, 1);
         bar.style.width = (p * 100) + "%";
-        const inWin = (now - t0) > windowAt && (now - t0) < windowEnd;
-        if (inWin && !windowOn) {
-          windowOn = true;
+        if (p >= 0.42) {
+          phase = "jam";
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
           jam.classList.remove("hidden");
-          hint.textContent = "卡了。现在清。";
-          bar.parentNode.classList.add("is-hot");
-        }
-        if (!inWin && windowOn && !hit) {
-          windowOn = false;
-          jam.classList.add("hidden");
-          bar.parentNode.classList.remove("is-hot");
-        }
-        if (p < 1) {
-          raf = requestAnimationFrame(tick);
+          track.classList.add("is-hot");
+          hint.textContent = "卡纸了。按清卡，不急。";
           return;
         }
-        locked = false;
-        send.disabled = false;
-        jam.classList.add("hidden");
-        bar.parentNode.classList.remove("is-hot");
-        if (!hit) {
-          host.toast("卡纸没清，重来");
-          host.bump("alert", 2);
-          bar.style.width = "0";
-          return;
-        }
-        wave += 1;
-        if (wave >= 2) {
-          finishJob("print", true);
-          return;
-        }
-        stat.textContent = "待送 2 / 2";
-        hint.textContent = "还有一叠。";
-        bar.style.width = "0";
+        raf = requestAnimationFrame(tick);
       }
-      jam.onclick = () => {
-        if (!windowOn || hit) return;
-        hit = true;
-        jam.classList.add("hidden");
-        hint.textContent = "卡已清。";
-      };
       raf = requestAnimationFrame(tick);
-    }
-    send.addEventListener("click", runWave);
+    });
+    jam.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (phase !== "jam") return;
+      phase = "done";
+      jam.classList.add("hidden");
+      track.classList.remove("is-hot");
+      bar.style.width = "100%";
+      hint.textContent = "好了。";
+      later(() => finishJob("print", true), 320);
+    });
   }
 
   function startMeet() {
     view = "meet";
     job = "meet";
-    setCg("img/cg_meeting.png");
-    const answer = "29";
-    let left = 9;
+    setCg("img/bg_office.png");
     root().innerHTML = `
       <section class="sh-play">
-        <header class="sh-play-head">
-          <button type="button" class="sh-back" id="sh-back">回工位</button>
-          <p>会前核对</p>
-        </header>
-        <p class="sh-hint">有人会问第三列合计。表上没有合计，自己加。</p>
-        <table class="sh-table mini">
-          <thead><tr><th>项目</th><th>一列</th><th>二列</th><th>三列</th></tr></thead>
-          <tbody>
-            <tr><th>A3</th><td>12</td><td>14</td><td>18</td></tr>
-            <tr><th>B1</th><td>9</td><td>9</td><td>11</td></tr>
-          </tbody>
-        </table>
-        <div class="sh-ask" id="sh-ask">
-          <p>陆总点到基层。第三列合计是多少？</p>
-          <em id="sh-timer">9</em>
-          <div class="sh-chips">
-            <button type="button" data-v="29">29</button>
-            <button type="button" data-v="40">40</button>
-            <button type="button" data-v="18">18</button>
-            <button type="button" data-v="21">21</button>
+        <div class="sh-card">
+          <header class="sh-play-head">
+            <button type="button" class="sh-back" id="sh-back">回工位</button>
+            <p>会前核对</p>
+          </header>
+          <p class="sh-hint">第三列两行相加。18 加 11。</p>
+          <table class="sh-table mini">
+            <thead><tr><th>项目</th><th>一列</th><th>二列</th><th class="is-focus">三列</th></tr></thead>
+            <tbody>
+              <tr><th>A3</th><td>12</td><td>14</td><td>18</td></tr>
+              <tr><th>B1</th><td>9</td><td>9</td><td>11</td></tr>
+            </tbody>
+          </table>
+          <div class="sh-ask" id="sh-ask">
+            <p>第三列合计是多少？</p>
+            <div class="sh-chips">
+              <button type="button" data-v="29">29</button>
+              <button type="button" data-v="18">18</button>
+            </div>
           </div>
         </div>
       </section>`;
-    const tick = () => {
-      left -= 1;
-      const el = $("#sh-timer");
-      if (el) el.textContent = String(Math.max(0, left));
-      if (left <= 0) {
-        finishJob("meet", false);
-        return;
-      }
-      later(tick, 1000);
-    };
-    later(tick, 1000);
     $("#sh-ask").addEventListener("click", (e) => {
       const btn = e.target.closest("button");
-      if (!btn) return;
-      finishJob("meet", btn.dataset.v === answer);
+      if (!btn || locking) return;
+      finishJob("meet", btn.dataset.v === "29");
     });
   }
 
@@ -317,8 +273,33 @@
     host.save();
     host.renderHud();
     locking = false;
-    if (shouldInterrupt()) startDodge(pickDodge());
-    else paintDesk();
+    showJobDone(id, ok);
+  }
+
+  function showJobDone(id, ok) {
+    view = "result";
+    clearTimers();
+    setCg("img/bg_office.png");
+    const names = { sheet: "节点表", print: "送印", meet: "核对" };
+    const line = ok
+      ? (id === "sheet" ? "数字对上了。你把表交了。" : id === "print" ? "印好了，你可以走了。" : "数对上了，这一下没出丑。")
+      : "这一下没对上。先坐回去，别在过道上愣着。";
+    const interrupt = shouldInterrupt();
+    root().innerHTML = `
+      <section class="sh-result">
+        <div class="sh-card">
+          <p class="sh-kicker">${ok ? "做完了" : "没做对"}</p>
+          <h2>${names[id] || "工作"}</h2>
+          <p class="sh-lead">${line}</p>
+          <div class="sh-actions">
+            <button type="button" class="sh-btn" id="sh-after-job">${interrupt ? "继续" : "回工位"}</button>
+          </div>
+        </div>
+      </section>`;
+    $("#sh-after-job").addEventListener("click", () => {
+      if (interrupt) startDodge(pickDodge());
+      else paintDesk();
+    });
   }
 
   function shouldInterrupt() {
@@ -348,17 +329,19 @@
   }
 
   function startEyes() {
-    setCg("img/cg_office.png");
+    setCg("img/bg_office.png");
     let danger = 22;
     root().innerHTML = `
       <section class="sh-dodge">
-        <p class="sh-kicker">隔间</p>
-        <h2>他停在过道</h2>
-        <p class="sh-lead">整排都感觉到了。低头改表，别跟他对上。</p>
-        <div class="sh-sight"><em id="sh-sight"></em></div>
-        <p class="sh-heat" id="sh-dstat">同事视线</p>
-        <button type="button" class="sh-hold" id="sh-hold">按住 · 低头改表</button>
-        <button type="button" class="sh-btn ghost" id="sh-flee">起身去茶水间</button>
+        <div class="sh-card">
+          <p class="sh-kicker">隔间</p>
+          <h2>他停在过道</h2>
+          <p class="sh-lead">整排都感觉到了。低头改表，别跟他对上。</p>
+          <div class="sh-sight"><em id="sh-sight"></em></div>
+          <p class="sh-heat">同事视线</p>
+          <button type="button" class="sh-hold" id="sh-hold">按住 · 低头改表</button>
+          <button type="button" class="sh-btn ghost" id="sh-flee">起身去茶水间</button>
+        </div>
       </section>`;
     const bar = $("#sh-sight");
     const hold = $("#sh-hold");
@@ -378,7 +361,7 @@
     function tick(now) {
       const dt = now - last;
       last = now;
-      danger += holdBusy ? -dt * 0.012 : dt * 0.028;
+      danger += holdBusy ? -dt * 0.018 : dt * 0.014;
       danger = clamp(danger, 0, 100);
       bar.style.width = danger + "%";
       bar.parentNode.classList.toggle("is-hot", danger > 70);
@@ -386,7 +369,7 @@
         endDodge(false, "eyes");
         return;
       }
-      if (now - (tick.t0 || (tick.t0 = now)) > 4600 && danger < 86) {
+      if (now - (tick.t0 || (tick.t0 = now)) > 7000 && danger < 90) {
         endDodge(true, "eyes");
         return;
       }
@@ -396,20 +379,22 @@
   }
 
   function startHall() {
-    setCg("img/cg_corridor.png");
+    setCg("img/bg_office.png");
     let danger = 8;
     root().innerHTML = `
       <section class="sh-dodge hall">
-        <p class="sh-kicker">走廊</p>
-        <h2>别跟他并排</h2>
-        <p class="sh-lead">他从转角过来。先闪进一间屋，别让整层看见。</p>
-        <div class="sh-hall">
-          <i class="sh-him" id="sh-him"></i>
-          <button type="button" class="sh-hide" data-hide="print" style="left:8%;top:58%">打印室</button>
-          <button type="button" class="sh-hide" data-hide="tea" style="left:38%;top:28%">茶水间</button>
-          <button type="button" class="sh-hide" data-hide="corner" style="left:68%;top:62%">拐角</button>
+        <div class="sh-card">
+          <p class="sh-kicker">走廊</p>
+          <h2>别跟他并排</h2>
+          <p class="sh-lead">他从转角过来。点一间屋闪进去就行。</p>
+          <div class="sh-hall">
+            <i class="sh-him" id="sh-him"></i>
+            <button type="button" class="sh-hide" data-hide="print" style="left:8%;top:58%">打印室</button>
+            <button type="button" class="sh-hide" data-hide="tea" style="left:38%;top:28%">茶水间</button>
+            <button type="button" class="sh-hide" data-hide="corner" style="left:68%;top:62%">拐角</button>
+          </div>
+          <div class="sh-sight"><em id="sh-sight"></em></div>
         </div>
-        <div class="sh-sight"><em id="sh-sight"></em></div>
       </section>`;
     const him = $("#sh-him");
     const bar = $("#sh-sight");
@@ -422,7 +407,7 @@
     function tick(now) {
       const dt = now - last;
       last = now;
-      danger += dt * 0.032;
+      danger += dt * 0.016;
       danger = clamp(danger, 0, 100);
       bar.style.width = danger + "%";
       him.style.top = (12 + danger * 0.55) + "%";
@@ -441,16 +426,18 @@
     let done = false;
     root().innerHTML = `
       <section class="sh-dodge lift">
-        <p class="sh-kicker">电梯</p>
-        <h2>门还开着</h2>
-        <p class="sh-lead">他伸手要进。下滑出去，别跟总裁关在一格里。</p>
-        <div class="sh-lift">
-          <div class="sh-door left" id="sh-dl"></div>
-          <div class="sh-door right" id="sh-dr"></div>
-          <div class="sh-sil"></div>
+        <div class="sh-card">
+          <p class="sh-kicker">电梯</p>
+          <h2>门还开着</h2>
+          <p class="sh-lead">点侧身出去，或下滑。时间够。</p>
+          <div class="sh-lift">
+            <div class="sh-door left" id="sh-dl"></div>
+            <div class="sh-door right" id="sh-dr"></div>
+            <div class="sh-sil"></div>
+          </div>
+          <div class="sh-swipe" id="sh-swipe">下滑离开</div>
+          <button type="button" class="sh-btn" id="sh-side">侧身挤出去</button>
         </div>
-        <div class="sh-swipe" id="sh-swipe">下滑离开</div>
-        <button type="button" class="sh-btn" id="sh-side">侧身挤出去</button>
       </section>`;
     later(() => {
       $("#sh-dl").classList.add("shut");
@@ -459,7 +446,7 @@
     later(() => {
       closed = true;
       if (!done) endDodge(false, "lift");
-    }, 2100);
+    }, 4200);
     function escape() {
       if (done || closed) return;
       done = true;
@@ -504,11 +491,13 @@
     }[tag];
     root().innerHTML = `
       <section class="sh-result">
-        <p class="sh-kicker">${ok ? "躲开了" : "被看见了"}</p>
-        <p class="sh-lead">${copy}</p>
-        <div class="sh-actions">
-          <button type="button" class="sh-btn" id="sh-back-desk">回工位</button>
-          <button type="button" class="sh-btn ghost" id="sh-talk-now">${ok ? "当没发生" : "他要说话"}</button>
+        <div class="sh-card">
+          <p class="sh-kicker">${ok ? "躲开了" : "被看见了"}</p>
+          <p class="sh-lead">${copy}</p>
+          <div class="sh-actions">
+            <button type="button" class="sh-btn" id="sh-back-desk">回工位</button>
+            <button type="button" class="sh-btn ghost" id="sh-talk-now">${ok ? "当没发生" : "他要说话"}</button>
+          </div>
         </div>
       </section>`;
     $("#sh-back-desk").addEventListener("click", () => paintDesk());
