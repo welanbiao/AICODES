@@ -532,7 +532,7 @@
   function openDesk(why) {
     if (!host) return;
     ensureShift();
-    if (why === "meet1") ensureShift().heat = 1;
+    if (why === "meet1" || why === "back") ensureShift().heat = 1;
     const el = root();
     if (!el) return;
     el.classList.remove("hidden");

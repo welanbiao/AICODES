@@ -1037,6 +1037,12 @@
     return padChoices(list, ctx);
   }
 
+  function isLeavingLift(choice) {
+    const t = String((choice && choice.text) || "");
+    if (/等他先开口|工作群|打开手机/.test(t)) return false;
+    return /回工位|先走|走开|侧身过去|从他身边|出电梯|往门外|走远再动|让他先走/.test(t);
+  }
+
   function hintChoices() {
     if (tutorialDone()) {
       return padChoices([
@@ -1820,26 +1826,93 @@
 
       if (currentId === "meet1") {
         resolveQuestStamp(scene, choice, scene);
-        advanceStoryClock(8);
-        state.sceneId = "live";
+        advanceStoryClock(2);
+        state.flags.liftGreeted = true;
         state.live = {
-          title: "回裙楼",
+          title: "到了",
+          place: "电梯间",
+          quest: hudQuestText(scene),
+          nar: "叮。门开。他没有先出去，手还搁在按钮边。",
+          act: "看了你一眼，没动",
+          line: "……",
+          sys: [
+            { who: "sys", text: "门开了也不让。她现在只想出去。" },
+            { who: "lu", text: "……" },
+            { who: "sys", text: "站着。等她先迈一步。" }
+          ],
+          choices: [
+            { text: "鞠躬让路，等他先走。", aff: 1, next: "hint_phone", judge: "doing" },
+            { text: "点头应一声，往门外迈。", aff: 0, next: "hint_phone", judge: "doing" },
+            { text: "往门边靠，等他让开。", aff: 1, next: "hint_phone", judge: "doing" }
+          ],
+          jump: 0,
+          mins: 2
+        };
+        state.sceneId = "live";
+        renderGame();
+        return;
+      }
+
+      if (choice.next === "hint_phone" || (state.flags.liftGreeted && !state.flags.phoneHint && /电梯/.test(String((scene && scene.place) || (state.live && state.live.place) || "")))) {
+        resolveQuestStamp(scene, choice, scene);
+        advanceStoryClock(3);
+        state.sceneId = "hint_phone";
+        state.flags.phoneHint = true;
+        renderGame();
+        return;
+      }
+
+      if (currentId === "hint_phone" && isLeavingLift(choice)) {
+        resolveQuestStamp(scene, choice, scene);
+        advanceStoryClock(4);
+        state.live = {
+          title: "厅",
+          place: "裙楼厅",
+          quest: hudQuestText(scene),
+          nar: "你从他身边过去。厅里灯白，他没有跟上来。工位在通道那头。",
+          act: "",
+          line: "",
+          sys: [
+            { who: "sys", text: "她走了。你拦得很难看。" },
+            { who: "lu", text: "……知道了。" },
+            { who: "sys", text: "不许立刻追到隔间。太像跟踪。" }
+          ],
+          choices: [
+            { text: "先回工位，把没改完的表收掉。", aff: 0, next: "live", judge: "doing", flags: { goDesk: true } },
+            { text: "加快脚步，不想回头。", aff: 0, next: "live", judge: "doing", flags: { goDesk: true } },
+            { text: "在转角停一下，确认他没跟。", aff: 0, next: "live", judge: "doing", flags: { goDesk: true } }
+          ],
+          jump: 0,
+          mins: 4
+        };
+        state.sceneId = "live";
+        renderGame();
+        return;
+      }
+
+      if (choice.flags && choice.flags.goDesk) {
+        resolveQuestStamp(scene, choice, scene);
+        advanceStoryClock(3);
+        state.flags.canDesk = true;
+        state.live = {
+          title: "工位",
           place: "基层办公区",
           quest: hudQuestText(scene),
-          nar: "你回到工位。总裁刚在裙楼电梯里出现过，隔间里有人看了你一眼。",
+          nar: "你坐回隔间。键盘声重新响起来。刚才电梯里的事，先搁下。",
           act: "",
           line: "",
           sys: scene.sys || [],
           choices: [
-            { text: "先把今天的表改完。", aff: 0, next: "live", judge: "doing" },
-            { text: "低头，当没看见那些目光。", aff: 0, next: "live", judge: "doing" },
-            { text: "打开工牌，确认自己没走错层。", aff: 0, next: "live", judge: "doing" }
+            { text: "先改今天的节点表。", aff: 0, next: "live", judge: "doing" },
+            { text: "低头，当没人注意你。", aff: 0, next: "live", judge: "doing" },
+            { text: "看一眼过道，确认他没下来。", aff: 0, next: "live", judge: "doing" }
           ],
           jump: 0,
-          mins: 6
+          mins: 3
         };
+        state.sceneId = "live";
         renderGame();
-        if (window.ZC_SHIFT) window.ZC_SHIFT.openDesk("meet1");
+        if (window.ZC_SHIFT) window.ZC_SHIFT.openDesk("back");
         return;
       }
 
@@ -3733,9 +3806,13 @@
         if (window.ZC_SHIFT.isOpen()) {
           window.ZC_SHIFT.closeDesk();
           renderGame();
-        } else {
-          window.ZC_SHIFT.openDesk();
+          return;
         }
+        if (!state.flags.canDesk && /电梯|裙楼厅/.test(stayPlace())) {
+          toast("你还没回到工位。");
+          return;
+        }
+        window.ZC_SHIFT.openDesk();
       });
     }
     const hudBoard = $("#btn-hud-board");
